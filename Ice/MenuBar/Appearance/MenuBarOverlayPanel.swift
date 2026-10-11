@@ -397,7 +397,19 @@ final class MenuBarOverlayPanel: NSPanel {
         else {
             return
         }
-        let wallpaper = ScreenCapture.captureWindow(with: wallpaperWindow.windowID, screenBounds: menuBarWindow.bounds)
+        // The wallpaper is drawn around the shape, so it has to look the way the
+        // desktop looks there. On macOS 26 that includes the window that darkens
+        // the wallpaper behind the menu bar, which is above the wallpaper window.
+        // Drawing the wallpaper without it made everything outside the shape
+        // brighter than the desktop below the menu bar (jordanbaird/Ice#943).
+        var windowIDs = [wallpaperWindow.windowID]
+        if
+            #unavailable(macOS 27.0),
+            let underbellyWindow = WindowInfo.menuBarUnderbellyWindow(from: windows, for: display)
+        {
+            windowIDs.insert(underbellyWindow.windowID, at: 0) // Front to back.
+        }
+        let wallpaper = ScreenCapture.captureWindows(with: windowIDs, screenBounds: menuBarWindow.bounds)
         if desktopWallpaper?.dataProvider?.data != wallpaper?.dataProvider?.data {
             desktopWallpaper = wallpaper
         }

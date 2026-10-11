@@ -135,6 +135,24 @@ extension WindowInfo {
         wallpaperWindow(from: createWindows(option: .onScreen), for: display)
     }
 
+    /// Returns the window that darkens the top of the wallpaper behind the
+    /// menu bar on the given display, from the given list of windows.
+    ///
+    /// On macOS 26, a window server window titled "underbelly" sits between the
+    /// wallpaper and the menu bar, taller than the menu bar, and darkens the
+    /// wallpaper there (measured on macOS 26.5.1 with the menu bar background
+    /// turned off: 83 points tall, average luma of the menu bar strip 121.7
+    /// without it and 109.4 with it). Returns `nil` where there is no such window.
+    static func menuBarUnderbellyWindow(from windows: [WindowInfo], for display: CGDirectDisplayID) -> WindowInfo? {
+        let displayBounds = CGDisplayBounds(display)
+        return windows.first { window in
+            window.isWindowServerWindow &&
+            window.isOnScreen &&
+            window.title == "underbelly" &&
+            displayBounds.contains(window.bounds)
+        }
+    }
+
     // MARK: Menu Bar Window
 
     /// Returns the menu bar window for the given display from the

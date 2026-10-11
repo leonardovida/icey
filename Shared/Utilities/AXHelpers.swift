@@ -13,6 +13,19 @@ enum AXHelpers {
         attributes: .concurrent
     )
 
+    /// Sets how long, in seconds, any Accessibility message sent by this process
+    /// waits for the application it is sent to, unless a call sets its own.
+    ///
+    /// The system default is about six seconds per message. The calls here run
+    /// synchronously, many of them from the main thread while the pointer moves
+    /// over the menu bar, and they ask the application that owns the menu bar. An
+    /// application hung in a popup menu then held the main thread for six seconds
+    /// at a time, again on the next pointer event, so the sections could not be
+    /// shown or hidden until that application was killed.
+    static func setGlobalMessagingTimeout(_ seconds: Float) {
+        AXUIElementSetMessagingTimeout(AXUIElementCreateSystemWide(), seconds)
+    }
+
     @discardableResult
     static func isProcessTrusted(prompt: Bool = false) -> Bool {
         queue.sync { checkIsProcessTrusted(prompt: prompt) }

@@ -239,12 +239,37 @@ final class MenuBarOverlayPanel: NSPanel {
         if let appState {
             appState.menuBarManager.$isMenuBarHiddenBySystem
                 .sink { [weak self] isHidden in
-                    self?.alphaValue = isHidden ? 0 : 1
+                    guard let self else {
+                        return
+                    }
+                    // The presentation options follow the frontmost app, which
+                    // can be on another display. Leaving a fullscreen app there
+                    // must not reveal this panel over a fullscreen space here.
+                    alphaValue = isHidden || isOwningDisplayFullscreen ? 0 : 1
                 }
                 .store(in: &c)
         }
 
         cancellables = c
+    }
+
+    /// A Boolean value that indicates whether the space currently shown on the
+    /// panel's owning display is fullscreen.
+    ///
+    /// The active space is the one on the display with keyboard focus, so with
+    /// separate spaces per display it says nothing about the other displays: a
+    /// fullscreen app on one display stopped the panels of every display from
+    /// updating, while the panel of the fullscreen display was shown again as
+    /// soon as focus moved to a desktop elsewhere. Falls back to the active
+    /// space when the display has no space of its own (spaces span displays).
+    private var isOwningDisplayFullscreen: Bool {
+        if
+            let space = SpaceInfo.currentSpace(for: owningScreen.displayID),
+            space.spaceID != 0
+        {
+            return space.isFullscreen
+        }
+        return appState?.activeSpace.isFullscreen ?? false
     }
 
     /// Inserts the given update flag into the panel's current list of update flags.
@@ -267,8 +292,8 @@ final class MenuBarOverlayPanel: NSPanel {
             MenuBarOverlayPanel.logger.debug("Menu bar is hidden by system. \(actionMessage, privacy: .public)")
             return false
         }
-        guard !appState.activeSpace.isFullscreen else {
-            MenuBarOverlayPanel.logger.debug("Active space is fullscreen. \(actionMessage, privacy: .public)")
+        guard !isOwningDisplayFullscreen else {
+            MenuBarOverlayPanel.logger.debug("Space on owning display is fullscreen. \(actionMessage, privacy: .public)")
             return false
         }
         guard appState.menuBarManager.hasValidMenuBar(in: windows, for: owningScreen.displayID) else {
@@ -284,6 +309,20 @@ final class MenuBarOverlayPanel: NSPanel {
             let menuBarManager = appState?.menuBarManager,
             !menuBarManager.isMenuBarHiddenBySystem
         else {
+            return
+        }
+        // Accessibility describes the menus of the display with the active menu
+        // bar, while every other display keeps drawing the menus of the app last
+        // active on it. Read from another display, the frame is the active
+        // display's menus, or nil when they reach past this display's notch, and
+        // nil collapsed the split shape into one continuous shape whenever focus
+        // moved to another display. Keep the frame measured while this display
+        // was active; only fill it in from elsewhere when there is none yet.
+        if
+            applicationMenuFrame != nil,
+            let activeScreen = NSScreen.screenWithActiveMenuBar ?? NSScreen.main,
+            activeScreen != screen
+        {
             return
         }
         applicationMenuFrame = screen.getApplicationMenuFrame()
@@ -322,6 +361,16 @@ final class MenuBarOverlayPanel: NSPanel {
 
         guard appState.appearanceManager.overlayPanels.contains(self) else {
             MenuBarOverlayPanel.logger.warning("Overlay panel \(self) not retained")
+            return
+        }
+
+        // Ordering the panel front pulls it onto the space now shown on its
+        // display, fullscreen ones included, where it drew the desktop wallpaper
+        // around the menu bar shape instead of the fullscreen app's black bar.
+        // Updates were already refused there; showing was not.
+        guard !isOwningDisplayFullscreen else {
+            MenuBarOverlayPanel.logger.debug("Space on owning display is fullscreen. Preventing overlay panel from showing.")
+            alphaValue = 0
             return
         }
 

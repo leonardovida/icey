@@ -14,6 +14,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: NSApplicationDelegate Methods
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        // Keep an unresponsive app from stalling Ice for the system's default
+        // six seconds per Accessibility message.
+        AXHelpers.setGlobalMessagingTimeout(1)
+
         // Initial chore work.
         NSSplitViewItem.swizzle()
         MigrationManager(appState: appState).migrateAll()

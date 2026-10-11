@@ -27,6 +27,17 @@ final class IceBarPanel: NSPanel {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
+    /// A Boolean value that indicates whether the panel has been asked to show
+    /// a section, but is not on screen yet.
+    ///
+    /// ``show(section:on:)`` waits up to a second for the caches before it puts
+    /// the panel on screen. During that wait the panel's frame is the one from
+    /// its previous presentation, so it cannot tell whether the pointer is over
+    /// the bar that is about to appear.
+    var isAwaitingDisplay: Bool {
+        currentSection != nil && !isVisible
+    }
+
     /// Creates a new Ice Bar panel.
     init() {
         super.init(

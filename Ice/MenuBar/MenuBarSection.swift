@@ -243,7 +243,11 @@ final class MenuBarSection {
 
     /// Starts running checks to determine when to rehide the section.
     private func startRehideChecks() {
+        // Clear the reference too: the monitor below only schedules a new timer
+        // while it is nil, so an invalidated but retained timer would stop timed
+        // rehide from ever re-arming.
         rehideTimer?.invalidate()
+        rehideTimer = nil
         rehideMonitor?.stop()
 
         guard

@@ -113,7 +113,7 @@ final class AppState: ObservableObject {
 
     /// Async setup actions, run once on first access.
     private lazy var setupTask = Task {
-        permissions.stopAllChecks()
+        permissions.stopChecksWhenGranted()
 
         settings.performSetup(with: self)
         menuBarManager.performSetup(with: self)

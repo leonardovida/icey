@@ -33,6 +33,10 @@ class Permission: ObservableObject, Identifiable {
     /// The function that requests permissions.
     private let request: () -> Void
 
+    /// A Boolean value that indicates whether to stop the permission check
+    /// once the permission is granted.
+    private var stopsCheckWhenGranted = false
+
     /// Observer that runs on a timer to check permissions.
     private var timerCancellable: AnyCancellable?
 
@@ -76,6 +80,9 @@ class Permission: ObservableObject, Identifiable {
                     return
                 }
                 hasPermission = check()
+                if hasPermission, stopsCheckWhenGranted {
+                    timerCancellable = nil
+                }
             }
     }
 
@@ -113,6 +120,14 @@ class Permission: ObservableObject, Identifiable {
         timerCancellable = nil
         hasPermissionCancellable?.cancel()
         hasPermissionCancellable = nil
+    }
+
+    /// Stops running the permission check once the permission is granted.
+    func stopCheckWhenGranted() {
+        stopsCheckWhenGranted = true
+        if hasPermission {
+            stopCheck()
+        }
     }
 }
 

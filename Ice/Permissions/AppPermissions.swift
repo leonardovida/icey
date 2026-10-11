@@ -69,11 +69,15 @@ final class AppPermissions: ObservableObject {
         }
     }
 
-    /// Stops running all permissions checks.
-    func stopAllChecks() {
-        logger.info("Stopping all permissions checks")
+    /// Stops running the checks of the permissions that are granted, and
+    /// the checks of the remaining permissions once they are granted.
+    ///
+    /// A permission granted while the app runs in limited mode is then
+    /// picked up without relaunching the app.
+    func stopChecksWhenGranted() {
+        logger.info("Stopping permissions checks once granted")
         for permission in allPermissions {
-            permission.stopCheck()
+            permission.stopCheckWhenGranted()
         }
     }
 }

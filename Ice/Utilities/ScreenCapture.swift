@@ -31,9 +31,10 @@ enum ScreenCapture {
     /// Returns a Boolean value that indicates whether the app has screen
     /// capture permissions.
     ///
-    /// This function caches its initial result and returns it on subsequent
-    /// calls. Pass `true` to the `reset` parameter to replace the cached
-    /// result with a newly computed value.
+    /// This function caches a positive result and returns it on subsequent
+    /// calls. A negative result is not cached, so that a permission granted
+    /// while the app is running is picked up. Pass `true` to the `reset`
+    /// parameter to replace the cached result with a newly computed value.
     static func cachedCheckPermissions(reset: Bool = false) -> Bool {
         enum Context {
             static var cachedResult: Bool?
@@ -42,7 +43,7 @@ enum ScreenCapture {
             return result
         }
         let result = checkPermissions()
-        Context.cachedResult = result
+        Context.cachedResult = result ? true : nil
         return result
     }
 

@@ -33,7 +33,14 @@ struct MenuBarItemContainer<Content: View>: View {
     }
 
     private var foreground: Color {
-        colorInfo?.isBright == true ? .black : .white
+        if appState.activeSpace.isFullscreen {
+            return .white
+        }
+        guard let colorInfo else {
+            // Contrast with the default background, which follows the system appearance.
+            return .primary
+        }
+        return colorInfo.isBright ? .black : .white
     }
 
     private var configuration: MenuBarAppearancePartialConfiguration {

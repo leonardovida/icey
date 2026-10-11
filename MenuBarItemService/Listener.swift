@@ -42,12 +42,25 @@ final class Listener {
         }
     }
 
+    /// The signing identifier of the app that contains the service.
+    private var appSigningIdentifier: String {
+        // The service is embedded at Ice.app/Contents/XPCServices/MenuBarItemService.xpc,
+        // and the app's signing identifier is its bundle identifier.
+        let appURL = Bundle.main.bundleURL
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        return Bundle(url: appURL)?.bundleIdentifier ?? "com.jordanbaird.Ice"
+    }
+
     /// Activates the listener without checking if it is already active,
-    /// with the requirement that session peers must be signed with the
-    /// same team identifier as the service process.
+    /// with the requirement that session peers must be signed by the same
+    /// team as the service process or, for builds without a team, with
+    /// the app's signing identifier.
     @available(macOS 26.0, *)
-    private func uncheckedActivateWithSameTeamRequirement() throws {
-        listener = try XPCListener(service: name, requirement: .isFromSameTeam()) { [weak self] request in
+    private func uncheckedActivateWithPeerRequirement() throws {
+        let requirement = MenuBarItemService.peerRequirement(signingIdentifier: appSigningIdentifier)
+        listener = try XPCListener(service: name, requirement: requirement) { [weak self] request in
             request.accept { message in
                 self?.handleMessage(message)
             }
@@ -74,7 +87,7 @@ final class Listener {
 
         do {
             if #available(macOS 26.0, *) {
-                try uncheckedActivateWithSameTeamRequirement()
+                try uncheckedActivateWithPeerRequirement()
             } else {
                 try uncheckedActivate()
             }

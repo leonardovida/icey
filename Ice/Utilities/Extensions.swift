@@ -160,6 +160,14 @@ extension CGImage {
             }
         }
 
+        // An image with no pixels at or above the alpha threshold, such as
+        // a capture of the transparent menu bar on macOS 26, has no average
+        // color. Returning here also prevents a division by zero, which used
+        // to produce a color with NaN components that drew as solid white.
+        guard count > 0 else {
+            return nil
+        }
+
         // Components are currently in integer format (0 to 255), but need
         // to be converted to floating point (0 to 1). Makes more sense to
         // scale the count up to match the components, rather than scale

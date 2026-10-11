@@ -520,6 +520,12 @@ extension MenuBarItemManager {
     }
 
     /// Waits asynchronously for the user to pause input.
+    ///
+    /// The check is repeated every 10ms. It runs before every move and
+    /// click, including those that open a hidden item's menu from the
+    /// Ice Bar or the search panel, so a coarser interval delays those
+    /// menus by up to the full interval. Each check reads a few event
+    /// source counters and costs about 25µs.
     private nonisolated func waitForUserToPauseInput() async throws {
         let waitTask = Task {
             while true {
@@ -527,7 +533,7 @@ extension MenuBarItemManager {
                 if hasUserPausedInput(for: .milliseconds(50)) {
                     break
                 }
-                try await Task.sleep(for: .milliseconds(250))
+                try await Task.sleep(for: .milliseconds(10))
             }
         }
         do {
@@ -1513,12 +1519,18 @@ extension MenuBarItemManager {
             return
         }
 
+        // List the items, which asks the menu bar item service for each
+        // item's source process on macOS 26, while Accessibility is asked
+        // for the application menu frame on this thread. Neither depends
+        // on the other.
+        async let currentItems = MenuBarItem.getMenuBarItems(option: .activeSpace)
+
         guard let applicationMenuFrame = screen.getApplicationMenuFrame() else {
             logger.error("No application menu frame, so not showing \(item.logString, privacy: .public)")
             return
         }
 
-        var items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
+        var items = await currentItems
 
         guard let destination = getReturnDestination(for: item, in: items) else {
             logger.error("No return destination for \(item.logString, privacy: .public)")

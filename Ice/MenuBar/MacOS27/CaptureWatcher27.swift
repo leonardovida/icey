@@ -45,6 +45,8 @@ final class CaptureWatcher27: ObservableObject {
                 self?.read()
             }
         }
+        // Lets the system coalesce the reading with other wakeups.
+        timer.tolerance = 0.5
         // The common run loop mode, or the reading stops while a menu is open.
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer

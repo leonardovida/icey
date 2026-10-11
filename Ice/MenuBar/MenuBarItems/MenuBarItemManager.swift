@@ -400,6 +400,12 @@ extension MenuBarItemManager {
                 // ???: Is clearing the cache the best thing to do here?
                 logger.warning("Missing control item for hidden section, clearing menu bar item cache")
                 itemCache = ItemCache(displayID: nil)
+                // The window list was stored above, so `cacheItemsIfNeeded()` would
+                // skip every later attempt until some item window came or went,
+                // leaving the cache empty for as long as the menu bar stayed the
+                // same (jordanbaird/Ice#908 shows a session stuck in this state).
+                // Forget it, so the next periodic check tries again.
+                await cacheActor.clearCachedItemWindowIDs()
                 return
             }
 
@@ -1466,6 +1472,9 @@ extension MenuBarItemManager {
         /// The number of attempts that have been made to rehide the item.
         var rehideAttempts = 0
 
+        /// The number of rounds of attempts that have failed to rehide the item.
+        var failedRehideRounds = 0
+
         /// A Boolean value that indicates whether the menu bar item's
         /// interface is showing.
         var isShowingInterface: Bool {
@@ -1704,7 +1713,18 @@ extension MenuBarItemManager {
                     // Failed contexts are ultimately added back to the array
                     // and rehidden after a longer delay, so reset the count.
                     context.rehideAttempts = 0
-                    failedContexts.append(context)
+                    context.failedRehideRounds += 1
+                    if context.failedRehideRounds < Self.maxFailedRehideRounds {
+                        failedContexts.append(context)
+                    } else {
+                        logger.error(
+                            """
+                            Giving up on rehiding \(item.logString, privacy: .public) \
+                            after \(context.failedRehideRounds, privacy: .public) rounds \
+                            of attempts
+                            """
+                        )
+                    }
                 }
             }
         }
@@ -1719,8 +1739,25 @@ extension MenuBarItemManager {
                 """
             )
             temporarilyShownItemContexts.append(contentsOf: failedContexts.reversed())
-            runRehideTimer(for: 3)
+            let rounds = failedContexts.map(\.failedRehideRounds).max() ?? 1
+            runRehideTimer(for: Self.rehideRetryInterval(afterFailedRounds: rounds))
         }
+    }
+
+    /// The number of failed rounds of rehide attempts after which a
+    /// temporarily shown item is left where it is.
+    ///
+    /// Every round hides the cursor, pauses Ice's event monitors and posts
+    /// synthetic drags. An item that could never be moved back was retried
+    /// every 3 seconds for as long as Ice ran, which over a long session is
+    /// tens of thousands of rounds of window server work.
+    private static let maxFailedRehideRounds = 5
+
+    /// The delay before the next round of rehide attempts, doubling from
+    /// 3 seconds with each failed round, up to a minute.
+    private static func rehideRetryInterval(afterFailedRounds rounds: Int) -> TimeInterval {
+        let exponent = min(max(rounds - 1, 0), 5)
+        return min(3 * pow(2, Double(exponent)), 60)
     }
 
     /// Removes a temporarily shown item from the cache, ensuring that

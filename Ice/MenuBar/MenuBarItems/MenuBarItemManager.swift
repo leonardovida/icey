@@ -616,6 +616,71 @@ extension MenuBarItemManager {
         source.localEventsSuppressionInterval = 0
     }
 
+    /// A continuation for an event operation that resumes once, from
+    /// whichever of an event tap or a cancellation reaches it first.
+    ///
+    /// The timeout of an event operation cancels the wait, but the wait
+    /// only ends when the continuation resumes. If the item never responds,
+    /// the timeout's task group would otherwise wait forever, leaving the
+    /// event taps enabled and the event semaphore held.
+    private final class EventContinuation: @unchecked Sendable {
+        private let lock = NSLock()
+        private var continuation: CheckedContinuation<Void, any Error>?
+        private var result: Result<Void, any Error>?
+
+        /// Calls the given closure with the continuation, and waits until
+        /// it resumes or the current task is cancelled.
+        static func wait(_ body: (EventContinuation) -> Void) async throws {
+            let eventContinuation = EventContinuation()
+            try await withTaskCancellationHandler {
+                try await withCheckedThrowingContinuation { continuation in
+                    eventContinuation.set(continuation)
+                    body(eventContinuation)
+                }
+            } onCancel: {
+                eventContinuation.resume(throwing: CancellationError())
+            }
+        }
+
+        /// Sets the continuation to resume, resuming it at once if a
+        /// result has already arrived.
+        private func set(_ continuation: CheckedContinuation<Void, any Error>) {
+            let result: Result<Void, any Error>? = lock.withLock {
+                if self.result == nil {
+                    self.continuation = continuation
+                }
+                return self.result
+            }
+            if let result {
+                continuation.resume(with: result)
+            }
+        }
+
+        /// Resumes the continuation with the given result, unless it has
+        /// already been resumed.
+        private func resume(with result: Result<Void, any Error>) {
+            let continuation: CheckedContinuation<Void, any Error>? = lock.withLock {
+                guard self.result == nil else {
+                    return nil
+                }
+                self.result = result
+                return self.continuation.take()
+            }
+            continuation?.resume(with: result)
+        }
+
+        /// Resumes the continuation, unless it has already been resumed.
+        func resume() {
+            resume(with: .success(()))
+        }
+
+        /// Resumes the continuation by throwing the given error, unless it
+        /// has already been resumed.
+        func resume(throwing error: any Error) {
+            resume(with: .failure(error))
+        }
+    }
+
     /// Posts an event to the given menu bar item and waits until
     /// it is received before returning.
     ///
@@ -656,7 +721,7 @@ extension MenuBarItemManager {
         var eventTaps = [EventTap]()
 
         let timeoutTask = Task(timeout: timeout * count) {
-            try await withCheckedThrowingContinuation { continuation in
+            try await EventContinuation.wait { continuation in
                 // Listen for the following events at the first location
                 // and perform the following actions:
                 //
@@ -775,7 +840,7 @@ extension MenuBarItemManager {
         var eventTaps = [EventTap]()
 
         let timeoutTask = Task(timeout: timeout * count) {
-            try await withCheckedThrowingContinuation { continuation in
+            try await EventContinuation.wait { continuation in
                 // Listen for the following events at the first location
                 // and perform the following actions:
                 //
@@ -1017,6 +1082,8 @@ extension MenuBarItemManager {
                 if origin != initialOrigin {
                     return origin
                 }
+                // Avoid spinning on the window server while waiting.
+                try await Task.sleep(for: .milliseconds(1))
             }
         }
         let timeoutTask = Task(timeout: timeout) {

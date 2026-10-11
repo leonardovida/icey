@@ -568,6 +568,40 @@ extension MenuBarItemManager {
         await task.value
     }
 
+    /// Waits for an item that was just moved to stop moving, so that it
+    /// is clicked where it ends up.
+    ///
+    /// The item's bounds are read every 10ms, and the wait ends once
+    /// they have not changed for 20ms, which is longer than a frame at
+    /// 60Hz, or after `timeout`, which is the fixed delay this replaced.
+    /// An item that lands at once is clicked after about 20ms instead
+    /// of 100ms.
+    ///
+    /// Like ``eventSleep(for:)``, this method ignores task cancellation.
+    private nonisolated func waitForItemToSettle(
+        _ item: MenuBarItem,
+        timeout: Duration = .milliseconds(100)
+    ) async {
+        let interval = Duration.milliseconds(10)
+        let requiredStableReads = 2
+        let deadline = ContinuousClock.now + timeout
+        var previous = Bridging.getWindowBounds(for: item.windowID)
+        var stableReads = 0
+        while ContinuousClock.now < deadline {
+            await eventSleep(for: min(interval, ContinuousClock.now.duration(to: deadline)))
+            let current = Bridging.getWindowBounds(for: item.windowID)
+            if let current, current == previous {
+                stableReads += 1
+                if stableReads >= requiredStableReads {
+                    return
+                }
+            } else {
+                stableReads = 0
+            }
+            previous = current
+        }
+    }
+
     /// Returns the current bounds for the given item.
     private nonisolated func getCurrentBounds(for item: MenuBarItem) async throws -> CGRect {
         let task = Task.detached(priority: .userInitiated) {
@@ -1588,7 +1622,7 @@ extension MenuBarItemManager {
             runRehideTimer()
         }
 
-        await eventSleep(for: .milliseconds(100))
+        await waitForItemToSettle(item)
         let idsBeforeClick = Set(Bridging.getWindowList(option: .onScreen))
 
         do {

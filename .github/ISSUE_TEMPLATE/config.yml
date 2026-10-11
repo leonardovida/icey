@@ -1,1 +1,11 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Release notes
+    url: https://github.com/leonardovida/icey/releases
+    about: What changed in each Icey version.
+  - name: Breaking changes and upgrade steps
+    url: https://github.com/leonardovida/icey/blob/main/BREAKING_CHANGES.md
+    about: Settings that reset, permissions to grant again, and other changes that need action.
+  - name: Ice bugs already fixed in Icey
+    url: https://github.com/leonardovida/icey/blob/main/docs/upstream-issues.md
+    about: Check whether an Ice bug is already fixed.

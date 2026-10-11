@@ -3,10 +3,8 @@
 //  Ice
 //
 
-import AXSwift
 import Combine
 import Cocoa
-import ScreenCaptureKit
 
 // MARK: - Permission
 
@@ -19,20 +17,29 @@ class Permission: ObservableObject, Identifiable {
 
     /// The title of the permission.
     let title: String
+
     /// Descriptive details for the permission.
     let details: [String]
+
     /// A Boolean value that indicates if the app can work without this permission.
     let isRequired: Bool
 
     /// The URL of the settings pane to open.
     private let settingsURL: URL?
+
     /// The function that checks permissions.
     private let check: () -> Bool
+
     /// The function that requests permissions.
     private let request: () -> Void
 
+    /// A Boolean value that indicates whether to stop the permission check
+    /// once the permission is granted.
+    private var stopsCheckWhenGranted = false
+
     /// Observer that runs on a timer to check permissions.
     private var timerCancellable: AnyCancellable?
+
     /// Observer that observes the ``hasPermission`` property.
     private var hasPermissionCancellable: AnyCancellable?
 
@@ -73,6 +80,9 @@ class Permission: ObservableObject, Identifiable {
                     return
                 }
                 hasPermission = check()
+                if hasPermission, stopsCheckWhenGranted {
+                    timerCancellable = nil
+                }
             }
     }
 
@@ -111,6 +121,14 @@ class Permission: ObservableObject, Identifiable {
         hasPermissionCancellable?.cancel()
         hasPermissionCancellable = nil
     }
+
+    /// Stops running the permission check once the permission is granted.
+    func stopCheckWhenGranted() {
+        stopsCheckWhenGranted = true
+        if hasPermission {
+            stopCheck()
+        }
+    }
 }
 
 // MARK: - AccessibilityPermission
@@ -126,10 +144,10 @@ final class AccessibilityPermission: Permission {
             isRequired: true,
             settingsURL: nil,
             check: {
-                checkIsProcessTrusted()
+                AXHelpers.isProcessTrusted()
             },
             request: {
-                checkIsProcessTrusted(prompt: true)
+                AXHelpers.isProcessTrusted(prompt: true)
             }
         )
     }
@@ -142,7 +160,7 @@ final class ScreenRecordingPermission: Permission {
         super.init(
             title: "Screen Recording",
             details: [
-                "Edit the menu bar's appearance.",
+                "Change the menu bar's appearance.",
                 "Display images of individual menu bar items.",
             ],
             isRequired: false,

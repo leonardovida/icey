@@ -215,6 +215,17 @@ final class MenuBarOverlayPanel: NSPanel {
             }
             .store(in: &c)
 
+        // The panel belongs to one display. If the window server moves it to
+        // another one, take it off screen rather than draw that display's
+        // tint and shape across someone else's (see `orderOutIfOnOtherDisplay()`).
+        NotificationCenter.default
+            .publisher(for: NSWindow.didChangeScreenNotification, object: self)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.orderOutIfOnOtherDisplay()
+            }
+            .store(in: &c)
+
         $needsShow
             .debounce(for: 0.05, scheduler: DispatchQueue.main)
             .sink { [weak self] needsShow in
@@ -386,7 +397,19 @@ final class MenuBarOverlayPanel: NSPanel {
         else {
             return
         }
-        let wallpaper = ScreenCapture.captureWindow(with: wallpaperWindow.windowID, screenBounds: menuBarWindow.bounds)
+        // The wallpaper is drawn around the shape, so it has to look the way the
+        // desktop looks there. On macOS 26 that includes the window that darkens
+        // the wallpaper behind the menu bar, which is above the wallpaper window.
+        // Drawing the wallpaper without it made everything outside the shape
+        // brighter than the desktop below the menu bar (jordanbaird/Ice#943).
+        var windowIDs = [wallpaperWindow.windowID]
+        if
+            #unavailable(macOS 27.0),
+            let underbellyWindow = WindowInfo.menuBarUnderbellyWindow(from: windows, for: display)
+        {
+            windowIDs.insert(underbellyWindow.windowID, at: 0) // Front to back.
+        }
+        let wallpaper = ScreenCapture.captureWindows(with: windowIDs, screenBounds: menuBarWindow.bounds)
         if desktopWallpaper?.dataProvider?.data != wallpaper?.dataProvider?.data {
             desktopWallpaper = wallpaper
         }
@@ -438,11 +461,45 @@ final class MenuBarOverlayPanel: NSPanel {
         setFrame(newFrame, display: false)
         orderFrontRegardless()
 
+        if orderOutIfOnOtherDisplay() {
+            return
+        }
+
         updateFlags = [.applicationMenuFrame, .desktopWallpaper]
 
         if !appState.menuBarManager.isMenuBarHiddenBySystem {
             animator().alphaValue = 1
         }
+    }
+
+    /// Takes the panel off screen if it is on a display other than its owning
+    /// display, and returns whether it did.
+    ///
+    /// The panel is ordered front on the active space, which belongs to the
+    /// display with keyboard focus. With an iPad extending the desktop through
+    /// Sidecar, the iPad's panel turned up as a strip along the bottom edge of
+    /// the main display, next to where the iPad is arranged
+    /// (jordanbaird/Ice#910). The likely cause is that the window server keeps
+    /// a window on its space's display and pulled the panel back onto the main
+    /// one, but that is not confirmed. Whatever moves it, a panel drawn for one
+    /// display has no business on another.
+    @discardableResult
+    private func orderOutIfOnOtherDisplay() -> Bool {
+        guard
+            isVisible,
+            let screen,
+            screen.displayID != owningScreen.displayID
+        else {
+            return false
+        }
+        MenuBarOverlayPanel.logger.notice(
+            """
+            Overlay panel for display \(self.owningScreen.displayID, privacy: .public) \
+            is on display \(screen.displayID, privacy: .public). Ordering it out.
+            """
+        )
+        orderOut(nil)
+        return true
     }
 
     override func isAccessibilityElement() -> Bool {

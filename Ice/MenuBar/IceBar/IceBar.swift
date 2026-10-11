@@ -27,6 +27,17 @@ final class IceBarPanel: NSPanel {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
+    /// A Boolean value that indicates whether the panel has been asked to show
+    /// a section, but is not on screen yet.
+    ///
+    /// ``show(section:on:)`` waits up to a second for the caches before it puts
+    /// the panel on screen. During that wait the panel's frame is the one from
+    /// its previous presentation, so it cannot tell whether the pointer is over
+    /// the bar that is about to appear.
+    var isAwaitingDisplay: Bool {
+        currentSection != nil && !isVisible
+    }
+
     /// Creates a new Ice Bar panel.
     init() {
         super.init(
@@ -208,10 +219,14 @@ final class IceBarPanel: NSPanel {
         // requested for, with `isIceBarPresented` already false, so the image
         // cache never filled it and nothing closed it again. That empty bar is
         // the leftover Ice Bar seen on the other display.
-        guard
-            presentationID == self.presentationID,
-            NSScreen.screens.contains(screen)
-        else {
+        guard presentationID == self.presentationID else {
+            return
+        }
+        guard NSScreen.screens.contains(screen) else {
+            // Close rather than leave `currentSection` set on a panel that is
+            // not on screen, which `isAwaitingDisplay` would report as still
+            // about to appear, holding off every rehide check.
+            hide()
             return
         }
 

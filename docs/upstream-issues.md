@@ -28,6 +28,28 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#959](https://github.com/jordanbaird/Ice/issues/959) | Split menu bar does not function like expected in full screen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#988](https://github.com/jordanbaird/Ice/issues/988) | Ice Bar fullscreen expansion behaves differently depending on which display contains the active window | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#968](https://github.com/jordanbaird/Ice/issues/968) | Ice stuck / menu bar stays hidden after form dropdown hang | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#1007](https://github.com/jordanbaird/Ice/issues/1007) | An app launched while concealed gets a squashed (3 pt) menu bar item that never recovers | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#1006](https://github.com/jordanbaird/Ice/issues/1006) | What got Ice working with PR #995, plus two things to look into | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#1010](https://github.com/jordanbaird/Ice/issues/1010) | always loading meum bar items | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#1009](https://github.com/jordanbaird/Ice/issues/1009) | (no title, macOS 27 layout) | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support; 27.2 betas untested) |
+| [#1008](https://github.com/jordanbaird/Ice/issues/1008) | Not functioning since MacOS 27 update on my Macbook pro M3 pro | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#1003](https://github.com/jordanbaird/Ice/issues/1003) | Updated to MacOS 27.0.1 and cannot customize Menu Bar Layout on Ice | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#996](https://github.com/jordanbaird/Ice/issues/996) | Ice not working properly on macOS 27 Golden Gate | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#992](https://github.com/jordanbaird/Ice/issues/992) | unavailable under MacOS27 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#991](https://github.com/jordanbaird/Ice/issues/991) | MacOS 27 Update | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#970](https://github.com/jordanbaird/Ice/issues/970) | Not automatically hiding in MacOS 27 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support; auto-rehide untested on 27) |
+| [#965](https://github.com/jordanbaird/Ice/issues/965) | Menubar layout broken/spinning in MacOS 27 Public Beta | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (early macOS 27 support) |
+| [#957](https://github.com/jordanbaird/Ice/issues/957) | Starts but nothing much more | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#921](https://github.com/jordanbaird/Ice/issues/921) | Icons in re-arrange menu in settings aren't visible | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#916](https://github.com/jordanbaird/Ice/issues/916) | I can't edit my layout, because it's all blank | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#913](https://github.com/jordanbaird/Ice/issues/913) | Settings Menu: Menu Bar Layout Icons Do Not Appear | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#912](https://github.com/jordanbaird/Ice/issues/912) | Update window won't shut down after clicking on update option | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#932](https://github.com/jordanbaird/Ice/issues/932) | (no title, update prompt) | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#926](https://github.com/jordanbaird/Ice/issues/926) | (no title, update prompt) | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#905](https://github.com/jordanbaird/Ice/issues/905) | (no title, Ice Bar crash on macOS 26.4) | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#919](https://github.com/jordanbaird/Ice/issues/919) | Ice icon dissappeared | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (the layout pane explains a missing divider) |
+| [#914](https://github.com/jordanbaird/Ice/issues/914) | Ice Bar auto-hides before cursor reaches it (latest beta) | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#943](https://github.com/jordanbaird/Ice/issues/943) | Ligthing error when enabeling split shape in menu bar appearance | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 
 ## Partly addressed
 
@@ -35,6 +57,10 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 |---|---|---|
 | [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Unable to proceed past permissions request. | Icey explains what to do when System Settings shows a permission as enabled but it doesn't apply: remove Ice from the list and add it again. |
 | [#929](https://github.com/jordanbaird/Ice/issues/929) | Menu bar scaling and layout issues on external/built-in displays | Item images now use the scale of the display they were captured on. Not yet confirmed on a two-display setup. |
+| [#987](https://github.com/jordanbaird/Ice/issues/987) | Ice Bar icons shrink drastically when expanded on an external display | Same cause as #929. Item images take their scale from the capture itself. Not yet confirmed on two displays. |
+| [#955](https://github.com/jordanbaird/Ice/issues/955) | Scale error and auto-deploying | Same as #987. Not yet confirmed on two displays. |
+| [#910](https://github.com/jordanbaird/Ice/issues/910) | iPad appearance tint shows on main monitor when the iPad is used as an extended display | An appearance overlay that ends up on another display now hides itself. Not yet confirmed with an iPad. |
+| [#908](https://github.com/jordanbaird/Ice/issues/908) | Ice appears to have caused system-wide freeze & kernel panic after ~33 hours of uptime | The crashing code in Ice 0.11.12 is gone, and an item that can't be moved back is no longer retried forever. The freeze itself isn't reproduced. |
 
 ## Open in Icey too
 
@@ -43,7 +69,7 @@ These need a reproduction or more information. If you can reproduce one in Icey,
 | Upstream issue | Title |
 |---|---|
 | [#946](https://github.com/jordanbaird/Ice/issues/946) | MacOS Tahoe 26.5 update broke hidden elements in ice layout |
-| [#957](https://github.com/jordanbaird/Ice/issues/957) | Starts but nothing much more |
+| [#918](https://github.com/jordanbaird/Ice/issues/918) | When icon for Intego One is moved from hidden to visible bar in settings, the icon disappears |
 
 ## Not a bug in Ice or Icey
 
@@ -51,6 +77,21 @@ These need a reproduction or more information. If you can reproduce one in Icey,
 |---|---|---|
 | [#930](https://github.com/jordanbaird/Ice/issues/930) | Removed icon from tray and can't get it back | Turn the icon back on in System Settings > Menu Bar. |
 | [#934](https://github.com/jordanbaird/Ice/issues/934) | Nothing happens when I try to run Ice | The Ice icon is running but has no room in the menu bar, for example next to the notch. It shows up on a wider external display. Hide or remove other items, or reduce item spacing. |
+| [#906](https://github.com/jordanbaird/Ice/issues/906) | App opens in dock when expanding the bar | By design: "Hide application menus" makes Icey the active app for a moment. Turn that setting off, or use the Ice Bar. |
+| [#974](https://github.com/jordanbaird/Ice/issues/974) | Orphaned application menu-bar windows stuck at CGWindow layer 101, invisible to accessibility | Not caused by Ice: the reporter saw it with the setting off and after removing Ice. |
+| [#909](https://github.com/jordanbaird/Ice/issues/909) | OneDrive icons | Some apps don't remember their item positions, so macOS places them in the always-hidden section. See [FREQUENT_ISSUES.md](../FREQUENT_ISSUES.md#items-are-moved-to-the-always-hidden-section). |
+| [#915](https://github.com/jordanbaird/Ice/issues/915) | Unsplash client crashes shortly after being hidden by ICE | The other app crashes when its item is off screen. See [FREQUENT_ISSUES.md](../FREQUENT_ISSUES.md#an-app-quits-or-crashes-after-i-hide-its-item). |
+| [#949](https://github.com/jordanbaird/Ice/issues/949) | How to uninstall? | See [FREQUENT_ISSUES.md](../FREQUENT_ISSUES.md#how-do-i-quit-or-uninstall-icey). |
+| [#1015](https://github.com/jordanbaird/Ice/issues/1015), [#993](https://github.com/jordanbaird/Ice/issues/993), [#939](https://github.com/jordanbaird/Ice/issues/939), [#1011](https://github.com/jordanbaird/Ice/issues/1011) | Is the project still alive? and similar | Ice is no longer maintained. Icey continues it. |
+| [#966](https://github.com/jordanbaird/Ice/issues/966) | Unofficial macOS 26-compatible build of Ice | An announcement for another build. |
+| [#935](https://github.com/jordanbaird/Ice/issues/935) | Website SSL cert expired | Upstream's website. |
+
+## Feature requests
+
+| Upstream issue | Title | Status |
+|---|---|---|
+| [#938](https://github.com/jordanbaird/Ice/issues/938) | Option that lets you choose location of new items | Not started. Needs a way to recognize new items and move them automatically. Pull requests welcome. |
+| [#961](https://github.com/jordanbaird/Ice/issues/961) | No dock icon | Not started. Needs an option to keep Icey out of the Dock while Settings is open. Pull requests welcome. |
 
 ## Upstream pull requests included in Icey
 

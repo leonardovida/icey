@@ -17,7 +17,7 @@ Icey hides, shows and rearranges macOS menu bar icons. It shows hidden items in 
 
 - **Support for current macOS:** macOS 26 Tahoe, and early support for macOS 27.
 - **Lower resource use:** less CPU, energy and WindowServer memory than Ice.
-- **Bug fixes:** more than 25 bugs fixed that are still open in Ice. Some fixes come from community pull requests that Ice never merged.
+- **Bug fixes:** about 40 bugs fixed that are still open in Ice. Some fixes come from community pull requests that Ice never merged.
 
 Icey is a drop-in replacement. It installs over Ice and keeps your settings.
 

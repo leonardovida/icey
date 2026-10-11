@@ -4,7 +4,7 @@ Full notes for every version are in [GitHub Releases](https://github.com/leonard
 
 ## [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1)
 
-Adds macOS 26 Tahoe and early macOS 27 support, carries the performance work over to the new code, and fixes more than 25 upstream Ice bugs. Menu bar appearance settings reset once during the upgrade. See the [release notes](release-notes/v0.11.13-dev.2-icey.1.md).
+Adds macOS 26 Tahoe and early macOS 27 support, carries the performance work over to the new code, and fixes about 40 upstream Ice bugs. Menu bar appearance settings reset once during the upgrade. See the [release notes](release-notes/v0.11.13-dev.2-icey.1.md).
 
 ## [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1)
 

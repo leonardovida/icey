@@ -10,6 +10,8 @@ Also check [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for changes between versio
 - [The Menu Bar Layout pane keeps loading or is empty](#the-menu-bar-layout-pane-keeps-loading-or-is-empty)
 - [An app quits or crashes after I hide its item](#an-app-quits-or-crashes-after-i-hide-its-item)
 - [How do I quit or uninstall Icey?](#how-do-i-quit-or-uninstall-icey)
+- [Icey shows a Dock icon when I show hidden items](#icey-shows-a-dock-icon-when-i-show-hidden-items)
+- [I have both Ice.app and Icey.app installed](#i-have-both-iceapp-and-iceyapp-installed)
 - [How do I solve the `Ice cannot arrange menu bar items in automatically hidden menu bars` error?](#how-do-i-solve-the-ice-cannot-arrange-menu-bar-items-in-automatically-hidden-menu-bars-error)
 
 ## Icey keeps asking for a permission that is already enabled
@@ -64,6 +66,14 @@ To uninstall Icey:
 2. Move `Icey.app` (or `Ice.app`) from Applications to the Trash. If you installed Ice with Homebrew, run `brew uninstall --cask jordanbaird-ice` instead.
 3. Optionally, remove Icey from System Settings > Privacy & Security > Accessibility and Screen Recording.
 4. Optionally, delete your settings with `defaults delete com.jordanbaird.Ice`. Ice and Icey share these settings, so only do this if you won't use either again.
+
+## Icey shows a Dock icon when I show hidden items
+
+This comes from "Hide application menus" in Settings > Advanced. To hide another app's menus, Icey has to become the active app for a moment, and active apps appear in the Dock. Turn that setting off, or use the Ice Bar, which never hides application menus ([jordanbaird/Ice#906](https://github.com/jordanbaird/Ice/issues/906)).
+
+## I have both Ice.app and Icey.app installed
+
+Releases before the rename installed as `Ice.app`. Quit Icey, move `Ice.app` to the Trash, and open `Icey.app`. Both copies share a bundle identifier, so macOS can confuse them, for example by opening the old one at login. On macOS 27, a second copy can make macOS hide Icey's own icon, so there is nothing to click to show hidden items.
 
 ## How do I solve the `Ice cannot arrange menu bar items in automatically hidden menu bars` error?
 

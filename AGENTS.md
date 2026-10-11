@@ -128,9 +128,8 @@ Contributions are welcome, including pull requests written by AI agents.
 Installed copies update themselves from `https://github.com/leonardovida/icey/releases/latest/download/appcast.xml`, so every release needs:
 
 1. A higher `CURRENT_PROJECT_VERSION` than the last release (Sparkle compares it), and `MARKETING_VERSION` set to the tag without the `v`.
-2. A Release build signed with the Developer ID, with Sparkle's nested helpers re-signed, notarized and stapled. Attach both the zip and the DMG.
-3. `Scripts/make-appcast.sh <zip> <tag>`. Attach its `appcast.xml` to the same release. It signs with the maintainer's EdDSA key, so only the maintainer can run it.
-4. Release notes in `release-notes/<tag>.md`, a CHANGELOG.md entry, and BREAKING_CHANGES.md rows for anything users must act on.
+2. `Scripts/package-release.sh <tag>`. It builds with the Developer ID, re-signs Sparkle's helpers, notarizes and staples the app and the DMG, then writes the zip, the DMG, `appcast.xml` (via `Scripts/make-appcast.sh`) and `SHA256SUMS.txt` to `build/release/<tag>/`. Attach all four to the release. It signs with the maintainer's certificate and EdDSA key, so only the maintainer can run it.
+3. Release notes in `release-notes/<tag>.md`, a CHANGELOG.md entry, and BREAKING_CHANGES.md rows for anything users must act on.
 
 Never mark a release as a prerelease if users should get it: `releases/latest` skips prereleases.
 

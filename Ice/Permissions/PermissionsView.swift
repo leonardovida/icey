@@ -62,7 +62,7 @@ struct PermissionsView: View {
     private var explanationBox: some View {
         IceSection {
             VStack {
-                Text("Ice needs your permission to manage the menu bar.")
+                Text("Icey needs your permission to manage the menu bar.")
                     .fontWeight(.medium)
                 Text("Absolutely no personal information is collected or stored.")
                     .bold()
@@ -135,7 +135,7 @@ struct PermissionsView: View {
                     .underline()
 
                 VStack(spacing: 2) {
-                    Text("Ice needs this to:")
+                    Text("Icey needs this to:")
                         .font(.title3)
                         .bold()
 
@@ -170,14 +170,14 @@ struct PermissionsView: View {
                     // macOS ties the permission to the app's signature. After an update
                     // of an ad hoc signed build, the old entry stays enabled in System
                     // Settings but no longer applies to the new copy of the app.
-                    Text("Already enabled in System Settings? Remove Ice from the list, then add it again.")
+                    Text("Already enabled in System Settings? Remove Icey from the list, then add it again.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
 
                 if !permission.isRequired {
-                    CalloutBox("Ice can work in a limited mode without this permission.") {
+                    CalloutBox("Icey can work in a limited mode without this permission.") {
                         Image(systemName: "checkmark.shield")
                             .foregroundStyle(.green)
                     }

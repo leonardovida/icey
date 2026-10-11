@@ -75,13 +75,13 @@ struct GeneralSettingsPane: View {
 
     @ViewBuilder
     private var showIceIcon: some View {
-        Toggle("Show Ice icon", isOn: $settings.showIceIcon)
-            .annotation("Click to show hidden menu bar items. Right-click to access Ice's settings.")
+        Toggle("Show Icey icon", isOn: $settings.showIceIcon)
+            .annotation("Click to show hidden menu bar items. Right-click to access Icey's settings.")
     }
 
     @ViewBuilder
     private var iceIconPicker: some View {
-        let labelKey = LocalizedStringKey("Ice icon")
+        let labelKey = LocalizedStringKey("Icey icon")
 
         IceMenu(labelKey) {
             Picker(labelKey, selection: $settings.iceIcon) {
@@ -200,7 +200,7 @@ struct GeneralSettingsPane: View {
             case .mousePointer:
                 Text("The Ice Bar is centered below the mouse pointer.")
             case .iceIcon:
-                Text("The Ice Bar is centered below the Ice icon.")
+                Text("The Ice Bar is centered below the Icey icon.")
             }
         }
     }

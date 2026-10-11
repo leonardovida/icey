@@ -397,14 +397,14 @@ private struct IceBarContentView: View {
                     appState.activate(withPolicy: .regular)
                     appState.openWindow(.settings)
                 } label: {
-                    Text("Open Ice Settings")
+                    Text("Open Icey Settings")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.link)
             }
             .padding(.horizontal, 10)
         } else if menuBarManager.isMenuBarHiddenBySystemUserDefaults {
-            Text("Ice cannot display menu bar items for automatically hidden menu bars")
+            Text("Icey cannot display menu bar items for automatically hidden menu bars")
                 .padding(.horizontal, 10)
         } else if itemManager.itemCache.managedItems.isEmpty {
             HStack {

@@ -4,7 +4,7 @@
 # the Ice Bar's display — also when the other display's menu bar is active — and the
 # application is concealed again once it closes.
 #
-# Requirements: Ice installed with Scripts/install.sh, EXT_APP with a window on the
+# Requirements: Icey installed with Scripts/install.sh, EXT_APP with a window on the
 # external display. CLICK_LABEL names a hidden item whose click opens a menu that Escape
 # closes (list the labels with icebar-ax while the Ice Bar is open). Leave the mouse and
 # keyboard alone.
@@ -25,7 +25,7 @@ done
 
 quit_ice() {
     osascript -e 'tell application id "com.jordanbaird.Ice" to quit' >/dev/null 2>&1 || true
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null || return 0; sleep 0.25; done
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null || return 0; sleep 0.25; done
 }
 activate() { osascript -e "tell application \"$1\" to activate" >/dev/null; sleep 2.5; }
 external_leftmost() {
@@ -36,8 +36,8 @@ as_bool() { case "$1" in 1|true|YES|yes) echo true ;; *) echo false ;; esac; }
 ORIGINAL_ICE_BAR=$(as_bool "$(defaults read com.jordanbaird.Ice UseIceBar 2>/dev/null || echo 1)")
 ORIGINAL_HOVER=$(as_bool "$(defaults read com.jordanbaird.Ice ShowOnHover 2>/dev/null || echo 1)")
 start_ice() {
-    open "$HOME/Applications/Ice.app"
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null && return 0; sleep 0.25; done
+    open "$HOME/Applications/Icey.app"
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null && return 0; sleep 0.25; done
 }
 # Leave Ice running, the way the run found it. A run that ended with Ice down left the
 # machine concealing nothing, and whatever was looked at next showed nothing worth seeing.
@@ -53,7 +53,7 @@ trap restore EXIT
 quit_ice
 defaults write com.jordanbaird.Ice UseIceBar -bool true
 defaults write com.jordanbaird.Ice ShowOnHover -bool true
-open "$HOME/Applications/Ice.app"
+open "$HOME/Applications/Icey.app"
 sleep 10
 activate "$EXT_APP"
 "$WORK/bin/pointer" glide 960 540; "$WORK/bin/pointer" hold 1

@@ -4,7 +4,7 @@
 # Bar on that display only, with an image of every hidden application's items, without
 # taking the front from the active application; moving away closes it.
 #
-# Requirements: Ice installed with Scripts/install.sh, EXT_APP with a window on the
+# Requirements: Icey installed with Scripts/install.sh, EXT_APP with a window on the
 # external display, MacOS27Layout set. Leave the mouse and keyboard alone.
 #
 # Usage: Scripts/macos27/verify-icebar.sh <ext-empty-x> <ext-empty-y> <builtin-empty-x> <builtin-empty-y>
@@ -21,7 +21,7 @@ swiftc -O "$ROOT/Scripts/macos27/ax-items.swift" -o "$WORK/bin/ax-items"
 
 quit_ice() {
     osascript -e 'tell application id "com.jordanbaird.Ice" to quit' >/dev/null 2>&1 || true
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null || return 0; sleep 0.25; done
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null || return 0; sleep 0.25; done
 }
 front_app() {
     osascript -e 'tell application "System Events" to get name of first process whose frontmost is true'
@@ -30,8 +30,8 @@ as_bool() { case "$1" in 1|true|YES|yes) echo true ;; *) echo false ;; esac; }
 ORIGINAL_ICE_BAR=$(as_bool "$(defaults read com.jordanbaird.Ice UseIceBar 2>/dev/null || echo 1)")
 ORIGINAL_HOVER=$(as_bool "$(defaults read com.jordanbaird.Ice ShowOnHover 2>/dev/null || echo 1)")
 start_ice() {
-    open "$HOME/Applications/Ice.app"
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null && return 0; sleep 0.25; done
+    open "$HOME/Applications/Icey.app"
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null && return 0; sleep 0.25; done
 }
 # Leave Ice running, the way the run found it. A run that ended with Ice down left the
 # machine concealing nothing, and whatever was looked at next showed nothing worth seeing.
@@ -46,7 +46,7 @@ trap restore EXIT
 quit_ice
 defaults write com.jordanbaird.Ice UseIceBar -bool true
 defaults write com.jordanbaird.Ice ShowOnHover -bool true
-open "$HOME/Applications/Ice.app"
+open "$HOME/Applications/Icey.app"
 sleep 10
 osascript -e "tell application \"$EXT_APP\" to activate" >/dev/null
 sleep 2.5

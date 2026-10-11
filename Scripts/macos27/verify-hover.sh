@@ -12,7 +12,7 @@
 # A revealed section appears on every display, so each check reads the external
 # bar: the built-in bar folds most items behind its overflow button.
 #
-# Requirements: Ice installed with Scripts/install.sh, Thaw not running, EXT_APP
+# Requirements: Icey installed with Scripts/install.sh, Thaw not running, EXT_APP
 # with a window on the external display and BUILTIN_APP with one on the built-in
 # display. The application frontmost when the script starts decides the display
 # Ice's icon lives on, so run it once with each display's menu bar active. Leave
@@ -37,7 +37,7 @@ swiftc -O "$ROOT/Scripts/macos27/ax-items.swift" -o "$WORK/bin/ax-items"
 
 quit_ice() {
     osascript -e 'tell application id "com.jordanbaird.Ice" to quit' >/dev/null 2>&1 || true
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null || return 0; sleep 0.25; done
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null || return 0; sleep 0.25; done
 }
 front_app() {
     osascript -e 'tell application "System Events" to get name of first process whose frontmost is true'
@@ -80,8 +80,8 @@ as_bool() { case "$1" in 1|true|YES|yes) echo true ;; *) echo false ;; esac; }
 ORIGINAL_ICE_BAR=$(as_bool "$(defaults read com.jordanbaird.Ice UseIceBar 2>/dev/null || echo 1)")
 ORIGINAL_HOVER=$(as_bool "$(defaults read com.jordanbaird.Ice ShowOnHover 2>/dev/null || echo 1)")
 start_ice() {
-    open "$HOME/Applications/Ice.app"
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null && return 0; sleep 0.25; done
+    open "$HOME/Applications/Icey.app"
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null && return 0; sleep 0.25; done
 }
 # Leave Ice running, the way the run found it. A run that ended with Ice down left the
 # machine concealing nothing, and whatever was looked at next showed nothing worth seeing.
@@ -96,7 +96,7 @@ trap restore EXIT
 quit_ice
 defaults write com.jordanbaird.Ice UseIceBar -bool false
 defaults write com.jordanbaird.Ice ShowOnHover -bool true
-open "$HOME/Applications/Ice.app"
+open "$HOME/Applications/Icey.app"
 sleep 10
 
 # The external menu bar is active.

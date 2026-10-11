@@ -42,7 +42,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7166832A2A767E6A006ABF84 /* Ice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ice.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7166832A2A767E6A006ABF84 /* Icey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Icey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7188A6832E27F9ED008F131D /* MenuBarItemService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = MenuBarItemService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -108,7 +108,7 @@
 		7166832B2A767E6A006ABF84 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7166832A2A767E6A006ABF84 /* Ice.app */,
+				7166832A2A767E6A006ABF84 /* Icey.app */,
 				7188A6832E27F9ED008F131D /* MenuBarItemService.xpc */,
 			);
 			name = Products;
@@ -147,7 +147,7 @@
 				71A065082E680C620087DB38 /* Semaphore */,
 			);
 			productName = Ice;
-			productReference = 7166832A2A767E6A006ABF84 /* Ice.app */;
+			productReference = 7166832A2A767E6A006ABF84 /* Icey.app */;
 			productType = "com.apple.product-type.application";
 		};
 		7188A6822E27F9ED008F131D /* MenuBarItemService */ = {
@@ -356,7 +356,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Jordan Baird";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Icey © 2026 Leonardo Vida and contributors. Based on Ice © 2023–2025 Jordan Baird.";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -416,7 +416,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 Jordan Baird";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Icey © 2026 Leonardo Vida and contributors. Based on Ice © 2023–2025 Jordan Baird.";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -446,6 +446,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Ice/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Icey;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -454,7 +455,8 @@
 				);
 				MARKETING_VERSION = "0.11.13-dev.2a";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jordanbaird.Ice;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = Ice;
+				PRODUCT_NAME = Icey;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -479,6 +481,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Ice/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Icey;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -487,7 +490,8 @@
 				);
 				MARKETING_VERSION = "0.11.13-dev.2a";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jordanbaird.Ice;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_MODULE_NAME = Ice;
+				PRODUCT_NAME = Icey;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};

@@ -104,7 +104,7 @@ If a user asks you to report a bug or request a feature in Icey:
 
 1. Search existing issues first, both open and closed: `gh issue list --repo leonardovida/icey --search "<keywords>" --state all`.
 2. Use the templates. Run `gh issue create --repo leonardovida/icey`, then choose "Bug report" or "Feature request". Or fill in the same fields in the body yourself.
-3. For bugs, include the Icey version (Settings > About), the exact macOS version (`sw_vers`), the Mac model, the number of displays, and the steps to reproduce. Attach logs if the user agrees: `log show --last 10m --predicate 'process == "Ice"'`.
+3. For bugs, include the Icey version (Settings > About), the exact macOS version (`sw_vers`), the Mac model, the number of displays, and the steps to reproduce. Attach logs if the user agrees: `log show --last 10m --predicate 'subsystem == "com.jordanbaird.Ice"'`.
 4. If the same bug exists upstream, link the upstream issue (`jordanbaird/Ice#NNN`).
 5. Say in the issue that an AI agent filed it on the user's behalf.
 

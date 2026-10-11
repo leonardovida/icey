@@ -166,6 +166,15 @@ extension Defaults {
         // MARK: Appearance Settings
         case menuBarAppearanceConfigurationV2 = "MenuBarAppearanceConfigurationV2"
 
+        // MARK: macOS 27
+        case macOS27Layout = "MacOS27Layout"
+        case macOS27LayoutSeeded = "MacOS27LayoutSeeded"
+        case showCaptureIndicator = "ShowCaptureIndicator"
+        case macOS27MenuReach = "MacOS27MenuReach"
+        case macOS27MenuOwner = "MacOS27MenuOwner"
+        case macOS27ClickRestoreDelay = "MacOS27ClickRestoreDelay"
+        case macOS27IceBarWaitsForRefresh = "MacOS27IceBarWaitsForRefresh"
+
         // MARK: Migration
         case hasMigrated0_8_0 = "hasMigrated0_8_0"
         case hasMigrated0_10_0 = "hasMigrated0_10_0"

@@ -37,8 +37,12 @@ final class ControlItem {
                 Lengths.standard
             case .hidden, .alwaysHidden:
                 switch state {
-                case .showSection: Lengths.standard
-                case .hideSection: Lengths.expanded
+                case .showSection:
+                    Lengths.standard
+                case .hideSection:
+                    // macOS 27 discards status items wider than the status area, so the
+                    // section is concealed by `Concealer27` instead of pushed off screen.
+                    if #available(macOS 27.0, *) { Lengths.standard } else { Lengths.expanded }
                 }
             }
         }
@@ -88,6 +92,8 @@ final class ControlItem {
                     self.constraint = nil
                 }
 
+                // On macOS 27, Ice finds its own items through Accessibility by this identifier.
+                button.setAccessibilityIdentifier(controlItem.identifier.rawValue)
                 button.target = controlItem
                 button.action = #selector(controlItem.performAction)
                 button.sendAction(on: [.leftMouseDown, .rightMouseUp])
@@ -365,6 +371,17 @@ final class ControlItem {
 
             button.image = image
         case .hidden, .alwaysHidden:
+            if #available(macOS 27.0, *) {
+                // Ice is signed locally, so MenuBarAgent drops its items whenever anything is
+                // concealed (measured on macOS 27.0). A divider is therefore never drawn, yet a
+                // standard-width status item still holds 18 points of the bar, which reads as a
+                // gap between the neighbouring icons. Sections come from the saved layout on 27,
+                // so the dividers only have to stay in the bar, not to take up room in it.
+                updateStatusItemVisibility(false)
+                button.appearsDisabled = true
+                button.isHighlighted = false
+                return
+            }
             switch state {
             case .showSection:
                 switch appState.settings.advanced.sectionDividerStyle {

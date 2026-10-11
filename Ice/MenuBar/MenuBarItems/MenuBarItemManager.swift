@@ -423,7 +423,8 @@ extension MenuBarItemManager {
             // There is no item window list on macOS 27. A reorder keeps the synthetic
             // identifiers, so the signature also carries each item's position.
             let items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
-            let signature = items.map { $0.windowID &+ UInt32(truncatingIfNeeded: Int($0.bounds.minX)) }
+            // Int(_:) traps on a non-finite value, so a bad frame must not reach it.
+            let signature = items.map { $0.windowID &+ UInt32(truncatingIfNeeded: Int(exactly: $0.bounds.minX.rounded(.towardZero)) ?? 0) }
             if await cacheActor.cachedItemWindowIDs != signature {
                 await cacheItemsRegardless(signature)
             }

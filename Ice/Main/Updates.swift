@@ -19,8 +19,11 @@ final class UpdatesManager: NSObject, ObservableObject {
     private(set) weak var appState: AppState?
 
     /// The underlying updater controller.
+    ///
+    /// The updater is started in ``performSetup(with:)``, once the rest of
+    /// the app is set up, rather than whenever this property is first read.
     private(set) lazy var updaterController = SPUStandardUpdaterController(
-        startingUpdater: true,
+        startingUpdater: false,
         updaterDelegate: self,
         userDriverDelegate: self
     )
@@ -55,7 +58,7 @@ final class UpdatesManager: NSObject, ObservableObject {
     /// Performs the initial setup of the manager.
     func performSetup(with appState: AppState) {
         self.appState = appState
-        _ = updaterController
+        updaterController.startUpdater()
         configureCancellables()
     }
 
@@ -94,6 +97,19 @@ extension UpdatesManager: @preconcurrency SPUUpdaterDelegate {
         }
         appState.userNotificationManager.requestAuthorization()
     }
+
+    func updaterShouldPromptForPermissionToCheck(forUpdates updater: SPUUpdater) -> Bool {
+        // Sparkle only asks this while the user has not answered the prompt yet.
+        // Keep its default of asking from the second launch onward.
+        guard UserDefaults.standard.bool(forKey: "SUHasLaunchedBefore") else {
+            return false
+        }
+        // Sparkle shows the prompt right after this returns. Ice is an agent app,
+        // so without this the prompt can open behind other windows without focus,
+        // never get an answer, and come back on every launch.
+        appState?.activate(withPolicy: .regular)
+        return true
+    }
 }
 
 // MARK: UpdatesManager: SPUStandardUserDriverDelegate
@@ -119,7 +135,11 @@ extension UpdatesManager: @preconcurrency SPUStandardUserDriverDelegate {
         guard let appState else {
             return
         }
-        if !state.userInitiated {
+        if handleShowingUpdate {
+            // Bring the alert Sparkle is about to show to the front, so it
+            // can receive input.
+            appState.activate(withPolicy: .regular)
+        } else if !state.userInitiated {
             appState.userNotificationManager.addRequest(
                 with: .updateCheck,
                 title: "A new update is available",

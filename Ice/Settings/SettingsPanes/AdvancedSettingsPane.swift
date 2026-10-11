@@ -60,7 +60,7 @@ struct AdvancedSettingsPane: View {
     private var showCaptureIndicator: some View {
         Toggle(isOn: $settings.showCaptureIndicator) {
             Text("Show a camera and microphone indicator")
-            Text("macOS draws none of its own while Ice is hiding items. Click Ice's to open Control Centre.")
+            Text("macOS draws none of its own while Icey is hiding items. Click Icey's to open Control Centre.")
         }
     }
 
@@ -99,7 +99,7 @@ struct AdvancedSettingsPane: View {
             Text(
                 """
                 Make more room in the menu bar by hiding the current app menus if \
-                needed. macOS requires Ice to make itself visible in the Dock while \
+                needed. macOS requires Icey to make itself visible in the Dock while \
                 this setting is in effect.
                 """
             )
@@ -117,7 +117,7 @@ struct AdvancedSettingsPane: View {
             Text(
                 """
                 Right-click in an empty area of the menu bar to display a minimal \
-                version of Ice's menu. Disable this setting if you encounter conflicts \
+                version of Icey's menu. Disable this setting if you encounter conflicts \
                 with other apps.
                 """
             )

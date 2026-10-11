@@ -517,10 +517,10 @@ final class ControlItem {
             appState.settings.hotkeys.hotkey(withAction: action)
         }
 
-        let menu = NSMenu(title: "Ice")
+        let menu = NSMenu(title: "Icey")
 
         let settingsItem = NSMenuItem(
-            title: "Ice Settings…",
+            title: "Icey Settings…",
             action: #selector(AppDelegate.openSettingsWindow),
             keyEquivalent: ","
         )
@@ -584,7 +584,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
-            title: "Quit Ice",
+            title: "Quit Icey",
             action: #selector(NSApp.terminate),
             keyEquivalent: "q"
         )

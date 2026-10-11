@@ -5,7 +5,7 @@
 # is concealed after the window closes and stays so after Ice restarts. The layout is
 # restored afterwards.
 #
-# Requirements: Ice installed with Scripts/install.sh, EXT_APP with a window on the
+# Requirements: Icey installed with Scripts/install.sh, EXT_APP with a window on the
 # external display, TEST_LABEL/TEST_BUNDLE naming a visible application with a menu bar
 # item. Leave the mouse and keyboard alone.
 #
@@ -31,7 +31,7 @@ LAYOUT_BEFORE=$(defaults read com.jordanbaird.Ice MacOS27Layout 2>/dev/null || e
 
 quit_ice() {
     osascript -e 'tell application id "com.jordanbaird.Ice" to quit' >/dev/null 2>&1 || true
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null || return 0; sleep 0.25; done
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null || return 0; sleep 0.25; done
 }
 activate() { osascript -e "tell application \"$1\" to activate" >/dev/null; sleep 2.5; }
 external_leftmost() {
@@ -39,8 +39,8 @@ external_leftmost() {
     "$WORK/bin/analyze-frames" "$WORK/steady" 700 1220 | awk -v n="$1" '$1 == n { print $2 }'
 }
 start_ice() {
-    open "$HOME/Applications/Ice.app"
-    for _ in $(seq 1 40); do pgrep -x Ice >/dev/null && return 0; sleep 0.25; done
+    open "$HOME/Applications/Icey.app"
+    for _ in $(seq 1 40); do pgrep -x Icey >/dev/null && return 0; sleep 0.25; done
 }
 # Leave Ice running, the way the run found it. A run that ended with Ice down left the
 # machine concealing nothing, and whatever was looked at next showed nothing worth seeing.
@@ -62,14 +62,14 @@ trap restore EXIT
 
 quit_ice
 defaults write com.jordanbaird.Ice UseIceBar -bool true
-open "$HOME/Applications/Ice.app"
+open "$HOME/Applications/Icey.app"
 sleep 10
 activate "$EXT_APP"
 "$WORK/bin/pointer" glide 960 540; "$WORK/bin/pointer" hold 1
 BEFORE=$(external_leftmost before)
 
 # Reopening Ice shows its settings; select Menu Bar Layout.
-open "$HOME/Applications/Ice.app"
+open "$HOME/Applications/Icey.app"
 sleep 3
 "$WORK/bin/layout-ax" > "$WORK/settings.txt"
 SIDEBAR=$(awk '/^sidebar/ { print $2, $3; exit }' "$WORK/settings.txt")
@@ -94,7 +94,7 @@ activate "$EXT_APP"
 "$WORK/bin/pointer" glide 960 540; "$WORK/bin/pointer" hold 1
 AFTER_CLOSE=$(external_leftmost after-close)
 quit_ice
-open "$HOME/Applications/Ice.app"
+open "$HOME/Applications/Icey.app"
 sleep 10
 activate "$EXT_APP"
 "$WORK/bin/pointer" glide 960 540; "$WORK/bin/pointer" hold 1

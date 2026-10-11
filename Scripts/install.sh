@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Builds Ice and installs it, signed.
+# Builds Icey and installs it as Icey.app, signed.
 #
 # Replaces the project's "Copy to Applications" build phase, which cannot work:
 # Xcode signs a target *after* its script phases run, so that phase always copies
@@ -53,7 +53,8 @@ xcodebuild -project "$ROOT/Ice.xcodeproj" -scheme Ice -configuration Release \
     ENABLE_HARDENED_RUNTIME=NO "${SIGNING[@]}" \
     | tail -3
 
-APP="$DERIVED/Build/Products/Release/Ice.app"
+BUNDLE_ID="com.jordanbaird.Ice"
+APP="$DERIVED/Build/Products/Release/Icey.app"
 [ -d "$APP" ] || { echo "error: no product at $APP" >&2; exit 1; }
 
 echo "==> Verifying the signature before installing"
@@ -62,22 +63,40 @@ codesign --verify --deep --strict "$APP"
 codesign -dv "$APP" 2>&1 | grep -E 'Identifier=|TeamIdentifier=' | sed 's/^/    /'
 
 echo "==> Installing to $DEST"
-if pgrep -x Ice >/dev/null 2>&1; then
-    osascript -e 'quit app "Ice"' >/dev/null 2>&1 || true
+# Quit by bundle identifier, which Ice and Icey share, and match both process names: an older
+# build runs as "Ice", this one as "Icey".
+if pgrep -x 'Ice|Icey' >/dev/null 2>&1; then
+    osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true
     for _ in 1 2 3 4 5 6 7 8 9 10; do
-        pgrep -x Ice >/dev/null 2>&1 || break
+        pgrep -x 'Ice|Icey' >/dev/null 2>&1 || break
         sleep 0.3
     done
-    pgrep -x Ice >/dev/null 2>&1 && pkill -x Ice || true
+    pgrep -x 'Ice|Icey' >/dev/null 2>&1 && pkill -x 'Ice|Icey' || true
 fi
 
 mkdir -p "$DEST"
-rm -rf "${DEST:?}/Ice.app"
+rm -rf "${DEST:?}/Icey.app"
 # ditto, not cp: it preserves the code signature.
-ditto "$APP" "$DEST/Ice.app"
+ditto "$APP" "$DEST/Icey.app"
 
 echo "==> Verifying the installed copy"
-codesign --verify --deep --strict "$DEST/Ice.app"
+codesign --verify --deep --strict "$DEST/Icey.app"
 
-open -a "$DEST/Ice.app"
-echo "==> Running from $DEST/Ice.app"
+# Earlier versions were named Ice.app. A copy left beside Icey.app has the same bundle identifier,
+# so Launch Services, login items and `open -b` may pick either one. It is the user's file, so it
+# is only reported, never deleted.
+checked=" "
+for dir in "$DEST" /Applications "$HOME/Applications"; do
+    case "$checked" in *" $dir "*) continue ;; esac
+    checked="$checked$dir "
+    old="$dir/Ice.app"
+    [ -d "$old" ] || continue
+    old_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$old/Contents/Info.plist" 2>/dev/null || true)"
+    if [ "$old_id" = "$BUNDLE_ID" ]; then
+        echo "note: $old is an older copy with the same bundle identifier ($BUNDLE_ID)."
+        echo "      Icey.app replaces it and keeps its settings. Move it to the Trash when you no longer need it."
+    fi
+done
+
+open "$DEST/Icey.app"
+echo "==> Running from $DEST/Icey.app"

@@ -3,6 +3,7 @@
 //  Ice
 //
 
+import AXSwift
 import Combine
 import OSLog
 import SwiftUI
@@ -66,6 +67,10 @@ final class MenuBarManager: ObservableObject {
     /// Performs the initial setup of the menu bar manager.
     func performSetup(with appState: AppState) {
         self.appState = appState
+        // Accessibility calls block the calling thread until the target app responds,
+        // for up to about 6 seconds by default. Ice makes many of these calls on the
+        // main thread, so an unresponsive app would otherwise stall Ice repeatedly.
+        UIElement.globalMessagingTimeout = 1
         configureCancellables()
         iceBarPanel.performSetup(with: appState)
         searchPanel.performSetup(with: appState)

@@ -111,7 +111,7 @@ final class MenuBarItemImageCache: ObservableObject {
         if let appState {
             Publishers.Merge3(
                 // Update every 3 seconds at minimum.
-                Timer.publish(every: 3, on: .main, in: .default).autoconnect().replace(with: ()),
+                Timer.publish(every: 3, tolerance: 0.5, on: .main, in: .default).autoconnect().replace(with: ()),
 
                 // Update when the active space or screen parameters change.
                 Publishers.Merge(
@@ -321,7 +321,7 @@ final class MenuBarItemImageCache: ObservableObject {
                 }
             }
             await MainActor.run { [newImages] in
-                images.merge(newImages) { (_, new) in new }
+                mergeImages(newImages, appState: appState)
             }
             return
         }
@@ -352,8 +352,25 @@ final class MenuBarItemImageCache: ObservableObject {
         }
 
         await MainActor.run { [newImages] in
-            images.merge(newImages) { (_, new) in new }
+            mergeImages(newImages, appState: appState)
         }
+    }
+
+    /// Merges the given images into the cache, dropping the images of items
+    /// that no longer exist, so that the cache doesn't grow without bound as
+    /// apps come and go.
+    @MainActor
+    private func mergeImages(_ newImages: [MenuBarItemTag: CapturedImage], appState: AppState) {
+        let currentTags = Set(appState.itemManager.itemCache.managedItems.map(\.tag))
+        // Skip pruning while the item cache is empty, so that every image
+        // isn't dropped at once.
+        guard !currentTags.isEmpty else {
+            images.merge(newImages) { (_, new) in new }
+            return
+        }
+        images = images
+            .filter { currentTags.contains($0.key) }
+            .merging(newImages) { (_, new) in new }
     }
 
     /// Updates the cache for the given sections, if necessary.

@@ -26,9 +26,13 @@ final class IceBarColorManager: ObservableObject {
         if let iceBarPanel {
             iceBarPanel.publisher(for: \.screen)
                 .receive(on: DispatchQueue.main)
-                .sink { [weak self] screen in
+                .sink { [weak self, weak iceBarPanel] screen in
                     guard
                         let self,
+                        let iceBarPanel,
+                        // The image is only used while the panel is visible. The panel
+                        // captures a fresh image itself right before it is shown.
+                        iceBarPanel.isVisible,
                         let screen,
                         screen == .main
                     else {
@@ -82,7 +86,7 @@ final class IceBarColorManager: ObservableObject {
                 DistributedNotificationCenter.default()
                     .publisher(for: DistributedNotificationCenter.interfaceThemeChangedNotification)
                     .replace(with: ()),
-                Timer.publish(every: 5, on: .main, in: .default)
+                Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
                     .autoconnect()
                     .replace(with: ())
             )
@@ -91,16 +95,18 @@ final class IceBarColorManager: ObservableObject {
                 guard
                     let self,
                     let iceBarPanel,
+                    // Capturing the menu bar is expensive, and the image is only used
+                    // while the panel is visible. The panel captures a fresh image
+                    // itself right before it is shown.
+                    iceBarPanel.isVisible,
                     let screen = iceBarPanel.screen,
                     screen == .main
                 else {
                     return
                 }
                 updateWindowImage(for: screen)
-                if iceBarPanel.isVisible {
-                    withAnimation {
-                        self.updateColorInfo(with: iceBarPanel.frame, screen: screen)
-                    }
+                withAnimation {
+                    self.updateColorInfo(with: iceBarPanel.frame, screen: screen)
                 }
             }
             .store(in: &c)

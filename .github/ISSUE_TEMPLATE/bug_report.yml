@@ -1,50 +1,73 @@
-name: Bug Report
-description: Submit a bug report.
+name: Bug report
+description: Something in Icey doesn't work as expected.
 title: "[Bug]: "
-labels: Bug
+labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Check the [latest release](https://github.com/leonardovida/icey/releases/latest), [BREAKING_CHANGES.md](https://github.com/leonardovida/icey/blob/main/BREAKING_CHANGES.md) and [FREQUENT_ISSUES.md](https://github.com/leonardovida/icey/blob/main/FREQUENT_ISSUES.md) first: your problem may already be fixed or explained.
+
+        AI agents filing on a user's behalf are welcome. See [AGENTS.md](https://github.com/leonardovida/icey/blob/main/AGENTS.md#opening-issues-for-a-user).
   - type: checkboxes
     attributes:
-      label: Search for Similar Reports
-      description: |
-        Please use the search feature on the repository's [Issues](https://github.com/jordanbaird/Ice/issues) page to see if a report already exists for the bug you encountered. Make sure to include both open and closed issues in your search.
-
-        **Important**: Only submit a new issue if the bug you encountered hasn't been reported in an existing open issue, or if a regression has occurred with a previously closed issue.
+      label: Search for similar reports
+      description: Search [Icey's issues](https://github.com/leonardovida/icey/issues?q=is%3Aissue), open and closed.
       options:
-        - label: I have searched existing issues for similar reports
+        - label: I searched existing issues and didn't find this bug
           required: true
   - type: textarea
     attributes:
       label: Description
-      placeholder: A clear and concise description of the bug...
+      placeholder: What happened, and what did you expect to happen?
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Steps to Reproduce
-      description: Steps to reliably reproduce the behavior.
+      label: Steps to reproduce
       placeholder: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
-        4. See error
+        1. Open Settings > Menu Bar Layout
+        2. Drag '...' into the Hidden section
+        3. See error
     validations:
       required: true
   - type: input
     id: app_version
     attributes:
-      label: App Version
-      placeholder: e.g. 1.2.3
+      label: Icey version
+      description: Shown in Settings > About.
+      placeholder: e.g. 0.11.13-dev.2-icey.1
     validations:
       required: true
   - type: input
     id: macos_version
     attributes:
-      label: macOS Version
-      placeholder: e.g. 15.3.2
+      label: macOS version
+      description: Run `sw_vers -productVersion` in Terminal.
+      placeholder: e.g. 26.5.1
     validations:
       required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Mac and displays
+      placeholder: e.g. MacBook Pro 14" (M3, notch) with one external display
+  - type: input
+    id: upstream
+    attributes:
+      label: Same bug in Ice?
+      description: Link the jordanbaird/Ice issue if there is one.
+      placeholder: e.g. jordanbaird/Ice#954
   - type: textarea
     attributes:
-      label: Additional Information
-      placeholder: Screenshots, screen recordings, logs, crash reports, or anything else you think might be helpful...
+      label: Additional information
+      description: |
+        Screenshots, screen recordings, crash reports (Console > Crash Reports > Ice) or logs. To collect logs, run:
+        `log show --last 10m --predicate 'process == "Ice"' > icey.log`
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Filed with an AI agent?
+      options:
+        - "No"
+        - "Yes"

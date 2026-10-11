@@ -24,7 +24,7 @@ Ice and Icey use the same settings, so you can switch between them without losin
 | What it is | A macOS menu bar manager (hide, show, rearrange and style menu bar icons) |
 | Forked from | [jordanbaird/Ice](https://github.com/jordanbaird/Ice), based on version 0.11.12 |
 | Repository | [github.com/leonardovida/icey](https://github.com/leonardovida/icey) |
-| Download | [Latest release](https://github.com/leonardovida/icey/releases/latest) (DMG and zip) |
+| Download | [Latest release](https://github.com/leonardovida/icey/releases/latest) (signed and notarized DMG) |
 | Supported macOS | macOS 14 Sonoma, macOS 15 Sequoia, macOS 26 Tahoe |
 | Architectures | Apple silicon and Intel (universal binary) |
 | Price and license | Free, [GPL-3.0](LICENSE) |
@@ -51,11 +51,7 @@ Ice and Icey use the same settings, so you can switch between them without losin
 
 Download `Icey-<version>.dmg` from the [latest release](https://github.com/leonardovida/icey/releases/latest), open it, and drag `Ice.app` to Applications.
 
-Releases are not notarized by Apple yet, so macOS blocks the first launch. To allow it, open System Settings > Privacy & Security and click "Open Anyway". Or run:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/Ice.app
-```
+Releases are signed with a Developer ID certificate and notarized by Apple, so they open without Gatekeeper warnings.
 
 ### Build from source
 
@@ -73,7 +69,7 @@ open /Applications/Ice.app
 ### Notes
 
 - The app bundle is still named `Ice.app` and uses the bundle identifier `com.jordanbaird.Ice`. Installing Icey replaces an existing Ice install, and keeps its settings.
-- Builds are ad-hoc signed, so macOS asks you to grant Accessibility and Screen Recording again after each new version.
+- Release builds are signed with the same Developer ID, so permissions carry over between versions. Builds you make from source are ad-hoc signed, so macOS asks for Accessibility and Screen Recording again after each one.
 - Icey still uses upstream's update feed. If upstream publishes a new release, the built-in updater may replace Icey with it. To prevent this, turn off "Automatically check for updates" in Settings > About.
 
 ## For AI agents and LLMs

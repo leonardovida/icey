@@ -19,6 +19,11 @@ final class IceBarPanel: NSPanel {
     /// The currently displayed section.
     private(set) var currentSection: MenuBarSection.Name?
 
+    /// Incremented by every call to ``show(section:on:)`` and ``close()``, so a
+    /// show that was suspended while the caches updated can tell that the panel
+    /// has since been closed or shown again.
+    private var presentationID = 0
+
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
@@ -164,6 +169,9 @@ final class IceBarPanel: NSPanel {
             return
         }
 
+        presentationID &+= 1
+        let presentationID = presentationID
+
         // IMPORTANT: We must set the navigation state and current section
         // before updating the caches.
         appState.navigationState.isIceBarPresented = true
@@ -191,6 +199,20 @@ final class IceBarPanel: NSPanel {
             } catch {
                 Logger.default.error("Cache update failed when showing IceBarPanel - \(error)")
             }
+        }
+
+        // The wait above can last up to a second, and the panel may have been
+        // closed in the meantime: a space or display change hides it, and a
+        // video entering fullscreen on another display is exactly that. Showing
+        // it anyway put it back on screen after the hide, on the display it was
+        // requested for, with `isIceBarPresented` already false, so the image
+        // cache never filled it and nothing closed it again. That empty bar is
+        // the leftover Ice Bar seen on the other display.
+        guard
+            presentationID == self.presentationID,
+            NSScreen.screens.contains(screen)
+        else {
+            return
         }
 
         contentView = IceBarHostingView(
@@ -233,6 +255,7 @@ final class IceBarPanel: NSPanel {
     }
 
     override func close() {
+        presentationID &+= 1
         super.close()
         contentView = nil
         currentSection = nil

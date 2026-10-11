@@ -24,7 +24,7 @@ cd "$ROOT"
 xcodebuild -project Ice.xcodeproj -scheme Ice -configuration Release -destination platform=macOS \
   -derivedDataPath "$DD" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Developer ID Application" \
   DEVELOPMENT_TEAM="$TEAM" OTHER_CODE_SIGN_FLAGS=--timestamp CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
-  build > "$OUT/build.log" 2>&1 || { tail -30 "$OUT/build.log"; exit 1; }
+  build > "$OUT.build.log" 2>&1 || { tail -30 "$OUT.build.log"; exit 1; }
 APP="$DD/Build/Products/Release/Icey.app"
 
 # Sparkle ships its helpers signed with its own identity and no timestamp, which

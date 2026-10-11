@@ -258,6 +258,20 @@ final class MenuBarSection {
             return
         }
 
+        // The pointer counts as outside when it is below the menu bar and not
+        // over the Ice Bar, which also sits below the menu bar. Counting the
+        // Ice Bar as outside closed it while the pointer was on its way to it,
+        // or while it was being used (jordanbaird/Ice#914).
+        let isMouseOutside = { [weak appState] (screen: NSScreen) -> Bool in
+            guard NSEvent.mouseLocation.y < screen.visibleFrame.maxY else {
+                return false
+            }
+            guard let appState else {
+                return true
+            }
+            return !appState.hidEventManager.isMouseInsideOrAwaitingIceBar(appState: appState)
+        }
+
         rehideMonitor = EventMonitor.universal(for: .mouseMoved) { [weak self] event in
             guard
                 let self,
@@ -265,7 +279,7 @@ final class MenuBarSection {
             else {
                 return event
             }
-            if NSEvent.mouseLocation.y < screen.visibleFrame.maxY {
+            if isMouseOutside(screen) {
                 if rehideTimer == nil {
                     rehideTimer = .scheduledTimer(
                         withTimeInterval: appState.settings.general.rehideInterval,
@@ -277,7 +291,7 @@ final class MenuBarSection {
                         else {
                             return
                         }
-                        if NSEvent.mouseLocation.y < screen.visibleFrame.maxY {
+                        if isMouseOutside(screen) {
                             Task {
                                 await self.hide()
                             }

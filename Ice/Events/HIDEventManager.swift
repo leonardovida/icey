@@ -753,7 +753,7 @@ extension HIDEventManager {
         } else {
             guard
                 !isMouseInsideMenuBar(appState: appState, screen: screen),
-                !isMouseInsideIceBar(appState: appState)
+                !isMouseInsideOrAwaitingIceBar(appState: appState)
             else {
                 return
             }
@@ -765,7 +765,7 @@ extension HIDEventManager {
                 // Make sure the mouse is still outside.
                 guard
                     !isMouseInsideMenuBar(appState: appState, screen: screen),
-                    !isMouseInsideIceBar(appState: appState)
+                    !isMouseInsideOrAwaitingIceBar(appState: appState)
                 else {
                     return
                 }
@@ -1129,14 +1129,30 @@ extension HIDEventManager {
     /// A Boolean value that indicates whether the mouse pointer is within
     /// the bounds of the Ice Bar panel.
     func isMouseInsideIceBar(appState: AppState) -> Bool {
-        guard let mouseLocation = MouseHelpers.locationAppKit else {
+        let panel = appState.menuBarManager.iceBarPanel
+        // A closed panel keeps the frame it had when it was last shown.
+        guard
+            panel.isVisible,
+            let mouseLocation = MouseHelpers.locationAppKit
+        else {
             return false
         }
-        let panel = appState.menuBarManager.iceBarPanel
         // Pad the frame to be more forgiving if the user accidentally
         // moves their mouse outside of the Ice Bar.
         let paddedFrame = panel.frame.insetBy(dx: -15, dy: -15)
         return paddedFrame.contains(mouseLocation)
+    }
+
+    /// A Boolean value that indicates whether the Ice Bar should stay open
+    /// for the mouse pointer: the pointer is within it, or it has been asked
+    /// to open and is not on screen yet.
+    ///
+    /// The pointer leaves the menu bar on its way down to the Ice Bar. Rehide
+    /// checks that counted every point below the menu bar as "outside" closed
+    /// the bar before the pointer reached it, or while it was being used
+    /// (jordanbaird/Ice#914).
+    func isMouseInsideOrAwaitingIceBar(appState: AppState) -> Bool {
+        appState.menuBarManager.iceBarPanel.isAwaitingDisplay || isMouseInsideIceBar(appState: appState)
     }
 
     /// A Boolean value that indicates whether the mouse pointer is within

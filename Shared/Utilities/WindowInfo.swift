@@ -140,9 +140,9 @@ extension WindowInfo {
     ///
     /// On macOS 26, a window server window titled "underbelly" sits between the
     /// wallpaper and the menu bar, taller than the menu bar, and darkens the
-    /// wallpaper there (measured on macOS 26.5.1 with the menu bar background
-    /// turned off: 83 points tall, average luma of the menu bar strip 121.7
-    /// without it and 109.4 with it). Returns `nil` where there is no such window.
+    /// wallpaper there (measured on macOS 26.5.1: 83 points tall, average luma
+    /// of the menu bar strip 121.7 without it and 109.4 with it). Returns `nil`
+    /// where there is no such window.
     static func menuBarUnderbellyWindow(from windows: [WindowInfo], for display: CGDirectDisplayID) -> WindowInfo? {
         let displayBounds = CGDisplayBounds(display)
         return windows.first { window in

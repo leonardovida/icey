@@ -78,6 +78,66 @@ struct ClockBridgeZone27Tests {
     func notConcealing() {
         #expect(!ClockBridgeZone27.shouldBridge(click: CGPoint(x: 1840, y: 15), systemItemFrames: [clock], isConcealing: false))
     }
+
+    // Measured on macOS 27.0.1 while concealed (jordanbaird/Ice#1014): Macs Fan Control's item
+    // sits between the battery and Control Centre, and MenuBarAgent draws the battery over it.
+    let wifi = CGRect(x: 1274, y: 0, width: 22, height: 24)
+    let battery = CGRect(x: 1312, y: 0, width: 26, height: 24)
+    let controlCenter = CGRect(x: 1354, y: 0, width: 26, height: 24)
+    let clockAfterControlCenter = CGRect(x: 1378, y: 0, width: 113, height: 24)
+    let fanControl = CGRect(x: 1315, y: 0, width: 24, height: 24)
+    var systemItems: [CGRect] { [wifi, battery, controlCenter, clockAfterControlCenter] }
+
+    @Test("A system item at or left of an overlapped one may move")
+    func mayMove() {
+        for clicked in [wifi, battery] {
+            #expect(ClockBridgeZone27.clickedItemMayMove(
+                clickedFrame: clicked,
+                systemItemFrames: systemItems,
+                applicationItemFrames: [fanControl]
+            ))
+        }
+    }
+
+    @Test("A system item right of the overlap stays where it is")
+    func staysPut() {
+        for clicked in [controlCenter, clockAfterControlCenter] {
+            #expect(!ClockBridgeZone27.clickedItemMayMove(
+                clickedFrame: clicked,
+                systemItemFrames: systemItems,
+                applicationItemFrames: [fanControl]
+            ))
+        }
+    }
+
+    @Test("Neighbours overlapping by the usual 2 points do not count")
+    func neighbours() {
+        let leftNeighbour = CGRect(x: 1254, y: 0, width: 22, height: 24)
+        #expect(!ClockBridgeZone27.clickedItemMayMove(
+            clickedFrame: wifi,
+            systemItemFrames: systemItems,
+            applicationItemFrames: [leftNeighbour]
+        ))
+    }
+
+    @Test("An item on another display does not count")
+    func otherDisplay() {
+        let elsewhere = fanControl.offsetBy(dx: 0, dy: 1000)
+        #expect(!ClockBridgeZone27.clickedItemMayMove(
+            clickedFrame: battery,
+            systemItemFrames: systemItems,
+            applicationItemFrames: [elsewhere]
+        ))
+    }
+
+    @Test("A replayed click keeps its place within the item that moved")
+    func relocated() {
+        // Lifted, the battery moved from 1312 to 1274 (#1014).
+        let moved = battery.offsetBy(dx: -38, dy: 0)
+        let point = ClockBridgeZone27.relocatedClick(CGPoint(x: 1325, y: 12), from: battery, to: moved)
+        #expect(point == CGPoint(x: 1287, y: 12))
+        #expect(moved.contains(point))
+    }
 }
 
 @Suite("ItemHitTest27")

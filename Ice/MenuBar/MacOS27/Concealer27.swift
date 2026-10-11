@@ -54,14 +54,24 @@ final class Concealer27: ObservableObject {
             logger.error("MenuBarClientCore assertions are unavailable, so items will not be hidden")
             return
         }
-        let workspaceCenter = NSWorkspace.shared.notificationCenter
-        for name in [NSWorkspace.didLaunchApplicationNotification, NSWorkspace.didTerminateApplicationNotification] {
-            observers.append(workspaceCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+        // Every assertion is an allowlist of the applications running when it was made, so an
+        // application missing from it has its items hidden. The workspace's launch and terminate
+        // notifications are never posted for agents (`LSUIElement`), which is what most menu bar
+        // applications are: an agent started while Ice conceals stayed hidden, whatever its
+        // section, until something else happened to update the concealment. The running
+        // applications are observed instead, which covers agents as well (adopted from
+        // @carlossantos74's jordanbaird/Ice#1001).
+        NSWorkspace.shared.publisher(for: \.runningApplications)
+            .map { Set($0.compactMap(\.bundleIdentifier)) }
+            .removeDuplicates()
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.update()
                 }
-            })
-        }
+            }
+            .store(in: &cancellables)
         // Plugging a display in lays both bars out again, and whatever does not fit beside the
         // notch is folded away — the state the check below watches for. Nothing else here notices
         // a display arriving, so without this the check waits for the next concealment change,
@@ -166,9 +176,19 @@ final class Concealer27: ObservableObject {
             return application.processIdentifier
         })
         lastChangeAt = .now
+        updateGeneration += 1
+        let generation = updateGeneration
         let previous = applyTask
-        let task = Task { [controller, logger] in
+        let task = Task { [weak self, controller, logger] in
             await previous?.value
+            // Applies follow one another, so a burst of updates — a login starting many
+            // applications, each one now an update — queued one apply behind the other, each
+            // laying the bar out again. Only the latest target is worth applying, as it comes
+            // later in the queue. Releases are never skipped, so applies and releases still land
+            // in the order they were asked for (adopted from jordanbaird/Ice#1001).
+            guard let self, updateGeneration == generation else {
+                return
+            }
             do {
                 try await controller.apply(target: target, running: running)
             } catch {
@@ -178,14 +198,21 @@ final class Concealer27: ObservableObject {
         applyTask = task
         // Concealing moves the remaining items, and hover hit-testing uses their cached
         // frames. The refresh stays out of `applyTask`, so a slow read never holds up the
-        // next change. The bar animates for about 250 ms (measured).
+        // next change. The bar animates for about 250 ms (measured). Only the refresh after
+        // the latest update runs, as each one reads every application's items.
         Task { [weak self] in
             await task.value
             try? await Task.sleep(for: .milliseconds(400))
-            await self?.appState?.itemManager.cacheItemsIfNeeded()
-            await self?.checkStuckOverflow()
+            guard let self, updateGeneration == generation else {
+                return
+            }
+            await self.appState?.itemManager.cacheItemsIfNeeded()
+            await checkStuckOverflow()
         }
     }
+
+    /// Counts the updates made, so an update overtaken by a later one is skipped.
+    private var updateGeneration = 0
 
     /// How many checks in a row have disagreed with ``isOverflowStuck``.
     ///

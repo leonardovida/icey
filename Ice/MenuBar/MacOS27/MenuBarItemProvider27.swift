@@ -149,6 +149,79 @@ enum MenuBarItemProvider27 {
         }
     }
 
+    /// The frame of the system item with the given identifier, from the last read.
+    static func systemItemFrame(withIdentifier identifier: String) -> CGRect? {
+        lock.withLock {
+            entries.values
+                .first { $0.bundleID == menuBarAgentBundleID && $0.identifier == identifier }?
+                .frame
+        }
+    }
+
+    /// Frames applications reported for their items in the last read, concealed ones included.
+    /// Ice's own items are left out: they are collapsed to nothing on macOS 27.
+    static func applicationItemFrames() -> [CGRect] {
+        lock.withLock {
+            entries.values
+                .filter { $0.bundleID != menuBarAgentBundleID && $0.bundleID != Constants.bundleIdentifier }
+                .map(\.frame)
+        }
+    }
+
+    /// Waits for the system item with the given identifier to leave the given frame, and returns
+    /// where it is now, or `nil` if MenuBarAgent could not be asked.
+    ///
+    /// The frame is read afresh from MenuBarAgent each time: the element kept from the last read
+    /// can go on reporting the old frame after the bar has moved (measured on macOS 27.0.1,
+    /// jordanbaird/Ice#1014). The item is returned where it stands once it has moved, or once the
+    /// timeout has passed without it moving.
+    static func systemItemFrame(
+        withIdentifier identifier: String,
+        afterMovingFrom frame: CGRect?,
+        timeout: Duration
+    ) async -> CGRect? {
+        guard let agent = NSRunningApplication.runningApplications(withBundleIdentifier: menuBarAgentBundleID).first else {
+            return nil
+        }
+        let pid = agent.processIdentifier
+        let seconds = Double(timeout.components.seconds) + Double(timeout.components.attoseconds) / 1e18
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let deadline = ProcessInfo.processInfo.systemUptime + seconds
+                var current = freshSystemItemFrame(withIdentifier: identifier, pid: pid)
+                while
+                    let before = frame,
+                    current.map({ abs($0.minX - before.minX) <= 1 && abs($0.minY - before.minY) <= 1 }) ?? true,
+                    ProcessInfo.processInfo.systemUptime < deadline
+                {
+                    usleep(10_000)
+                    current = freshSystemItemFrame(withIdentifier: identifier, pid: pid) ?? current
+                }
+                continuation.resume(returning: current)
+            }
+        }
+    }
+
+    /// Reads the frame of one system item straight from MenuBarAgent. Blocks.
+    private static func freshSystemItemFrame(withIdentifier identifier: String, pid: pid_t) -> CGRect? {
+        let application = AXUIElementCreateApplication(pid)
+        AXUIElementSetMessagingTimeout(application, 0.1)
+        guard
+            let bar = element(application, kAXExtrasMenuBarAttribute),
+            let children = elements(bar, kAXChildrenAttribute)
+        else {
+            return nil
+        }
+        for child in children where string(child, kAXRoleAttribute) != kAXButtonRole {
+            // MenuBarAgent wraps each system item in a hosting group, as in `readItems`.
+            let item = elements(child, kAXChildrenAttribute)?.first ?? child
+            if string(item, kAXIdentifierAttribute) == identifier {
+                return frame(of: item)
+            }
+        }
+        return nil
+    }
+
     /// Tells the provider which processes are concealed right now.
     static func setConcealedPIDs(_ pids: Set<pid_t>) {
         lock.withLock { concealedPIDs = pids }

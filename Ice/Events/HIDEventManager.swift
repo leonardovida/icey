@@ -432,6 +432,17 @@ extension HIDEventManager {
         // fixed second and a half, which is what made every hidden item flash into view.
         let systemItem = MenuBarItemProvider27.systemItem(at: location)
         let mayOpenFromPress = systemItem.map { !Self.systemItemsIgnoringPress.contains($0.identifier) } ?? false
+        // An application's item drawn over by a system item at or right of the clicked one gets
+        // its slot back when concealment is lifted, and the clicked item moves (see
+        // `ClockBridgeZone27.clickedItemMayMove`). Every other click is replayed where it was made.
+        let clickedFrame = systemItem.flatMap { MenuBarItemProvider27.systemItemFrame(withIdentifier: $0.identifier) }
+        let clickedItemMayMove = clickedFrame.map { clickedFrame in
+            ClockBridgeZone27.clickedItemMayMove(
+                clickedFrame: clickedFrame,
+                systemItemFrames: MenuBarItemProvider27.systemItemFrames(),
+                applicationItemFrames: MenuBarItemProvider27.applicationItemFrames()
+            )
+        } ?? false
         Task {
             // A click that lands while a panel is up is the click that dismisses it, and
             // Escape dismisses it just as well — with no lift of concealment at all. Lifting
@@ -475,6 +486,32 @@ extension HIDEventManager {
             // the replay, so the click is as quick as the release allows.
             let bridgeStarted = ProcessInfo.processInfo.systemUptime
             Self.bridgeLogger.debug("Click bridge: holding the click, lifting concealment")
+            if clickedItemMayMove, let systemItem {
+                // MenuBarAgent moves the bar 50–150 ms after the release, so reading the item's
+                // frame straight after it is too early: Ice waits for the item to move, up to
+                // `itemMoveWait`, with the lift extended by as much, and clicks it where it went
+                // (measured on macOS 27.0.1, jordanbaird/Ice#1014).
+                let before = await MenuBarItemProvider27.systemItemFrame(
+                    withIdentifier: systemItem.identifier,
+                    afterMovingFrom: nil,
+                    timeout: .zero
+                ) ?? clickedFrame
+                await concealer.suspendReleased(for: Self.clickRestoreDelay + Self.itemMoveWait)
+                let after = await MenuBarItemProvider27.systemItemFrame(
+                    withIdentifier: systemItem.identifier,
+                    afterMovingFrom: before,
+                    timeout: Self.itemMoveWait
+                )
+                var target = location
+                if let before, let after {
+                    target = ClockBridgeZone27.relocatedClick(location, from: before, to: after)
+                }
+                let released = (ProcessInfo.processInfo.systemUptime - bridgeStarted) * 1000
+                Self.replayClick(at: target)
+                Self.itemShowingPanel = systemItem.identifier
+                Self.bridgeLogger.debug("Click bridge: lifted in \(released, privacy: .public) ms, click replayed on the moved item")
+                return
+            }
             await concealer.suspendReleased(for: Self.clickRestoreDelay)
             let released = (ProcessInfo.processInfo.systemUptime - bridgeStarted) * 1000
             Self.replayClick(at: location)
@@ -502,6 +539,10 @@ extension HIDEventManager {
         let stored = Defaults.integer(forKey: .macOS27ClickRestoreDelay)
         return .milliseconds(stored > 0 ? min(max(stored, 30), 2000) : 120)
     }
+
+    /// The longest Ice waits for a clicked system item to move once concealment is lifted. The
+    /// bar moves 50–150 ms after the release (measured on macOS 27.0.1, jordanbaird/Ice#1014).
+    private static let itemMoveWait = Duration.milliseconds(200)
 
 
 

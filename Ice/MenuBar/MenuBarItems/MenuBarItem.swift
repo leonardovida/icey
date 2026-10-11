@@ -213,13 +213,13 @@ extension MenuBarItem {
     ///     to return all available menu bar item windows.
     static func getMenuBarItemWindows(on display: CGDirectDisplayID? = nil, option: ListOption) -> [WindowInfo] {
         var bridgingOption: Bridging.MenuBarWindowListOption = .itemsOnly
-        var displayBoundsPredicate: (CGWindowID) -> Bool = { _ in true }
+        var displayBoundsPredicate: (WindowInfo) -> Bool = { _ in true }
 
         if let display {
             bridgingOption.insert(.onScreen)
             let displayBounds = CGDisplayBounds(display)
-            displayBoundsPredicate = { windowID in
-                Bridging.windowIntersectsDisplayBounds(windowID, displayBounds)
+            displayBoundsPredicate = { window in
+                displayBounds.intersects(window.bounds)
             }
         } else if option.contains(.onScreen) {
             bridgingOption.insert(.onScreen)
@@ -228,16 +228,24 @@ extension MenuBarItem {
             bridgingOption.insert(.activeSpace)
         }
 
-        return Bridging.getMenuBarWindowList(option: bridgingOption)
-            .reversed().compactMap { windowID in
-                guard
-                    displayBoundsPredicate(windowID),
-                    let window = WindowInfo(windowID: windowID)
-                else {
-                    return nil
-                }
-                return window
+        let windowIDs = Bridging.getMenuBarWindowList(option: bridgingOption)
+
+        // Retrieve the window descriptions in a single call to the window server,
+        // rather than one call per window, as this is called on hot paths, such
+        // as drawing the split shape of the menu bar appearance.
+        let windows = WindowInfo.createWindows(from: windowIDs).reduce(into: [CGWindowID: WindowInfo]()) { result, window in
+            result[window.windowID] = window
+        }
+
+        return windowIDs.reversed().compactMap { windowID in
+            guard
+                let window = windows[windowID],
+                displayBoundsPredicate(window)
+            else {
+                return nil
             }
+            return window
+        }
     }
 
     /// Creates and returns a list of menu bar items using experimental

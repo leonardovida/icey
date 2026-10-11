@@ -130,8 +130,11 @@ Installed copies update themselves from `https://github.com/leonardovida/icey/re
 1. A higher `CURRENT_PROJECT_VERSION` than the last release (Sparkle compares it), and `MARKETING_VERSION` set to the tag without the `v`.
 2. `Scripts/package-release.sh <tag>`. It builds with the Developer ID, re-signs Sparkle's helpers, notarizes and staples the app and the DMG, then writes the zip, the DMG, `appcast.xml` (via `Scripts/make-appcast.sh`) and `SHA256SUMS.txt` to `build/release/<tag>/`. Attach all four to the release. It signs with the maintainer's certificate and EdDSA key, so only the maintainer can run it.
 3. Release notes in `release-notes/<tag>.md`, a CHANGELOG.md entry, and BREAKING_CHANGES.md rows for anything users must act on.
+4. `Scripts/publish-release.sh <tag>`. It refuses to publish unless the appcast points at this release's zip, uploads only the four assets, and checks that the update feed serves the new release.
 
-Never mark a release as a prerelease if users should get it: `releases/latest` skips prereleases.
+The "Check release appcast" workflow checks every published, non-prerelease release. If `appcast.xml` is missing or doesn't point at that release's zip, the workflow turns the release back into a draft, so it can't break the update feed.
+
+Never mark a release as a prerelease if users should get it: `releases/latest` skips prereleases. Don't publish releases from the GitHub website: use the script, so the appcast is always attached.
 
 ## Writing docs and release notes
 

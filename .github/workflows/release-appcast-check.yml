@@ -1,0 +1,70 @@
+name: Check release appcast
+
+# Installed copies of Icey check
+# https://github.com/leonardovida/icey/releases/latest/download/appcast.xml
+# for updates. A published release without a valid appcast.xml becomes "latest"
+# and silently breaks every update check, so such a release is turned back into
+# a draft, which takes it out of "latest" until it is fixed.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  check-appcast:
+    # Prereleases are never "latest", so they cannot break the update feed.
+    if: '!github.event.release.prerelease'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Check appcast.xml
+        id: check
+        run: |
+          set -u
+          fail() { echo "::error::$1"; echo "reason=$1" >> "$GITHUB_OUTPUT"; exit 1; }
+
+          # Assets can still be uploading right after publishing.
+          for attempt in 1 2 3 4 5 6; do
+            assets="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
+            grep -qx 'appcast.xml' <<< "$assets" && break
+            sleep 10
+          done
+          grep -qx 'appcast.xml' <<< "$assets" || fail "Release $TAG has no appcast.xml asset. Build it with Scripts/package-release.sh and attach everything in build/release/$TAG/."
+
+          command -v xmllint > /dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq libxml2-utils > /dev/null; }
+          gh release download "$TAG" --pattern appcast.xml --dir "$RUNNER_TEMP"
+          appcast="$RUNNER_TEMP/appcast.xml"
+          xmllint --noout "$appcast" || fail "appcast.xml in $TAG is not valid XML."
+
+          url="$(grep -o 'enclosure url="[^"]*"' "$appcast" | head -1 | sed 's/enclosure url="\(.*\)"/\1/')"
+          [ -n "$url" ] || fail "appcast.xml in $TAG has no enclosure URL."
+          case "$url" in
+            "https://github.com/$GH_REPO/releases/download/$TAG/"*) ;;
+            *) fail "appcast.xml in $TAG points to $url, not to an asset of this release." ;;
+          esac
+          grep -qx "$(basename "$url")" <<< "$assets" || fail "appcast.xml in $TAG points to $(basename "$url"), which is not attached to the release."
+          grep -q 'sparkle:edSignature="[^"]\+"' "$appcast" || fail "appcast.xml in $TAG has no EdDSA signature."
+          grep -q '<sparkle:version>[0-9]\+</sparkle:version>' "$appcast" || fail "appcast.xml in $TAG has no build number."
+
+          echo "appcast.xml in $TAG is valid: $(basename "$url")"
+
+      - name: Unpublish the release
+        if: failure()
+        env:
+          REASON: ${{ steps.check.outputs.reason }}
+        run: |
+          gh release edit "$TAG" --draft=true
+          {
+            echo "## Release $TAG was turned back into a draft"
+            echo
+            echo "${REASON:-The appcast check failed. See the job log.}"
+            echo
+            echo "Installed copies of Icey read the appcast of the latest release, so publishing it without a valid appcast.xml would break their update checks."
+            echo "Fix the assets, then publish the draft again."
+          } >> "$GITHUB_STEP_SUMMARY"

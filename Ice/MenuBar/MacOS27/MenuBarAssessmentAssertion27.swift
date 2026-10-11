@@ -68,13 +68,17 @@ final class MenuBarAssessmentAssertion27: ConcealmentBackend27 {
     /// would otherwise be concealed, and Ice hides applications' items, not the system's. The
     /// range matches the one @carlossantos74 arrived at in jordanbaird/Ice#1001.
     ///
+    /// It reaches 255 rather than 63: with only 0...63 allowed, Screen Mirroring silently
+    /// disappeared from the bar (reported by @brentc22 on jordanbaird/Ice#954, whose
+    /// assessment-mode app allows 0...255). Numbers with no item behind them are ignored.
+    ///
     /// Control Centre's capture indicator — the green camera button, orange for the microphone,
     /// indigo for screen sharing — is not one of these numbers and cannot be kept. It is drawn
     /// while no assertion is live and gone while one is, whatever the allowlist holds: every
     /// number to 127, Control Centre's bundle identifier, the capturing application's own. The
     /// small green dot beside the clock is not an item and stays either way. Measured with
     /// `Scripts/macos27/system-item-probe.swift` on macOS 27.0 (2026-09-29).
-    private static let systemItems = (0...63).map { NSNumber(value: $0) } as NSArray
+    private static let systemItems = (0...255).map { NSNumber(value: $0) } as NSArray
 
     private static let classes: (configuration: AnyClass, assertion: AnyClass)? = {
         guard

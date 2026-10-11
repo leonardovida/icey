@@ -33,20 +33,20 @@ final class HIDEventManager: ObservableObject {
     /// swallowing an unrelated one later.
     private var heldBackReleaseUntil: ContinuousClock.Instant?
 
+    /// The pending show-on-hover check, if there is one.
+    private var showOnHoverTask: Task<Void, any Error>?
 
+    /// Whether the pending show-on-hover check is for showing the hidden
+    /// section (`true`) or hiding it (`false`).
+    private var showOnHoverTaskShowsSection = false
+
+    /// An identifier for the pending show-on-hover check.
+    private var showOnHoverTaskID = UUID()
 
     /// A Boolean value that indicates whether the manager is enabled.
     private var isEnabled = false {
         didSet {
-            if isEnabled {
-                for monitor in allMonitors {
-                    monitor.start()
-                }
-            } else {
-                for monitor in allMonitors {
-                    monitor.stop()
-                }
-            }
+            updateMonitors()
         }
     }
 
@@ -140,35 +140,36 @@ final class HIDEventManager: ObservableObject {
         return event
     }
 
-    // MARK: All Monitors
-
-    /// All monitors maintained by the manager.
-    private lazy var allMonitors: [any EventMonitorProtocol] = {
-        var monitors: [any EventMonitorProtocol] = [
-            mouseDownMonitor,
-            mouseUpMonitor,
-            mouseDraggedMonitor,
-            mouseMovedTap,
-            scrollWheelMonitor,
-        ]
-        if #available(macOS 27.0, *) {
-            monitors.append(systemItemClickTap)
-        }
-        return monitors
-    }()
-
     // MARK: Setup
 
     /// Sets up the manager.
     func performSetup(with appState: AppState) {
         self.appState = appState
-        startAll()
         configureCancellables()
+        startAll()
     }
 
     /// Configures the internal observers for the manager.
     private func configureCancellables() {
         var c = Set<AnyCancellable>()
+
+        if let appState {
+            // Only run the monitors that the current settings need. Monitors for
+            // high-frequency events (mouse moved, dragged, scroll wheel) wake the app
+            // for every such event in the system, even when the handlers return early.
+            Publishers.Merge4(
+                appState.settings.general.$showOnHover.replace(with: ()),
+                appState.settings.general.$showOnScroll.replace(with: ()),
+                appState.settings.advanced.$showAllSectionsOnUserDrag.replace(with: ()),
+                appState.appearanceManager.$configuration.replace(with: ())
+            )
+            // Receive on the main queue, as the publishers emit before the new values are stored.
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.updateMonitors()
+            }
+            .store(in: &c)
+        }
 
         if let appState, let hiddenSection = appState.menuBarManager.section(withName: .hidden) {
             // In fullscreen mode, the menu bar slides down from the top on hover. Observe the
@@ -195,6 +196,51 @@ final class HIDEventManager: ObservableObject {
     }
 
     // MARK: Start/Stop
+
+    /// Starts or stops each monitor, according to whether the manager is
+    /// enabled and whether the current settings need the monitor.
+    private func updateMonitors() {
+        let general = appState?.settings.general
+
+        // Dragging shows all sections and fades out the overlay panels.
+        var needsDragMonitors = false
+        if let appState {
+            let appearanceManager = appState.appearanceManager
+            needsDragMonitors = appState.settings.advanced.showAllSectionsOnUserDrag ||
+                appearanceManager.mayNeedOverlayPanels(for: appearanceManager.configuration)
+        }
+
+        let monitors: [(any EventMonitorProtocol, Bool)] = [
+            (mouseDownMonitor, true),
+            (mouseUpMonitor, needsDragMonitors),
+            (mouseDraggedMonitor, needsDragMonitors),
+            (mouseMovedTap, general?.showOnHover == true),
+            (scrollWheelMonitor, general?.showOnScroll == true),
+        ]
+        for (monitor, isNeeded) in monitors {
+            if isEnabled && isNeeded {
+                monitor.start()
+            } else {
+                monitor.stop()
+            }
+        }
+        if #available(macOS 27.0, *) {
+            if isEnabled {
+                systemItemClickTap.start()
+            } else {
+                systemItemClickTap.stop()
+            }
+        }
+
+        if !needsDragMonitors {
+            // The mouse up event that ends a drag can't be received while
+            // the monitor is stopped, so don't leave the drag in progress.
+            handleMenuBarItemDragStop()
+        }
+        if general?.showOnHover != true {
+            cancelShowOnHoverTask()
+        }
+    }
 
     /// Starts all monitors.
     func startAll() {
@@ -622,23 +668,45 @@ extension HIDEventManager {
         }
 
         let delay = appState.settings.advanced.showOnHoverDelay
+        let isHidden = hiddenSection.isHidden
 
-        if hiddenSection.isHidden {
+        // Mouse moved events arrive at the pointer's polling rate. Keep a single
+        // check pending at a time, rather than spawning a task for every event.
+        if showOnHoverTask != nil {
+            guard showOnHoverTaskShowsSection != isHidden else {
+                return
+            }
+            cancelShowOnHoverTask()
+        }
+
+        if isHidden {
+            // Perform the cheap geometric checks up front. The checks that query
+            // Accessibility and the window server run in the pending task.
             guard
                 appState.menuBarManager.showOnHoverAllowed,
-                isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen)
+                isMouseInsideMenuBar(appState: appState, screen: screen),
+                !isMouseInsideNotch(appState: appState, screen: screen)
             else {
                 return
             }
-            if let location = MouseHelpers.locationCoreGraphics {
-                lastEmptyMenuBarPoints[screen.displayID] = location
-            }
-            Task {
+            startShowOnHoverTask(showsSection: true) { [weak self] in
+                guard let self else {
+                    return
+                }
+                guard isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen) else {
+                    // The mouse is likely moving over the application menus or the
+                    // items. Wait briefly before allowing another check, as each one
+                    // is expensive.
+                    try await Task.sleep(for: .milliseconds(50))
+                    return
+                }
+                recordEmptyMenuBarPoint(on: screen)
                 try await Task.sleep(for: .seconds(delay))
                 // Make sure the mouse is still inside.
                 guard isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen) else {
                     return
                 }
+                recordEmptyMenuBarPoint(on: screen)
                 hiddenSection.show()
             }
         } else {
@@ -648,8 +716,11 @@ extension HIDEventManager {
             else {
                 return
             }
-            Task {
+            startShowOnHoverTask(showsSection: false) { [weak self] in
                 try await Task.sleep(for: .seconds(delay))
+                guard let self else {
+                    return
+                }
                 // Make sure the mouse is still outside.
                 guard
                     !isMouseInsideMenuBar(appState: appState, screen: screen),
@@ -659,6 +730,36 @@ extension HIDEventManager {
                 }
                 hiddenSection.hide()
             }
+        }
+    }
+
+    /// Starts the pending show-on-hover check with the given operation.
+    private func startShowOnHoverTask(showsSection: Bool, operation: @escaping @MainActor () async throws -> Void) {
+        let taskID = UUID()
+        showOnHoverTaskID = taskID
+        showOnHoverTaskShowsSection = showsSection
+        showOnHoverTask = Task { [weak self] in
+            defer {
+                if self?.showOnHoverTaskID == taskID {
+                    self?.showOnHoverTask = nil
+                }
+            }
+            try await operation()
+        }
+    }
+
+    /// Cancels the pending show-on-hover check, if there is one.
+    private func cancelShowOnHoverTask() {
+        showOnHoverTask?.cancel()
+        showOnHoverTask = nil
+        showOnHoverTaskID = UUID()
+    }
+
+    /// Records the mouse location as the last empty menu bar spot hovered
+    /// on the given screen.
+    private func recordEmptyMenuBarPoint(on screen: NSScreen) {
+        if let location = MouseHelpers.locationCoreGraphics {
+            lastEmptyMenuBarPoints[screen.displayID] = location
         }
     }
 
@@ -945,11 +1046,13 @@ extension HIDEventManager {
     /// A Boolean value that indicates whether the mouse pointer is within
     /// the bounds of an empty space in the menu bar.
     func isMouseInsideEmptyMenuBarSpace(appState: AppState, screen: NSScreen) -> Bool {
+        // Perform the cheap geometric checks before the ones that query
+        // Accessibility and the window server.
         guard
             isMouseInsideMenuBar(appState: appState, screen: screen),
+            !isMouseInsideNotch(appState: appState, screen: screen),
             !isMouseInsideApplicationMenu(appState: appState, screen: screen),
-            !isMouseInsideMenuBarItem(appState: appState, screen: screen),
-            !isMouseInsideNotch(appState: appState, screen: screen)
+            !isMouseInsideMenuBarItem(appState: appState, screen: screen)
         else {
             return false
         }

@@ -66,10 +66,35 @@ struct MenuBarLayoutSettingsPane: View {
         .blur(radius: hasItems ? 0 : 5)
         .allowsHitTesting(hasItems)
         .overlay {
-            if !hasItems {
+            if hasItems {
+                EmptyView()
+            } else if itemManager.isHiddenControlItemMissing {
+                missingControlItem
+            } else {
                 loadingMenuBarItems
             }
         }
+    }
+
+    /// Shown instead of the loading indicator when the hidden section's
+    /// divider is not in the menu bar, as the items can't load without it.
+    @ViewBuilder
+    private var missingControlItem: some View {
+        VStack(spacing: 6) {
+            Text("Icey's items are missing from the menu bar.")
+                .font(.title2)
+            Group {
+                if #available(macOS 26.0, *) {
+                    Text("Make sure Icey is allowed in System Settings > Menu Bar and the menu bar has room for its icon, then quit and reopen Icey.")
+                } else {
+                    Text("Make sure the menu bar has room for Icey's icon, then quit and reopen Icey.")
+                }
+            }
+            .font(.body)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+        }
+        .padding()
     }
 
     @ViewBuilder

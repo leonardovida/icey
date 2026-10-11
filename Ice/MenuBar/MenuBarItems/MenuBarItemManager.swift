@@ -14,6 +14,14 @@ final class MenuBarItemManager: ObservableObject {
     /// The current cache of menu bar items.
     @Published private(set) var itemCache = ItemCache(displayID: nil)
 
+    /// A Boolean value that indicates whether the most recent cache found
+    /// no control item for the hidden section in the menu bar.
+    ///
+    /// Without that divider, items can't be sorted into sections, so the
+    /// cache stays empty. This happens when macOS has turned Icey's items
+    /// off, for example in System Settings > Menu Bar.
+    @Published private(set) var isHiddenControlItemMissing = false
+
     /// Logger for the menu bar item manager.
     private nonisolated let logger = Logger.menuBarItemManager
 
@@ -400,7 +408,13 @@ extension MenuBarItemManager {
                 // ???: Is clearing the cache the best thing to do here?
                 logger.warning("Missing control item for hidden section, clearing menu bar item cache")
                 itemCache = ItemCache(displayID: nil)
+                if !isHiddenControlItemMissing {
+                    isHiddenControlItemMissing = true
+                }
                 return
+            }
+            if isHiddenControlItemMissing {
+                isHiddenControlItemMissing = false
             }
 
             // Moving items is not supported on macOS 27 yet (plan 2), so the dividers

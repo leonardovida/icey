@@ -520,6 +520,12 @@ extension MenuBarItemManager {
     }
 
     /// Waits asynchronously for the user to pause input.
+    ///
+    /// The check is repeated every 10ms. It runs before every move and
+    /// click, including those that open a hidden item's menu from the
+    /// Ice Bar or the search panel, so a coarser interval delays those
+    /// menus by up to the full interval. Each check reads a few event
+    /// source counters and costs about 25µs.
     private nonisolated func waitForUserToPauseInput() async throws {
         let waitTask = Task {
             while true {
@@ -527,7 +533,7 @@ extension MenuBarItemManager {
                 if hasUserPausedInput(for: .milliseconds(50)) {
                     break
                 }
-                try await Task.sleep(for: .milliseconds(250))
+                try await Task.sleep(for: .milliseconds(10))
             }
         }
         do {
@@ -560,6 +566,40 @@ extension MenuBarItemManager {
             try? await Task.sleep(for: duration)
         }
         await task.value
+    }
+
+    /// Waits for an item that was just moved to stop moving, so that it
+    /// is clicked where it ends up.
+    ///
+    /// The item's bounds are read every 10ms, and the wait ends once
+    /// they have not changed for 20ms, which is longer than a frame at
+    /// 60Hz, or after `timeout`, which is the fixed delay this replaced.
+    /// An item that lands at once is clicked after about 20ms instead
+    /// of 100ms.
+    ///
+    /// Like ``eventSleep(for:)``, this method ignores task cancellation.
+    private nonisolated func waitForItemToSettle(
+        _ item: MenuBarItem,
+        timeout: Duration = .milliseconds(100)
+    ) async {
+        let interval = Duration.milliseconds(10)
+        let requiredStableReads = 2
+        let deadline = ContinuousClock.now + timeout
+        var previous = Bridging.getWindowBounds(for: item.windowID)
+        var stableReads = 0
+        while ContinuousClock.now < deadline {
+            await eventSleep(for: min(interval, ContinuousClock.now.duration(to: deadline)))
+            let current = Bridging.getWindowBounds(for: item.windowID)
+            if let current, current == previous {
+                stableReads += 1
+                if stableReads >= requiredStableReads {
+                    return
+                }
+            } else {
+                stableReads = 0
+            }
+            previous = current
+        }
     }
 
     /// Returns the current bounds for the given item.
@@ -1513,12 +1553,18 @@ extension MenuBarItemManager {
             return
         }
 
+        // List the items, which asks the menu bar item service for each
+        // item's source process on macOS 26, while Accessibility is asked
+        // for the application menu frame on this thread. Neither depends
+        // on the other.
+        async let currentItems = MenuBarItem.getMenuBarItems(option: .activeSpace)
+
         guard let applicationMenuFrame = screen.getApplicationMenuFrame() else {
             logger.error("No application menu frame, so not showing \(item.logString, privacy: .public)")
             return
         }
 
-        var items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
+        var items = await currentItems
 
         guard let destination = getReturnDestination(for: item, in: items) else {
             logger.error("No return destination for \(item.logString, privacy: .public)")
@@ -1576,7 +1622,7 @@ extension MenuBarItemManager {
             runRehideTimer()
         }
 
-        await eventSleep(for: .milliseconds(100))
+        await waitForItemToSettle(item)
         let idsBeforeClick = Set(Bridging.getWindowList(option: .onScreen))
 
         do {

@@ -115,26 +115,25 @@ final class MenuBarItemManager: ObservableObject {
     /// The last time a menu bar item was moved.
     private var lastItemMoveStartDate: Date?
 
-    /// The last time the mouse was moved.
-    private var lastMouseMoveStartDate: Date?
-
     /// Counter to determine if a menu bar item, or group of menu bar
     /// items is being moved.
     private var itemMoveCount = 0
 
     /// A Boolean value that indicates whether a mouse button is down.
-    private var isMouseButtonDown = false
+    ///
+    /// This is queried on demand rather than tracked with event monitors,
+    /// which would wake the app for every mouse event in the system.
+    private var isMouseButtonDown: Bool {
+        NSEvent.pressedMouseButtons != 0
+    }
 
-    /// Event type mask for tracking mouse events.
-    private let mouseTrackingMask: NSEvent.EventTypeMask = [
-        .mouseMoved,
-        .leftMouseDown,
-        .rightMouseDown,
-        .otherMouseDown,
-        .leftMouseUp,
-        .rightMouseUp,
-        .otherMouseUp,
-    ]
+    /// The number of seconds since the mouse was last moved.
+    ///
+    /// This is queried on demand rather than tracked with event monitors,
+    /// which would wake the app for every mouse event in the system.
+    private nonisolated var secondsSinceLastMouseMove: TimeInterval {
+        CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .mouseMoved)
+    }
 
     /// A Boolean value that indicates whether a menu bar item, or
     /// group of menu bar items is being moved.
@@ -153,10 +152,7 @@ final class MenuBarItemManager: ObservableObject {
 
     /// A Boolean value that indicates whether the mouse has recently moved.
     var mouseHasRecentlyMoved: Bool {
-        guard let lastMouseMoveStartDate else {
-            return false
-        }
-        return Date.now.timeIntervalSince(lastMouseMoveStartDate) <= 1
+        secondsSinceLastMouseMove <= 1
     }
 
     /// Creates a manager with the given app state.
@@ -173,7 +169,7 @@ final class MenuBarItemManager: ObservableObject {
     private func configureCancellables() {
         var c = Set<AnyCancellable>()
 
-        Timer.publish(every: 5, on: .main, in: .default)
+        Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
             .autoconnect()
             .merge(with: Just(.now))
             .sink { [weak self] _ in
@@ -197,28 +193,6 @@ final class MenuBarItemManager: ObservableObject {
                 }
             }
             .store(in: &c)
-
-        Publishers.Merge(
-            UniversalEventMonitor.publisher(for: mouseTrackingMask),
-            RunLoopLocalEventMonitor.publisher(for: mouseTrackingMask, mode: .eventTracking)
-        )
-        .removeDuplicates()
-        .sink { [weak self] event in
-            guard let self else {
-                return
-            }
-            switch event.type {
-            case .mouseMoved:
-                lastMouseMoveStartDate = .now
-            case .leftMouseDown, .rightMouseDown, .otherMouseDown:
-                isMouseButtonDown = true
-            case .leftMouseUp, .rightMouseUp, .otherMouseUp:
-                isMouseButtonDown = false
-            default:
-                break
-            }
-        }
-        .store(in: &c)
 
         cancellables = c
     }
@@ -520,10 +494,7 @@ extension MenuBarItemManager {
             }
             while true {
                 try Task.checkCancellation()
-                guard let date = await lastMouseMoveStartDate else {
-                    break
-                }
-                if Date.now.timeIntervalSince(date) > threshold {
+                if self.secondsSinceLastMouseMove > threshold {
                     break
                 }
                 try await Task.sleep(for: .milliseconds(10))
@@ -536,25 +507,13 @@ extension MenuBarItemManager {
     /// - Parameter timeout: Amount of time to wait before throwing an error.
     func waitForNoModifiersPressed(timeout: Duration? = nil) async throws {
         try await waitWithTask(timeout: timeout) {
-            // Return early if no flags are pressed.
-            if NSEvent.modifierFlags.isEmpty {
-                return
-            }
-
-            var cancellable: AnyCancellable?
-
-            await withCheckedContinuation { continuation in
-                cancellable = Publishers.Merge(
-                    UniversalEventMonitor.publisher(for: .flagsChanged),
-                    RunLoopLocalEventMonitor.publisher(for: .flagsChanged, mode: .eventTracking)
-                )
-                .removeDuplicates()
-                .sink { _ in
-                    if NSEvent.modifierFlags.isEmpty {
-                        cancellable?.cancel()
-                        continuation.resume()
-                    }
-                }
+            // Poll instead of installing event monitors. The monitors were installed
+            // off the main thread, where the run loop based monitor never fires, and
+            // the continuation they resumed couldn't be cancelled, so a missed event
+            // could leave this waiting (and leave the monitors installed) forever.
+            while !NSEvent.modifierFlags.isEmpty {
+                try Task.checkCancellation()
+                try await Task.sleep(for: .milliseconds(10))
             }
         }
     }
@@ -902,6 +861,8 @@ extension MenuBarItemManager {
                     Logger.itemManager.debug("Menu bar item frame for \(item.logString) has changed to \(NSStringFromRect(currentFrame))")
                     return
                 }
+                // Avoid spinning on the window server while waiting.
+                try await Task.sleep(for: .milliseconds(1))
             }
         }
         do {
@@ -1153,6 +1114,8 @@ extension MenuBarItemManager {
                 if try await self.itemHasCorrectPosition(item: item, for: destination) {
                     return
                 }
+                // Avoid spinning on the window server while waiting.
+                try await Task.sleep(for: .milliseconds(10))
             }
         }
         do {

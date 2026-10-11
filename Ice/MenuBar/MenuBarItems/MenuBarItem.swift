@@ -175,7 +175,7 @@ extension MenuBarItem {
         var option: Bridging.WindowListOption = [.menuBarItems]
 
         var titlePredicate: (MenuBarItem) -> Bool = { _ in true }
-        var boundsPredicate: (CGWindowID) -> Bool = { _ in true }
+        var boundsPredicate: (MenuBarItem) -> Bool = { _ in true }
 
         if onScreenOnly {
             option.insert(.onScreen)
@@ -186,19 +186,18 @@ extension MenuBarItem {
         }
         if let display {
             let displayBounds = CGDisplayBounds(display)
-            boundsPredicate = { windowID in
-                guard let windowFrame = Bridging.getWindowFrame(for: windowID) else {
-                    return false
-                }
-                return displayBounds.intersects(windowFrame)
+            boundsPredicate = { item in
+                displayBounds.intersects(item.frame)
             }
         }
 
-        return Bridging.getWindowList(option: option).lazy
-            .filter(boundsPredicate)
-            .compactMap { windowID in
-                MenuBarItem(windowID: windowID)
+        // Retrieve the window descriptions in a single call to the window server,
+        // rather than one call per window, as this is called on hot paths.
+        return WindowInfo.getWindows(for: Bridging.getWindowList(option: option)).lazy
+            .compactMap { window in
+                MenuBarItem(itemWindow: window)
             }
+            .filter(boundsPredicate)
             .filter(titlePredicate)
             .sortedByOrderInMenuBar()
     }

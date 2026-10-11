@@ -105,7 +105,12 @@ final class AppState: ObservableObject {
             guard let self else {
                 return
             }
-            isActiveSpaceFullscreen = Bridging.isSpaceFullscreen(Bridging.activeSpaceID)
+            // Only assign when the value changes, as each assignment invalidates
+            // every view that observes the app state.
+            let isFullscreen = Bridging.isSpaceFullscreen(Bridging.activeSpaceID)
+            if isActiveSpaceFullscreen != isFullscreen {
+                isActiveSpaceFullscreen = isFullscreen
+            }
         }
         .store(in: &c)
 
@@ -115,7 +120,10 @@ final class AppState: ObservableObject {
                 guard let self else {
                     return
                 }
-                navigationState.isAppFrontmost = frontmostApplication == .current
+                let isAppFrontmost = frontmostApplication == .current
+                if navigationState.isAppFrontmost != isAppFrontmost {
+                    navigationState.isAppFrontmost = isAppFrontmost
+                }
             }
             .store(in: &c)
 
@@ -138,10 +146,14 @@ final class AppState: ObservableObject {
             navigationState.$isSettingsPresented
         )
         .debounce(for: 0.1, scheduler: DispatchQueue.main)
-        .sink { [weak self] shouldUpdate in
+        .sink { [weak self] _ in
+            // Ice also becomes frontmost to hide the application menus, which
+            // can happen often. Only capture the item images, which is expensive,
+            // when the settings window that displays them is visible.
             guard
                 let self,
-                shouldUpdate
+                navigationState.isAppFrontmost,
+                navigationState.isSettingsPresented
             else {
                 return
             }

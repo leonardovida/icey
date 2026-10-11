@@ -187,10 +187,13 @@ extension Bridging {
         } else {
             getWindowList()
         }
-        return if option.contains(.activeSpace) {
-            list.filter(isWindowOnActiveSpace)
-        } else {
-            list
+        guard option.contains(.activeSpace) else {
+            return list
+        }
+        // Look up the active space once, instead of once for every window.
+        let activeSpaceID = activeSpaceID
+        return list.filter { windowID in
+            isWindow(windowID, onSpace: activeSpaceID)
         }
     }
 }
@@ -233,7 +236,17 @@ extension Bridging {
     ///
     /// - Parameter windowID: An identifier for a window.
     static func isWindowOnActiveSpace(_ windowID: CGWindowID) -> Bool {
-        getSpaceList(for: windowID, option: .allSpaces).contains(activeSpaceID)
+        isWindow(windowID, onSpace: activeSpaceID)
+    }
+
+    /// Returns a Boolean value that indicates whether the window with the
+    /// given identifier is on the space with the given identifier.
+    ///
+    /// - Parameters:
+    ///   - windowID: An identifier for a window.
+    ///   - spaceID: An identifier for a space.
+    private static func isWindow(_ windowID: CGWindowID, onSpace spaceID: CGSSpaceID) -> Bool {
+        getSpaceList(for: windowID, option: .allSpaces).contains(spaceID)
     }
 
     /// Returns a Boolean value that indicates whether the space with the given

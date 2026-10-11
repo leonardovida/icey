@@ -95,7 +95,9 @@ final class MenuBarAppearanceManager: ObservableObject {
                 }
                 // The overlay panels may not have been configured yet. Since some of the
                 // properties on the manager might call for them, try to configure now.
-                if overlayPanels.isEmpty {
+                // Also remove them once they are no longer needed, as each panel runs
+                // its own timers, event monitors, and Accessibility polling.
+                if overlayPanels.isEmpty || !needsOverlayPanels(for: configuration) {
                     configureOverlayPanels(with: configuration)
                 }
             }
@@ -121,6 +123,20 @@ final class MenuBarAppearanceManager: ObservableObject {
             return true
         }
         return false
+    }
+
+    /// Returns a Boolean value that indicates whether a set of overlay panels may
+    /// be needed for the given configuration, in either light or dark mode.
+    func mayNeedOverlayPanels(for configuration: MenuBarAppearanceConfigurationV2) -> Bool {
+        if configuration.shapeKind != .none {
+            return true
+        }
+        let partials = if configuration.isDynamic {
+            [configuration.lightModeConfiguration, configuration.darkModeConfiguration]
+        } else {
+            [configuration.staticConfiguration]
+        }
+        return partials.contains { $0.hasShadow || $0.hasBorder || $0.tintKind != .none }
     }
 
     /// Configures the manager's overlay panels, if required by the given configuration.

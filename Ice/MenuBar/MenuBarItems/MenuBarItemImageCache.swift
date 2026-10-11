@@ -42,7 +42,7 @@ final class MenuBarItemImageCache: ObservableObject {
         if let appState {
             Publishers.Merge3(
                 // Update every 3 seconds at minimum.
-                Timer.publish(every: 3, on: .main, in: .default).autoconnect().mapToVoid(),
+                Timer.publish(every: 3, tolerance: 0.5, on: .main, in: .default).autoconnect().mapToVoid(),
 
                 // Update when the active space or screen parameters change.
                 Publishers.Merge(
@@ -58,8 +58,21 @@ final class MenuBarItemImageCache: ObservableObject {
                 )
             )
             .throttle(for: 0.5, scheduler: DispatchQueue.main, latest: false)
-            .sink { [weak self] in
-                guard let self else {
+            .sink { [weak self, weak appState] in
+                guard
+                    let self,
+                    let appState
+                else {
+                    return
+                }
+                // The images are only displayed in the Ice Bar, the search panel, and
+                // the settings window. Don't do any work while none of them are shown.
+                let navigationState = appState.navigationState
+                guard
+                    navigationState.isIceBarPresented ||
+                    navigationState.isSearchPresented ||
+                    navigationState.isSettingsPresented
+                else {
                     return
                 }
                 Task.detached {
@@ -213,7 +226,17 @@ final class MenuBarItemImageCache: ObservableObject {
         }
 
         await MainActor.run { [newImages] in
-            images.merge(newImages) { (_, new) in new }
+            // Drop the images of items that no longer exist, so that the cache
+            // doesn't grow without bound as apps come and go. Skip this if the
+            // item cache was cleared, to avoid dropping every image at once.
+            let currentInfos = Set(appState.itemManager.itemCache.allItems.map(\.info))
+            if currentInfos.isEmpty {
+                images.merge(newImages) { (_, new) in new }
+            } else {
+                images = images
+                    .filter { currentInfos.contains($0.key) }
+                    .merging(newImages) { (_, new) in new }
+            }
         }
 
         self.screen = screen

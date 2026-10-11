@@ -219,10 +219,14 @@ final class IceBarPanel: NSPanel {
         // requested for, with `isIceBarPresented` already false, so the image
         // cache never filled it and nothing closed it again. That empty bar is
         // the leftover Ice Bar seen on the other display.
-        guard
-            presentationID == self.presentationID,
-            NSScreen.screens.contains(screen)
-        else {
+        guard presentationID == self.presentationID else {
+            return
+        }
+        guard NSScreen.screens.contains(screen) else {
+            // Close rather than leave `currentSection` set on a panel that is
+            // not on screen, which `isAwaitingDisplay` would report as still
+            // about to appear, holding off every rehide check.
+            hide()
             return
         }
 

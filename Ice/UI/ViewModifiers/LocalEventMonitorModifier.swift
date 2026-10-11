@@ -22,8 +22,9 @@ private struct LocalEventMonitorModifier: ViewModifier {
     @StateObject private var state: LocalEventMonitorModifierState
 
     init(mask: NSEvent.EventTypeMask, action: @escaping (NSEvent) -> NSEvent?) {
-        let state = LocalEventMonitorModifierState(mask: mask, action: action)
-        self._state = StateObject(wrappedValue: state)
+        // Pass the initializer directly, so that the autoclosure only creates (and
+        // starts) a monitor the first time the view appears, not on every update.
+        self._state = StateObject(wrappedValue: LocalEventMonitorModifierState(mask: mask, action: action))
     }
 
     func body(content: Content) -> some View {

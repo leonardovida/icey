@@ -15,6 +15,15 @@ final class EventManager {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
+    /// A Boolean value that indicates whether the monitors should be running.
+    private var isRunning = false
+
+    /// The task that performs the delayed show-on-hover check, if one is pending.
+    private var showOnHoverTask: Task<Void, Never>?
+
+    /// An identifier for the current show-on-hover task.
+    private var showOnHoverTaskID = UUID()
+
     // MARK: Monitors
 
     /// Monitor for mouse down events.
@@ -89,8 +98,8 @@ final class EventManager {
 
     /// Sets up the manager.
     func performSetup() {
-        startAll()
         configureCancellables()
+        startAll()
     }
 
     /// Configures the internal observers for the manager.
@@ -98,6 +107,21 @@ final class EventManager {
         var c = Set<AnyCancellable>()
 
         if let appState {
+            // Only run the monitors that the current settings need. Global monitors for
+            // high-frequency events (mouse moved, dragged, scroll wheel) wake the app for
+            // every event the user produces, even when the handlers return immediately.
+            Publishers.Merge4(
+                appState.settingsManager.generalSettingsManager.$showOnHover.mapToVoid(),
+                appState.settingsManager.generalSettingsManager.$showOnScroll.mapToVoid(),
+                appState.settingsManager.advancedSettingsManager.$showAllSectionsOnUserDrag.mapToVoid(),
+                appState.appearanceManager.$configuration.mapToVoid()
+            )
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.updateMonitors()
+            }
+            .store(in: &c)
+
             if let hiddenSection = appState.menuBarManager.section(withName: .hidden) {
                 // In fullscreen mode, the menu bar slides down from the top on hover. Observe
                 // the frame of the hidden section's control item, which we know will always be
@@ -124,18 +148,59 @@ final class EventManager {
 
     // MARK: Start/Stop
 
-    /// Starts all monitors.
-    func startAll() {
-        for monitor in allMonitors {
-            monitor.start()
+    /// Returns a Boolean value that indicates whether the given monitor is
+    /// needed by the current settings.
+    private func isMonitorNeeded(_ monitor: UniversalEventMonitor) -> Bool {
+        guard let appState else {
+            return false
         }
+        let generalSettings = appState.settingsManager.generalSettingsManager
+        let advancedSettings = appState.settingsManager.advancedSettingsManager
+        if monitor === mouseMovedMonitor {
+            return generalSettings.showOnHover
+        }
+        if monitor === scrollWheelMonitor {
+            return generalSettings.showOnScroll
+        }
+        if monitor === mouseDraggedMonitor || monitor === mouseUpMonitor {
+            // Dragging is used to show all sections and to fade out the overlay panels.
+            return advancedSettings.showAllSectionsOnUserDrag ||
+                appState.appearanceManager.mayNeedOverlayPanels(for: appState.appearanceManager.configuration)
+        }
+        return true
+    }
+
+    /// Starts or stops each monitor according to the current settings.
+    private func updateMonitors() {
+        for monitor in allMonitors {
+            if isRunning && isMonitorNeeded(monitor) {
+                monitor.start()
+            } else {
+                monitor.stop()
+            }
+        }
+        if !isRunning || !isMonitorNeeded(mouseUpMonitor) {
+            // The mouse up event that ends a drag can't be received while the
+            // monitor is stopped, so make sure the overlay panels don't stay faded.
+            appState?.appearanceManager.setIsDraggingMenuBarItem(false)
+        }
+        if !isRunning || !isMonitorNeeded(mouseMovedMonitor) {
+            showOnHoverTask?.cancel()
+            showOnHoverTask = nil
+            showOnHoverTaskID = UUID()
+        }
+    }
+
+    /// Starts all monitors needed by the current settings.
+    func startAll() {
+        isRunning = true
+        updateMonitors()
     }
 
     /// Stops all monitors.
     func stopAll() {
-        for monitor in allMonitors {
-            monitor.stop()
-        }
+        isRunning = false
+        updateMonitors()
     }
 }
 
@@ -363,31 +428,73 @@ extension EventManager {
             return
         }
 
-        let delay = appState.settingsManager.advancedSettingsManager.showOnHoverDelay
+        // Mouse moved events arrive at the pointer's polling rate. Only keep a single
+        // check pending at a time, rather than spawning a task for every event.
+        guard showOnHoverTask == nil else {
+            return
+        }
 
-        Task {
-            if hiddenSection.isHidden {
-                guard self.isMouseInsideEmptyMenuBarSpace else {
+        let isHidden = hiddenSection.isHidden
+
+        // Perform the cheap geometric checks up front. The checks that query the
+        // window server and the Accessibility API only run once the delay ends.
+        if isHidden {
+            guard
+                isMouseInsideMenuBar,
+                !isMouseInsideNotch
+            else {
+                return
+            }
+        } else {
+            guard
+                !isMouseInsideMenuBar,
+                !isMouseInsideIceBar
+            else {
+                return
+            }
+        }
+
+        let delay = appState.settingsManager.advancedSettingsManager.showOnHoverDelay
+        let taskID = UUID()
+
+        showOnHoverTaskID = taskID
+        showOnHoverTask = Task { [weak self, weak appState] in
+            defer {
+                if self?.showOnHoverTaskID == taskID {
+                    self?.showOnHoverTask = nil
+                }
+            }
+            // Make sure the mouse starts out inside an empty menu bar space, so that
+            // the delay is measured from when it entered the space. If it doesn't,
+            // wait briefly before allowing another check, as the check is expensive
+            // and the mouse is likely still moving over the application menu or items.
+            if isHidden {
+                guard self?.isMouseInsideEmptyMenuBarSpace == true else {
+                    try? await Task.sleep(for: .milliseconds(50))
                     return
                 }
-                try? await Task.sleep(for: .seconds(delay))
-                // Make sure the mouse is still inside.
-                guard self.isMouseInsideEmptyMenuBarSpace else {
+            }
+            try? await Task.sleep(for: .seconds(delay))
+            guard
+                let self,
+                let appState,
+                !Task.isCancelled,
+                !appState.isShowOnHoverPrevented,
+                hiddenSection.isHidden == isHidden
+            else {
+                return
+            }
+            if isHidden {
+                // Make sure the mouse is inside an empty menu bar space.
+                guard isMouseInsideEmptyMenuBarSpace else {
                     return
                 }
                 hiddenSection.show()
             } else {
-                guard
-                    !self.isMouseInsideMenuBar,
-                    !self.isMouseInsideIceBar
-                else {
-                    return
-                }
-                try? await Task.sleep(for: .seconds(delay))
                 // Make sure the mouse is still outside.
                 guard
-                    !self.isMouseInsideMenuBar,
-                    !self.isMouseInsideIceBar
+                    !isMouseInsideMenuBar,
+                    !isMouseInsideIceBar
                 else {
                     return
                 }
@@ -431,6 +538,10 @@ extension EventManager {
 // MARK: - Helpers
 
 extension EventManager {
+    /// An upper bound for the height of the menu bar, used to skip expensive
+    /// checks when the mouse is clearly outside of the menu bar.
+    private static let maxMenuBarHeight: CGFloat = 64
+
     /// Returns the best screen to use for event manager calculations.
     var bestScreen: NSScreen? {
         guard let appState else {
@@ -453,6 +564,15 @@ extension EventManager {
             return false
         }
         if appState.menuBarManager.isMenuBarHiddenBySystem || appState.isActiveSpaceFullscreen {
+            // The menu bar can only ever be at the top of the screen. Avoid copying the
+            // window list (which is expensive, and can happen for every mouse event) if
+            // the mouse is clearly outside of that area.
+            guard
+                let mouseLocationAppKit = MouseCursor.locationAppKit,
+                screen.frame.maxY - mouseLocationAppKit.y <= Self.maxMenuBarHeight
+            else {
+                return false
+            }
             if
                 let mouseLocation = MouseCursor.locationCoreGraphics,
                 let menuBarWindow = WindowInfo.getMenuBarWindow(for: screen.displayID)
@@ -513,10 +633,12 @@ extension EventManager {
     /// A Boolean value that indicates whether the mouse pointer is within
     /// the bounds of an empty space in the menu bar.
     var isMouseInsideEmptyMenuBarSpace: Bool {
+        // Perform the cheap geometric checks before the ones that query the
+        // window server and the Accessibility API.
         isMouseInsideMenuBar &&
+        !isMouseInsideNotch &&
         !isMouseInsideApplicationMenu &&
-        !isMouseInsideMenuBarItem &&
-        !isMouseInsideNotch
+        !isMouseInsideMenuBarItem
     }
 
     /// A Boolean value that indicates whether the mouse pointer is within

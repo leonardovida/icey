@@ -55,6 +55,10 @@ final class MenuBarManager: ObservableObject {
 
     /// Performs the initial setup of the menu bar manager.
     func performSetup() {
+        // Accessibility calls block the calling thread until the target app responds,
+        // for up to 6 seconds by default. Ice makes these calls on the main thread,
+        // so an unresponsive frontmost app would otherwise stall Ice repeatedly.
+        UIElement.globalMessagingTimeout = 1
         initializeSections()
         configureCancellables()
         iceBarPanel.performSetup()
@@ -141,7 +145,7 @@ final class MenuBarManager: ObservableObject {
             }
             .store(in: &c)
 
-        Timer.publish(every: 5, on: .main, in: .default)
+        Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.updateAverageColorInfo()

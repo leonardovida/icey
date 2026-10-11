@@ -117,6 +117,25 @@ struct WindowInfo {
         }
         self.init(dictionary: dictionary)
     }
+
+    /// Returns the windows with the given window identifiers.
+    ///
+    /// This retrieves the descriptions of all the windows in a single call to
+    /// the window server, rather than one call per window. Identifiers that do
+    /// not correspond to a valid window are omitted from the result.
+    static func getWindows(for windowIDs: [CGWindowID]) -> [WindowInfo] {
+        guard !windowIDs.isEmpty else {
+            return []
+        }
+        var pointers = windowIDs.map { UnsafeRawPointer(bitPattern: Int($0)) }
+        guard
+            let array = CFArrayCreate(kCFAllocatorDefault, &pointers, pointers.count, nil),
+            let list = CGWindowListCreateDescriptionFromArray(array) as? [CFDictionary]
+        else {
+            return []
+        }
+        return list.compactMap { WindowInfo(dictionary: $0) }
+    }
 }
 
 // MARK: - WindowList Operations

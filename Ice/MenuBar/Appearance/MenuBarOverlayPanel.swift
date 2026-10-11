@@ -141,28 +141,28 @@ final class MenuBarOverlayPanel: NSPanel {
         .sink { [weak self] _ in
             guard
                 let self,
-                let appState
+                let appState,
+                needsApplicationMenuFrame
             else {
                 return
             }
             let displayID = owningScreen.displayID
             updateTaskContext.setTask(for: .applicationMenuFrame, timeout: .seconds(10)) {
-                var hasDoneInitialUpdate = false
+                // Apps can take some time to populate their menus after they launch, so
+                // keep checking for a while. Each check makes several Accessibility calls
+                // on the main thread, so back off instead of polling in a tight loop,
+                // which is especially costly when the frame can't be retrieved.
+                var interval = Duration.milliseconds(10)
                 while true {
                     try Task.checkCancellation()
-                    guard
+                    if
                         let latestFrame = appState.menuBarManager.getApplicationMenuFrame(for: displayID),
                         latestFrame != self.applicationMenuFrame
-                    else {
-                        if hasDoneInitialUpdate {
-                            try await Task.sleep(for: .seconds(1))
-                        } else {
-                            try await Task.sleep(for: .milliseconds(1))
-                        }
-                        continue
+                    {
+                        self.insertUpdateFlag(.applicationMenuFrame)
                     }
-                    self.insertUpdateFlag(.applicationMenuFrame)
-                    hasDoneInitialUpdate = true
+                    try await Task.sleep(for: interval)
+                    interval = min(interval * 2, .seconds(1))
                 }
             }
             Task {
@@ -185,23 +185,38 @@ final class MenuBarOverlayPanel: NSPanel {
         )
         .debounce(for: 0.05, scheduler: DispatchQueue.main)
         .sink { [weak self] in
-            self?.insertUpdateFlag(.applicationMenuFrame)
+            guard let self, needsApplicationMenuFrame else {
+                return
+            }
+            insertUpdateFlag(.applicationMenuFrame)
         }
         .store(in: &c)
 
         // Continually update the desktop wallpaper. Ideally, we would set up an observer
         // for a wallpaper change notification, but macOS doesn't post one anymore.
-        Timer.publish(every: 5, on: .main, in: .default)
+        Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
             .autoconnect()
             .sink { [weak self] _ in
-                self?.insertUpdateFlag(.desktopWallpaper)
+                guard
+                    let self,
+                    // Only shapes other than `none` draw the wallpaper. Skip the update,
+                    // which copies the window list and captures the wallpaper, otherwise.
+                    let appState,
+                    appState.appearanceManager.configuration.shapeKind != .none
+                else {
+                    return
+                }
+                insertUpdateFlag(.desktopWallpaper)
             }
             .store(in: &c)
 
-        Timer.publish(every: 10, on: .main, in: .default)
+        Timer.publish(every: 10, tolerance: 2, on: .main, in: .default)
             .autoconnect()
             .sink { [weak self] _ in
-                self?.insertUpdateFlag(.applicationMenuFrame)
+                guard let self, needsApplicationMenuFrame else {
+                    return
+                }
+                insertUpdateFlag(.applicationMenuFrame)
             }
             .store(in: &c)
 
@@ -241,9 +256,30 @@ final class MenuBarOverlayPanel: NSPanel {
                     self?.alphaValue = isHidden ? 0 : 1
                 }
                 .store(in: &c)
+
+            // The desktop wallpaper and application menu frame are only needed for
+            // some shapes. Update them when the shape changes. Receive on the main
+            // queue, as the publisher emits before the new configuration is stored.
+            appState.appearanceManager.$configuration
+                .map(\.shapeKind)
+                .removeDuplicates()
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    guard let self else {
+                        return
+                    }
+                    updateFlags.formUnion([.applicationMenuFrame, .desktopWallpaper])
+                }
+                .store(in: &c)
         }
 
         cancellables = c
+    }
+
+    /// A Boolean value that indicates whether the panel needs the frame of the
+    /// application menu, which is only used to draw the split shape.
+    private var needsApplicationMenuFrame: Bool {
+        appState?.appearanceManager.configuration.shapeKind == .split
     }
 
     /// Inserts the given update flag into the panel's current list of update flags.
@@ -282,7 +318,8 @@ final class MenuBarOverlayPanel: NSPanel {
     private func updateApplicationMenuFrame(for display: CGDirectDisplayID) {
         guard
             let menuBarManager = appState?.menuBarManager,
-            !menuBarManager.isMenuBarHiddenBySystem
+            !menuBarManager.isMenuBarHiddenBySystem,
+            needsApplicationMenuFrame
         else {
             return
         }
@@ -292,6 +329,21 @@ final class MenuBarOverlayPanel: NSPanel {
     /// Stores the area of the desktop wallpaper that is under the menu bar
     /// of the given display.
     private func updateDesktopWallpaper(for display: CGDirectDisplayID, with windows: [WindowInfo]) {
+        // The wallpaper is only drawn for the full and split shapes. Capturing it is
+        // expensive (and leaks memory in the window server), so skip it otherwise.
+        guard
+            let appState,
+            appState.appearanceManager.configuration.shapeKind != .none
+        else {
+            if desktopWallpaper != nil {
+                desktopWallpaper = nil
+            }
+            return
+        }
+        // Don't capture while the display is asleep.
+        guard CGDisplayIsAsleep(display) == 0 else {
+            return
+        }
         guard
             let wallpaperWindow = WindowInfo.getWallpaperWindow(from: windows, for: display),
             let menuBarWindow = WindowInfo.getMenuBarWindow(from: windows, for: display)

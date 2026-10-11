@@ -166,6 +166,16 @@ struct PermissionsView: View {
                 }
                 .allowsHitTesting(!permission.hasPermission)
 
+                if !permission.hasPermission {
+                    // macOS ties the permission to the app's signature. After an update
+                    // of an ad hoc signed build, the old entry stays enabled in System
+                    // Settings but no longer applies to the new copy of the app.
+                    Text("Already enabled in System Settings? Remove Ice from the list, then add it again.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
                 if !permission.isRequired {
                     CalloutBox("Ice can work in a limited mode without this permission.") {
                         Image(systemName: "checkmark.shield")

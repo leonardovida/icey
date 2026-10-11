@@ -54,7 +54,7 @@ Icey uses Ice's bundle identifier and settings, so switching keeps your sections
 
 - Your menu bar appearance settings reset once when you move from Ice 0.11.12. See [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 - macOS asks for Accessibility and Screen Recording again, because Icey has a different signature than Ice.
-- Turn off "Automatically check for updates" in Settings > About. The built-in updater still uses Ice's update feed. Get new versions from [Releases](https://github.com/leonardovida/icey/releases).
+- Icey updates itself from [Icey's GitHub releases](https://github.com/leonardovida/icey/releases), never from Ice's update feed. Turn on "Automatically check for updates" in Settings > About to get new versions as they ship.
 
 ### Build from source
 

@@ -123,6 +123,17 @@ Contributions are welcome, including pull requests written by AI agents.
 4. If you port work from an upstream pull request, say so and keep its authors' credit with `Co-authored-by:` trailers.
 5. Say that an AI agent wrote or helped write the change, and which one.
 
+## Releasing (maintainers only)
+
+Installed copies update themselves from `https://github.com/leonardovida/icey/releases/latest/download/appcast.xml`, so every release needs:
+
+1. A higher `CURRENT_PROJECT_VERSION` than the last release (Sparkle compares it), and `MARKETING_VERSION` set to the tag without the `v`.
+2. A Release build signed with the Developer ID, with Sparkle's nested helpers re-signed, notarized and stapled. Attach both the zip and the DMG.
+3. `Scripts/make-appcast.sh <zip> <tag>`. Attach its `appcast.xml` to the same release. It signs with the maintainer's EdDSA key, so only the maintainer can run it.
+4. Release notes in `release-notes/<tag>.md`, a CHANGELOG.md entry, and BREAKING_CHANGES.md rows for anything users must act on.
+
+Never mark a release as a prerelease if users should get it: `releases/latest` skips prereleases.
+
 ## Writing docs and release notes
 
 - Write plainly, for users. Say what changed and what the user needs to do.

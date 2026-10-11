@@ -15,6 +15,7 @@ Release: [v0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/t
 | On macOS 27, the section divider style, "Hide application menus" and the temporary show interval have no effect, so they are hidden. Items without a bundle identifier can't be moved between sections. | Nothing. Disabled items show a tooltip that says why. |
 | Coming from Ice or a build you made yourself: macOS treats Icey as a new app. | Grant Accessibility and Screen Recording again. If System Settings shows them as enabled but Icey still asks, remove Ice from the list and add it again. |
 | Coming from Icey 0.11.12-icey.1: permissions carry over. | Nothing. |
+| The built-in updater now uses Icey's GitHub releases instead of Ice's update feed. Earlier versions still check Ice's feed, so they never offer this release. | Install this release by hand once. After that, "Automatically check for updates" in Settings > About keeps Icey up to date. |
 
 ## 0.11.12-icey.1
 
@@ -23,7 +24,7 @@ Release: [v0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.
 | Change | What to do |
 |---|---|
 | Icey is signed with a different certificate than Ice, so macOS treats it as a new app. | Grant Accessibility and Screen Recording again. |
-| The built-in updater still uses Ice's update feed, and could replace Icey with an upstream release. | Turn off "Automatically check for updates" in Settings > About. Get updates from [Releases](https://github.com/leonardovida/icey/releases). |
+| The built-in updater still uses Ice's update feed, and could replace Icey with an upstream release. | Turn off "Automatically check for updates" in Settings > About, or upgrade to 0.11.13-dev.2-icey.1 or later, which uses Icey's own feed. |
 | Accessibility reads that take longer than 1 second now fail and are retried later. | Nothing. This keeps a hung app from freezing Icey. |
 
 ## Applies to every version

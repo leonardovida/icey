@@ -14,8 +14,8 @@ Also check [BREAKING_CHANGES.md](BREAKING_CHANGES.md) for changes between versio
 macOS ties Accessibility and Screen Recording to the app's signature. After you switch from Ice, or install a build you made yourself, System Settings can show the old entry as enabled although it no longer applies. Turning the switch off and on doesn't help.
 
 1. Open System Settings > Privacy & Security > Accessibility (or Screen Recording).
-2. Select Ice and click the minus button to remove it.
-3. Click the plus button and add `Ice.app` from Applications again.
+2. Select Ice or Icey and click the minus button to remove it.
+3. Click the plus button and add `Icey.app` (or `Ice.app` for releases before the rename) from Applications again.
 
 Releases from GitHub are all signed with the same Developer ID, so this only needs doing once.
 

@@ -4,7 +4,7 @@
 
 This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (jordanbaird/Ice) to their status in Icey. If you hit one of these in Ice, [install Icey](../README.md#install) instead. Icey replaces Ice and keeps your settings.
 
-Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
+Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it. Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
 ## Fixed in Icey (139)
 

@@ -201,7 +201,15 @@ final class MenuBarManager: ObservableObject {
                                     items.trimPrefix { $0.bounds.maxX <= alwaysHiddenControlItem.bounds.minX }
                                 }
                             }
-                        } else {
+                        } else if
+                            // Only leave out the hidden items while their section is
+                            // hidden. Without the always-hidden section, this code runs
+                            // when the hidden section is shown, so the items left out
+                            // were the very ones now covering the application menus,
+                            // and the menus were never hidden (jordanbaird/Ice#434).
+                            let hiddenSection = self.section(withName: .hidden),
+                            hiddenSection.controlItem.state == .hideSection
+                        {
                             if let hiddenControlItem = items.firstIndex(matching: .hiddenControlItem).map({ items.remove(at: $0) }) {
                                 items.trimPrefix { $0.bounds.maxX <= hiddenControlItem.bounds.minX }
                             }

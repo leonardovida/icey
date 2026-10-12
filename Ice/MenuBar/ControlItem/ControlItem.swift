@@ -525,6 +525,7 @@ final class ControlItem {
             keyEquivalent: ","
         )
         settingsItem.keyEquivalentModifierMask = .command
+        settingsItem.setMenuSymbol("gearshape")
         menu.addItem(settingsItem)
 
         menu.addItem(.separator())
@@ -542,6 +543,7 @@ final class ControlItem {
             searchItem.keyEquivalentModifierMask = keyCombination.modifiers.nsEventFlags
         }
         searchItem.target = self
+        searchItem.setMenuSymbol("magnifyingglass")
         menu.addItem(searchItem)
 
         menu.addItem(.separator())
@@ -568,6 +570,7 @@ final class ControlItem {
             }
             item.target = self
             item.representedObject = section
+            item.setMenuSymbol(section.isHidden ? "eye" : "eye.slash")
             menu.addItem(item)
         }
 
@@ -579,6 +582,7 @@ final class ControlItem {
             keyEquivalent: ""
         )
         checkForUpdatesItem.target = self
+        checkForUpdatesItem.setMenuSymbol("arrow.down.circle")
         menu.addItem(checkForUpdatesItem)
 
         menu.addItem(.separator())
@@ -589,6 +593,7 @@ final class ControlItem {
             keyEquivalent: "q"
         )
         quitItem.keyEquivalentModifierMask = .command
+        quitItem.setMenuSymbol("power")
         menu.addItem(quitItem)
 
         return menu
@@ -713,4 +718,19 @@ extension ControlItemDefaults.Key<Bool> {
 
     /// String key: "NSStatusItem VisibleCC autosaveName"
     static let visibleCC = Self(rawValue: "VisibleCC")
+}
+
+// MARK: - NSMenuItem
+
+private extension NSMenuItem {
+    /// Shows an SF Symbol next to the item's title on macOS 26 and later.
+    ///
+    /// macOS 26 menus show icons next to their items. Earlier versions show
+    /// text only, so the menu stays unchanged there.
+    func setMenuSymbol(_ name: String) {
+        guard #available(macOS 26.0, *) else {
+            return
+        }
+        image = NSImage(systemSymbolName: name, accessibilityDescription: nil)
+    }
 }

@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="Ice/Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" width=200 height=200>
+    <img src="Resources/AppIcon/AppIcon-256.png" width=200 height=200>
     <h1>Icey</h1>
     <p><strong>The maintained replacement for <a href="https://github.com/jordanbaird/Ice">Ice</a>, the free and open-source macOS menu bar manager.</strong></p>
     <p>Works on macOS 14 Sonoma, 15 Sequoia, 26 Tahoe and 27. Faster, lighter, and with the bugs fixed that Ice left open.</p>

@@ -47,13 +47,14 @@ struct PermissionsView: View {
     private var headerView: some View {
         Label {
             Text("Permissions")
-                .font(.system(size: 40, weight: .medium))
+                .font(.largeTitle.weight(.semibold))
         } icon: {
             if let nsImage = NSImage(named: NSImage.applicationIconName) {
                 Image(nsImage: nsImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 85, height: 85)
+                    .frame(width: 64, height: 64)
+                    .accessibilityHidden(true)
             }
         }
     }
@@ -61,16 +62,15 @@ struct PermissionsView: View {
     @ViewBuilder
     private var explanationBox: some View {
         IceSection {
-            VStack {
+            VStack(spacing: 6) {
                 Text("Icey needs your permission to manage the menu bar.")
-                    .fontWeight(.medium)
-                Text("Absolutely no personal information is collected or stored.")
-                    .bold()
-                    .foregroundStyle(Color(red: 0.5, green: 0.75, blue: 1))
+                    .font(.title3)
+                Label("No personal information is collected or stored.", systemImage: "lock.shield")
+                    .foregroundStyle(.secondary)
             }
             .padding()
+            .frame(maxWidth: .infinity)
         }
-        .font(.title3)
     }
 
     @ViewBuilder
@@ -87,7 +87,9 @@ struct PermissionsView: View {
     private var footerView: some View {
         HStack {
             quitButton
+                .keyboardShortcut(.cancelAction)
             continueButton
+                .keyboardShortcut(.defaultAction)
         }
         .controlSize(.large)
     }
@@ -131,40 +133,34 @@ struct PermissionsView: View {
         IceSection {
             VStack(spacing: 12) {
                 Text(permission.title)
-                    .font(.title.weight(.medium))
-                    .underline()
+                    .font(.title2.weight(.semibold))
+                    .accessibilityAddTraits(.isHeader)
 
-                VStack(spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Icey needs this to:")
-                        .font(.title3)
-                        .bold()
+                        .font(.headline)
 
-                    VStack(alignment: .leading) {
-                        ForEach(permission.details, id: \.self) { detail in
-                            HStack {
-                                Text("•").bold()
-                                Text(detail).fontWeight(.medium)
-                            }
+                    ForEach(permission.details, id: \.self) { detail in
+                        Label(detail, systemImage: "checkmark")
+                            .labelStyle(PermissionDetailLabelStyle())
+                    }
+                }
+
+                if permission.hasPermission {
+                    Label("Permission Granted", systemImage: "checkmark.circle.fill")
+                        .font(.headline)
+                        .foregroundStyle(.green)
+                        .frame(minHeight: 22)
+                } else {
+                    Button("Grant Permission") {
+                        permission.performRequest()
+                        Task {
+                            await permission.waitForPermission()
+                            appState.activate(withPolicy: .regular)
+                            appState.openWindow(.permissions)
                         }
                     }
                 }
-
-                Button {
-                    permission.performRequest()
-                    Task {
-                        await permission.waitForPermission()
-                        appState.activate(withPolicy: .regular)
-                        appState.openWindow(.permissions)
-                    }
-                } label: {
-                    if permission.hasPermission {
-                        Text("Permission Granted")
-                            .foregroundStyle(.green)
-                    } else {
-                        Text("Grant Permission")
-                    }
-                }
-                .allowsHitTesting(!permission.hasPermission)
 
                 if !permission.hasPermission {
                     // macOS ties the permission to the app's signature. After an update
@@ -185,6 +181,18 @@ struct PermissionsView: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+/// Shows a permission detail as a secondary checkmark next to its text.
+private struct PermissionDetailLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            configuration.icon
+                .foregroundStyle(.secondary)
+                .imageScale(.small)
+            configuration.title
         }
     }
 }

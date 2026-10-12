@@ -30,7 +30,8 @@ SITE_URL = "https://leonardovida.github.io/icey"
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "docs" / "issues.json"
 DOCS = ROOT / "docs" / "upstream-issues.md"
-ICONS = ROOT / "Ice" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset"
+# PNG renders of Ice/Resources/AppIcon.icon (exported with Icon Composer's ictool).
+ICONS = ROOT / "Resources" / "AppIcon"
 
 STATUS_ORDER = ["fixed", "partial", "open", "not-a-bug", "feature"]
 
@@ -492,8 +493,8 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(doc)
         (out / "style.css").write_text(CSS.strip() + "\n")
-        for size, name in [(32, "icon_32x32.png"), (64, "icon_32x32@2x.png"), (256, "icon_256x256.png"), (512, "icon_512x512.png")]:
-            shutil.copy(ICONS / name, out / f"icon-{size}.png")
+        for size in (32, 64, 256, 512):
+            shutil.copy(ICONS / f"AppIcon-{size}.png", out / f"icon-{size}.png")
         self.pages.remove("download/")  # a redirect, not content
         today = date.today().isoformat()
         urls = "".join(f"<url><loc>{self.base_url}/{p}</loc><lastmod>{today}</lastmod></url>" for p in self.pages)

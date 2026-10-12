@@ -199,7 +199,7 @@ ol.steps li{margin-bottom:8px}
 details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:600}
 details p{color:var(--muted);margin:8px 0 0}
-.issue{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.issue{scroll-margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
 .issue h3 a{color:var(--fg);text-decoration:none}
 .issue h3 a:hover{text-decoration:underline}
 .issue p{margin:6px 0;color:var(--muted)}
@@ -348,7 +348,7 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
         faq = "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in FAQ)
         by_number = {i["number"]: i for i in fixed}
         top_fixes = "".join(
-            '<li><a href="{}">{}</a></li>'.format(self.href(f"fixes/{n}/"), e(by_number[n]["headline"]))
+            '<li><a href="{}">{}</a></li>'.format(self.href(f"fixes/#issue-{n}"), e(by_number[n]["headline"]))
             for n in HIGHLIGHTED_FIXES
             if n in by_number
         )
@@ -418,13 +418,10 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             return f'<a href="{GH}/releases/tag/{e(tag)}">Icey {e(tag_label(tag))}</a>'
         return "the next Icey release"
 
-    def issue_card(self, i, link=True, heading=True):
+    def issue_card(self, i):
         e = html.escape
         n = i["number"]
-        title = e(i["headline"])
-        if link and i["status"] in ("fixed", "partial"):
-            title = f'<a href="{self.href(f"fixes/{n}/")}">{title}</a>'
-        title = f"<h3>{title}</h3>" if heading else ""
+        title = f'<h3><a href="#issue-{n}">{e(i["headline"])}</a></h3>'
         tags = {
             "fixed": '<span class="tag fixed">Fixed</span>',
             "partial": '<span class="tag partial">Partly fixed</span>',
@@ -476,30 +473,6 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             body,
         )
 
-    def fix_page(self, i):
-        e = html.escape
-        n = i["number"]
-        verb = "Fixed" if i["status"] == "fixed" else "Addressed"
-        if self.released(i.get("fixed_in")):
-            get_it = ("Ice is no longer maintained, so this won't be fixed in Ice. Icey is the maintained replacement: "
-                      "it installs over Ice and keeps your settings, sections and hotkeys.")
-        else:
-            get_it = (f'This fix ships in the next Icey release. To be notified, watch <a href="{GH}">Icey on GitHub</a> '
-                      'and choose "Releases only". Icey installs over Ice and keeps your settings, sections and hotkeys.')
-        body = f"""<section style="padding-top:40px">
-<p class="small"><a href="{self.href('fixes/')}">Ice bugs fixed in Icey</a></p>
-<h1 style="font-size:34px">{e(i['headline'])}</h1>
-<p>Reported in Ice as <a href="{UPSTREAM}/issues/{n}">jordanbaird/Ice#{n}</a>. {verb} in {self.fixed_in_html(i)}.</p>
-{self.issue_card(i, link=False, heading=False)}
-<h2>How to get the fix</h2>
-<p>{get_it}</p>
-{self.download_block()}
-</section>"""
-        description = f"{i['symptom']} {i['fix']}"
-        if len(description) > 300:
-            description = description[:297].rsplit(" ", 1)[0] + "..."
-        return self.page(f"fixes/{n}/", f"{i['headline']} (Ice #{n}): fixed in Icey", description, body)
-
     def download_page(self):
         e = html.escape
         url = e(self.download_url())
@@ -514,7 +487,6 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             shutil.rmtree(out)
         out.mkdir(parents=True)
         files = [self.index(), self.fixes_index(), self.download_page()]
-        files += [self.fix_page(i) for i in self.data["issues"] if i["status"] in ("fixed", "partial")]
         for path, doc in files:
             target = out / path / "index.html" if path else out / "index.html"
             target.parent.mkdir(parents=True, exist_ok=True)

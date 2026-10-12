@@ -154,12 +154,12 @@
     },
     {
       "number": 905,
-      "title": "(no title, Ice Bar crash on macOS 26.4)",
-      "headline": "Ice Bar crashes on macOS 26.4",
+      "title": "(untitled report)",
+      "headline": "Ice crashes at launch with the Ice Bar on macOS 26.4",
       "status": "fixed",
       "fixed_in": "v0.11.13-dev.2-icey.1",
-      "symptom": "Using the Ice Bar on macOS 26.4 crashed Ice.",
-      "fix": "The code that crashed is gone, and similar conversions elsewhere no longer crash on unexpected values.",
+      "symptom": "With the Ice Bar enabled, Ice 0.11.12 crashed at launch or while running on macOS 26.4, on a main-thread check while reading the menu bar's window.",
+      "fix": "Icey doesn't have the Ice 0.11.12 code that crashed.",
       "pr": 5
     },
     {
@@ -204,21 +204,21 @@
     },
     {
       "number": 932,
-      "title": "(no title, update prompt)",
-      "headline": "The update prompt is stuck",
+      "title": "(untitled report)",
+      "headline": "The update dialog doesn't let you click its options",
       "status": "fixed",
       "fixed_in": "v0.11.13-dev.2-icey.1",
-      "symptom": "The update prompt couldn't be answered or closed.",
+      "symptom": "On macOS 26.4.1, none of the options in the update dialog could be clicked.",
       "fix": "The dialog now comes to the front, accepts input, and stays answered.",
       "pr": 5
     },
     {
       "number": 926,
-      "title": "(no title, update prompt)",
-      "headline": "The update prompt can't be dismissed",
+      "title": "(untitled report)",
+      "headline": "The \"Check for updates automatically\" pop-up won't close",
       "status": "fixed",
       "fixed_in": "v0.11.13-dev.2-icey.1",
-      "symptom": "The update prompt couldn't be answered or closed.",
+      "symptom": "Right after opening Ice on macOS 26.3.1, the \"Check for updates automatically\" pop-up stayed open after either option was chosen.",
       "fix": "The dialog now comes to the front, accepts input, and stays answered.",
       "pr": 5
     },
@@ -318,12 +318,12 @@
     },
     {
       "number": 1009,
-      "title": "(no title, macOS 27 layout)",
-      "headline": "Menu Bar Layout doesn't work on macOS 27",
+      "title": "(untitled report)",
+      "headline": "Menu Bar Layout stuck on \"Loading menu bar items\" on macOS 27.2 beta",
       "status": "fixed",
       "fixed_in": "v0.11.13-dev.2-icey.1",
-      "symptom": "On macOS 27, the Menu Bar Layout pane didn't work.",
-      "fix": "Icey includes early macOS 27 support, so the layout editor works again.",
+      "symptom": "On macOS 27.2 beta 3, the Menu Bar Layout pane showed \"Loading menu bar items...\" with a spinner forever.",
+      "fix": "Icey includes early macOS 27 support, so the layout editor loads your items on macOS 27.",
       "note": "Early macOS 27 support. macOS 27.2 betas are untested.",
       "pr": 5
     },

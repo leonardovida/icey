@@ -43,6 +43,10 @@ final class HIDEventManager: ObservableObject {
     /// An identifier for the pending show-on-hover check.
     private var showOnHoverTaskID = UUID()
 
+    /// The last answer to whether a display's menu bar is out of sight in a
+    /// fullscreen space (see `isMenuBarConcealedByFullscreen(on:)`).
+    private var fullscreenConcealment: (displayID: CGDirectDisplayID, checkedAt: ContinuousClock.Instant, isConcealed: Bool)?
+
     /// A Boolean value that indicates whether the manager is enabled.
     private var isEnabled = false {
         didSet {
@@ -65,7 +69,7 @@ final class HIDEventManager: ObservableObject {
         }
         switch event.type {
         case .leftMouseDown:
-            handleShowOnClick(appState: appState, screen: screen)
+            handleShowOnClick(with: event, appState: appState, screen: screen)
             handleSmartRehide(with: event, appState: appState, screen: screen)
         case .rightMouseDown:
             handleSecondaryContextMenu(appState: appState, screen: screen)
@@ -260,16 +264,24 @@ extension HIDEventManager {
 
     // MARK: Handle Show On Click
 
-    private func handleShowOnClick(appState: AppState, screen: NSScreen) {
+    private func handleShowOnClick(with event: NSEvent, appState: AppState, screen: NSScreen) {
         guard
             appState.settings.general.showOnClick,
-            isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen)
+            isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen),
+            // A click while a menu is open is the click that closes it, not
+            // one on the menu bar. Navigating an app's menus showed the hidden
+            // items whenever the menus could not be measured (jordanbaird/Ice#567).
+            !isMenuOpen(on: screen)
         else {
             return
         }
 
+        // The keys held for this click, rather than whatever is held once the
+        // task below runs (see `ModifierFlags.clickModifiers`).
+        let modifiers = event.modifierFlags.clickModifiers
+
         Task {
-            if NSEvent.modifierFlags == .control {
+            if modifiers == .control {
                 handleSecondaryContextMenu(appState: appState, screen: screen)
                 return
             }
@@ -277,7 +289,7 @@ extension HIDEventManager {
             let targetSection: MenuBarSection
 
             if
-                NSEvent.modifierFlags == .option,
+                modifiers == .option,
                 let alwaysHiddenSection = appState.menuBarManager.section(withName: .alwaysHidden),
                 alwaysHiddenSection.isEnabled
             {
@@ -338,19 +350,44 @@ extension HIDEventManager {
                 return
             }
 
-            // Get the window that was clicked.
-            guard
-                let mouseLocation = MouseHelpers.locationCoreGraphics,
-                let windowUnderMouse = WindowInfo.createWindows(option: .onScreen)
-                    .filter({ $0.layer < CGWindowLevelForKey(.cursorWindow) })
-                    .first(where: { $0.bounds.contains(mouseLocation) && $0.title?.isEmpty == false }),
-                let owningApplication = windowUnderMouse.owningApplication
-            else {
+            guard let mouseLocation = MouseHelpers.locationCoreGraphics else {
                 return
             }
 
-            // Note: The Dock is an exception to the following check.
+            // A click inside a menu bar app's popover or a menu, such as on a
+            // switch or a brightness slider, is not a click outside the menu
+            // bar. The search below skips untitled windows, so it found the
+            // window behind the popover, and hiding the items closed the popover
+            // (jordanbaird/Ice#403, #526).
+            if menuBarInterfaceWindows(on: screen).contains(where: { $0.bounds.contains(mouseLocation) }) {
+                return
+            }
+
+            // Get the window that was clicked.
+            let windowsUnderMouse = WindowInfo.createWindows(option: .onScreen).filter { window in
+                window.layer < CGWindowLevelForKey(.cursorWindow) && window.bounds.contains(mouseLocation)
+            }
+            guard
+                let windowIndex = windowsUnderMouse.firstIndex(where: { $0.title?.isEmpty == false }),
+                let owningApplication = windowsUnderMouse[windowIndex].owningApplication
+            else {
+                return
+            }
+            let windowUnderMouse = windowsUnderMouse[windowIndex]
+
+            // Note: The Dock is an exception to the following checks.
             if owningApplication.bundleIdentifier != "com.apple.dock" {
+                // Don't hide the sections for a click in one of the app's menus
+                // or popovers, which sit above normal windows. It is likely the
+                // interface of one of the shown items, which closed as soon as
+                // its item was hidden (jordanbaird/Ice#621).
+                guard !windowsUnderMouse[...windowIndex].contains(where: { window in
+                    window.ownerPID == windowUnderMouse.ownerPID &&
+                    window.layer > CGWindowLevelForKey(.normalWindow)
+                }) else {
+                    return
+                }
+
                 // Only continue if the clicked app is active, and has
                 // a regular activation policy.
                 guard
@@ -747,6 +784,15 @@ extension HIDEventManager {
                 guard isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen) else {
                     return
                 }
+                // While a menu is open, the pointer is moving between menus,
+                // not resting on an empty part of the menu bar. Navigating an
+                // app's menus showed the hidden items whenever the menus could
+                // not be measured (jordanbaird/Ice#567). Wait before allowing
+                // another check, as each one asks the window server.
+                guard !isMenuOpen(on: screen) else {
+                    try await Task.sleep(for: .milliseconds(250))
+                    return
+                }
                 recordEmptyMenuBarPoint(on: screen)
                 hiddenSection.show()
             }
@@ -767,6 +813,14 @@ extension HIDEventManager {
                     !isMouseInsideMenuBar(appState: appState, screen: screen),
                     !isMouseInsideOrAwaitingIceBar(appState: appState)
                 else {
+                    return
+                }
+                // The pointer leaves the menu bar to use the menu or popover
+                // of a shown item, and hiding the items closed it
+                // (jordanbaird/Ice#452). The delay can be zero, so wait before
+                // allowing another check, as each one asks the window server.
+                guard menuBarInterfaceWindows(on: screen).isEmpty else {
+                    try await Task.sleep(for: .milliseconds(250))
                     return
                 }
                 hiddenSection.hide()
@@ -902,6 +956,9 @@ extension HIDEventManager {
         // The bottom edge of the menu bar.
         var menuBarMinY = screen.visibleFrame.maxY
 
+        // Whether the Ice icon is in this screen's menu bar.
+        var isIceIconOnScreen = false
+
         // Ice icon must be vertically visible. Otherwise, we can infer
         // that the menu bar is hidden and the mouse is not inside.
         //
@@ -926,14 +983,25 @@ extension HIDEventManager {
             // checked, because stacked displays can share a horizontal range.
             if screen.frame.contains(CGPoint(x: iceIconFrame.midX, y: iceIconFrame.midY)) {
                 menuBarMinY = min(menuBarMinY, iceIconFrame.minY)
+                isIceIconOnScreen = true
             }
         }
 
         // Infer the menu bar frame from the screen frame.
-        return mouseLocation.x >= screen.frame.minX &&
-        mouseLocation.x <= screen.frame.maxX &&
-        mouseLocation.y <= screen.frame.maxY &&
-        mouseLocation.y >= menuBarMinY
+        let isInsideFrame = mouseLocation.x >= screen.frame.minX &&
+            mouseLocation.x <= screen.frame.maxX &&
+            mouseLocation.y <= screen.frame.maxY &&
+            mouseLocation.y >= menuBarMinY
+
+        // An icon in another display's menu bar says nothing about whether
+        // this one is revealed. Asked only when the pointer is at the top of
+        // the screen, and only before macOS 27 (see above).
+        if #unavailable(macOS 27.0) {
+            if isInsideFrame && !isIceIconOnScreen {
+                return !isMenuBarConcealedByFullscreen(on: screen)
+            }
+        }
+        return isInsideFrame
     }
 
     /// A Boolean value that indicates whether the mouse pointer is within
@@ -1185,6 +1253,107 @@ extension HIDEventManager {
         appState.menuBarManager.iceBarPanel.isAwaitingDisplay || isMouseInsideIceBar(appState: appState)
     }
 
+    /// Returns the menus, popovers and panels that are open just below the
+    /// menu bar of the given screen, front to back.
+    ///
+    /// A menu bar item opens its menu or popover as a window whose top edge
+    /// meets the bottom of the menu bar. Hiding the items while one is open
+    /// moves the item it belongs to, and the app closes it: a menu closed
+    /// under the pointer by timed rehide or show on hover (jordanbaird/Ice#452),
+    /// and a switch or slider in another app's popover closed by smart rehide
+    /// (#403, #526). Counted are menus, from any app, and the floating windows
+    /// of apps that run without a Dock icon, as menu bar apps do. An ordinary
+    /// window is not counted, even when it reaches up to the menu bar.
+    ///
+    /// This asks the window server for one window list, so it is only called
+    /// when the items are about to be shown or hidden, never per event.
+    func menuBarInterfaceWindows(on screen: NSScreen) -> [WindowInfo] {
+        let displayBounds = CGDisplayBounds(screen.displayID)
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        let menuLevel = Int(CGWindowLevelForKey(.popUpMenuWindow))
+        let cursorLevel = Int(CGWindowLevelForKey(.cursorWindow))
+        let windows = WindowInfo.createWindows(option: .onScreen)
+
+        // The bottom edge of the menu bar, in window server coordinates.
+        let menuBarBottom: CGFloat = {
+            if let menuBarWindow = WindowInfo.menuBarWindow(from: windows, for: screen.displayID) {
+                return menuBarWindow.bounds.maxY
+            }
+            let reservedHeight = screen.frame.maxY - screen.visibleFrame.maxY
+            return displayBounds.minY + max(reservedHeight, NSStatusBar.system.thickness)
+        }()
+
+        return windows.filter { window in
+            guard
+                window.ownerPID != ownPID,
+                !window.isWindowServerWindow,
+                window.layer >= 0,
+                window.layer < cursorLevel,
+                window.bounds.width > 20,
+                window.bounds.height > 20,
+                displayBounds.intersects(window.bounds),
+                // Hangs from the menu bar. A window that covers the menu bar
+                // itself, such as another app's tint overlay, starts above it.
+                window.bounds.minY >= menuBarBottom - 2,
+                window.bounds.minY <= menuBarBottom + 40
+            else {
+                return false
+            }
+            if window.layer == menuLevel {
+                return true
+            }
+            // A popover or panel floats above ordinary windows, which an app
+            // without a Dock icon can also have, such as a settings window.
+            guard window.layer > 0, let app = window.owningApplication else {
+                return false
+            }
+            return app.activationPolicy != .regular && app.bundleIdentifier != "com.apple.dock"
+        }
+    }
+
+    /// A Boolean value that indicates whether a menu is open just below the
+    /// menu bar of the given screen.
+    func isMenuOpen(on screen: NSScreen) -> Bool {
+        let menuLevel = Int(CGWindowLevelForKey(.popUpMenuWindow))
+        return menuBarInterfaceWindows(on: screen).contains { $0.layer == menuLevel }
+    }
+
+    /// A Boolean value that indicates whether the given screen's menu bar is
+    /// out of sight in a fullscreen space.
+    ///
+    /// In a fullscreen space the system shows the menu bar only while it is
+    /// revealed, and the top of the screen belongs to the fullscreen app the
+    /// rest of the time. The Ice icon cannot tell this when it sits in the
+    /// menu bar of another display, which it does until the fullscreen app is
+    /// focused: clicking the top of a fullscreen app on a second display
+    /// counted as a click on its menu bar and showed the hidden items
+    /// (jordanbaird/Ice#899). The display's own menu bar window, which is only
+    /// on that display while the menu bar is revealed, is asked instead.
+    ///
+    /// Mouse moved events at the top of the screen ask this as often as the
+    /// pointer reports, so the answer is kept for a quarter of a second.
+    private func isMenuBarConcealedByFullscreen(on screen: NSScreen) -> Bool {
+        let displayID = screen.displayID
+        let now = ContinuousClock.now
+        if
+            let cached = fullscreenConcealment,
+            cached.displayID == displayID,
+            now - cached.checkedAt < .milliseconds(250)
+        {
+            return cached.isConcealed
+        }
+        var isConcealed = false
+        if
+            let space = SpaceInfo.currentSpace(for: displayID),
+            space.spaceID != 0,
+            space.isFullscreen
+        {
+            isConcealed = WindowInfo.menuBarWindow(for: displayID) == nil
+        }
+        fullscreenConcealment = (displayID, now, isConcealed)
+        return isConcealed
+    }
+
     /// A Boolean value that indicates whether the mouse pointer is within
     /// the bounds of the Ice icon.
     func isMouseInsideIceIcon(appState: AppState) -> Bool {
@@ -1196,6 +1365,20 @@ extension HIDEventManager {
             return false
         }
         return iceIconFrame.contains(mouseLocation)
+    }
+}
+
+// MARK: - Click Modifiers
+
+extension NSEvent.ModifierFlags {
+    /// The keys a click is made with: Shift, Control, Option and Command.
+    ///
+    /// The flags also carry Caps Lock, the Function key, the numeric keypad
+    /// and device-dependent bits. Comparing them whole against `.option`
+    /// failed whenever one of those was set, so Option-click only showed the
+    /// always-hidden section some of the time (jordanbaird/Ice#644).
+    var clickModifiers: NSEvent.ModifierFlags {
+        intersection([.shift, .control, .option, .command])
     }
 }
 

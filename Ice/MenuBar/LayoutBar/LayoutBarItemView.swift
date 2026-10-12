@@ -31,6 +31,19 @@ final class LayoutBarItemView: NSView {
     /// A Boolean value that indicates whether the item view is currently inside a container.
     var hasContainer = false
 
+    /// The container the item view was in when its current dragging session began.
+    ///
+    /// The container stops setting its arranged views for the length of the session.
+    /// Only the container that accepts the drop turned this back on, so dragging an
+    /// item to another section left the section it came from frozen: it stopped
+    /// showing new, removed and moved items until the settings pane was reopened
+    /// (jordanbaird/Ice#283, jordanbaird/Ice#300).
+    private weak var draggingSourceContainer: LayoutBarContainer?
+
+    /// A Boolean value that indicates whether the item view's dragging session
+    /// is in progress.
+    private var isInDraggingSession = false
+
     /// The image displayed inside the view.
     private var cachedImage: MenuBarItemImageCache.CapturedImage? {
         didSet {
@@ -193,13 +206,21 @@ extension LayoutBarItemView: NSDraggingSource {
         // aren't arranged during a dragging session
         if let container = superview as? LayoutBarContainer {
             container.canSetArrangedViews = false
+            draggingSourceContainer = container
         }
+
+        isInDraggingSession = true
 
         // prevent the dragging image from animating back to its original location
         session.animatesToStartingPositionsOnCancelOrFail = false
 
-        // async to prevent the view from disappearing before the dragging image appears
+        // async to prevent the view from disappearing before the dragging image appears;
+        // skipped if the session has already ended, which would otherwise leave the view
+        // blank for as long as it exists
         DispatchQueue.main.async {
+            guard self.isInDraggingSession else {
+                return
+            }
             self.isDraggingPlaceholder = true
         }
     }
@@ -208,7 +229,18 @@ extension LayoutBarItemView: NSDraggingSource {
         defer {
             // always remove container info at the end of a session
             oldContainerInfo = nil
+
+            // let the container the drag started in update again; the container that
+            // accepted the drop, if any, does the same in `performDragOperation(_:)`
+            if let container = draggingSourceContainer {
+                draggingSourceContainer = nil
+                DispatchQueue.main.async {
+                    container.canSetArrangedViews = true
+                }
+            }
         }
+
+        isInDraggingSession = false
 
         // since the session's `animatesToStartingPositionsOnCancelOrFail` property was
         // set to false when the session began (above), there is no delay between the user

@@ -318,6 +318,11 @@ struct GeneralSettingsPane: View {
         .onAppear {
             tempItemSpacingOffset = settings.itemSpacingOffset
         }
+        .onChange(of: settings.itemSpacingOffset) { _, offset in
+            // A settings window restored at launch appears before the saved
+            // value is loaded, so it showed the default (jordanbaird/Ice#392).
+            tempItemSpacingOffset = offset
+        }
     }
 
     private func applyTempItemSpacingOffset() {

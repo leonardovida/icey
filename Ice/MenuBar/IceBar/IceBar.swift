@@ -357,7 +357,7 @@ private struct IceBarContentView: View {
             return nil
         }
         if configuration.shapeKind != .noShape && configuration.isInset && screen.hasNotch {
-            return menuBarHeight - appState.appearanceManager.menuBarInsetAmount * 2
+            return menuBarHeight - appState.appearanceManager.menuBarInsetAmount(forMenuBarHeight: menuBarHeight) * 2
         }
         return menuBarHeight
     }

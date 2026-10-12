@@ -27,6 +27,9 @@ class Permission: ObservableObject, Identifiable {
     /// The URL of the settings pane to open.
     private let settingsURL: URL?
 
+    /// The URL of the permission's list in System Settings > Privacy & Security.
+    private let privacyListURL: URL?
+
     /// The function that checks permissions.
     private let check: () -> Bool
 
@@ -50,6 +53,7 @@ class Permission: ObservableObject, Identifiable {
     ///   - details: Descriptive details for the permission.
     ///   - isRequired: A Boolean value that indicates if the app can work without this permission.
     ///   - settingsURL: The URL of the settings pane to open.
+    ///   - privacyListURL: The URL of the permission's list in System Settings.
     ///   - check: A function that checks permissions.
     ///   - request: A function that requests permissions.
     init(
@@ -57,6 +61,7 @@ class Permission: ObservableObject, Identifiable {
         details: [String],
         isRequired: Bool,
         settingsURL: URL?,
+        privacyListURL: URL?,
         check: @escaping () -> Bool,
         request: @escaping () -> Void
     ) {
@@ -64,6 +69,7 @@ class Permission: ObservableObject, Identifiable {
         self.details = details
         self.isRequired = isRequired
         self.settingsURL = settingsURL
+        self.privacyListURL = privacyListURL
         self.check = check
         self.request = request
         self.hasPermission = check()
@@ -91,6 +97,18 @@ class Permission: ObservableObject, Identifiable {
         request()
         if let settingsURL {
             NSWorkspace.shared.open(settingsURL)
+        }
+    }
+
+    /// Opens the permission's list in System Settings.
+    ///
+    /// The request alone does not always get there. When the list already
+    /// has an entry for the app, such as one left by an earlier copy with
+    /// a different signature, macOS may not prompt at all, and the entry
+    /// that no longer applies can only be removed from the list.
+    func openPrivacyList() {
+        if let privacyListURL {
+            NSWorkspace.shared.open(privacyListURL)
         }
     }
 
@@ -143,6 +161,7 @@ final class AccessibilityPermission: Permission {
             ],
             isRequired: true,
             settingsURL: nil,
+            privacyListURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"),
             check: {
                 AXHelpers.isProcessTrusted()
             },
@@ -165,6 +184,7 @@ final class ScreenRecordingPermission: Permission {
             ],
             isRequired: false,
             settingsURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
+            privacyListURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
             check: {
                 ScreenCapture.checkPermissions()
             },

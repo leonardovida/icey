@@ -452,6 +452,10 @@ final class ControlItem {
             return
         }
         statusItem.isVisible = true
+        // Apply the image and length again. Turning "Show Icey icon" off and
+        // on brought the item back blank until it was hovered or clicked
+        // (jordanbaird/Ice#329).
+        updateStatusItem()
     }
 
     /// Removes the control item from the menu bar.
@@ -478,7 +482,7 @@ final class ControlItem {
 
         switch event.type {
         case .leftMouseDown:
-            let modifierFlags = NSEvent.modifierFlags
+            let modifierFlags = event.modifierFlags.clickModifiers
 
             // Running this from a Task seems to improve the visual
             // responsiveness of the status item's button.

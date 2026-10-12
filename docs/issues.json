@@ -441,8 +441,8 @@
       "status": "partial",
       "fixed_in": "v0.11.13-dev.2-icey.1",
       "symptom": "System Settings showed Accessibility or Screen Recording as enabled, but Ice still asked for it.",
-      "fix": "Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch.",
-      "pr": 5
+      "fix": "Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch. The permissions window now also has a link that opens the right System Settings list, where a stale entry can be removed.",
+      "pr": 17
     },
     {
       "number": 929,
@@ -513,11 +513,12 @@
       "number": 918,
       "title": "When icon for Intego One is moved from hidden to visible bar in settings, the icon disappears",
       "headline": "An app's icon disappears when moved from hidden to visible",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Moving Intego One's icon from the hidden to the visible section made it disappear.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "After a failed move, the pane now redraws instead of dropping the icon.",
+      "pr": 17,
+      "note": "The slow response looks specific to Intego."
     },
     {
       "number": 930,
@@ -683,12 +684,12 @@
       "number": 899,
       "title": "[Bug]: Ice triggering while clicking just under the menu bar in fullscreen",
       "headline": "Clicking just under the menu bar in fullscreen triggers Ice",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "In fullscreen on a large display, clicking just below the hidden menu bar showed hidden items.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Possibly a fullscreen app on a second display. Needs the display setup.",
-      "pr": null
+      "fix": "With the Ice icon on another display, the top of a fullscreen display now counts as the menu bar only while its menu bar is showing.",
+      "note": "Doesn't cover a single display.",
+      "pr": 17
     },
     {
       "number": 892,
@@ -786,12 +787,12 @@
       "number": 879,
       "title": "[Bug]: \"hide app menus when showing menu bar items\" feature not working",
       "headline": "\"Hide application menus\" shows the Dock icon but doesn't hide the menus",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Ice appeared in the Dock but the application menus stayed.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "macOS may refuse Icey's request to become active. Needs logs from Icey.",
-      "pr": null
+      "fix": "If macOS refuses Icey's request to become the active app, Icey now activates anyway, so the menus hide instead of only a Dock icon appearing.",
+      "note": "Not yet tested on macOS 15 or 26.",
+      "pr": 17
     },
     {
       "number": 878,
@@ -879,11 +880,12 @@
       "number": 861,
       "title": "[Bug]: unable to move icons to hidden section",
       "headline": "Unable to move icons to the hidden section",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Moving items timed out on macOS 15.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "After a failed move, the pane now redraws to show where the item really is, instead of where it was dropped.",
+      "pr": 17,
+      "note": "The timeout itself isn't addressed."
     },
     {
       "number": 860,
@@ -971,11 +973,12 @@
       "number": 845,
       "title": "[Bug]: Hidden menubar items not selectable",
       "headline": "Shown hidden items can't be selected",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Items shown from the hidden section didn't open when clicked on macOS 26.2.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "With Caps Lock on, Icey waited for a key release that never came, so items clicked in the Ice Bar never opened. Caps Lock no longer blocks clicks.",
+      "pr": 17,
+      "note": "May not be the reporter's cause; please retest."
     },
     {
       "number": 844,
@@ -1048,7 +1051,7 @@
       "symptom": "Ice kept asking for permissions that System Settings showed as granted.",
       "fix": "Remove the app from the list in System Settings > Privacy & Security with the minus button, then add Icey again.",
       "note": "Same as #1004.",
-      "pr": 5
+      "pr": 17
     },
     {
       "number": 833,
@@ -1099,7 +1102,8 @@
       "fixed_in": null,
       "symptom": "Clicking a hidden system item didn't open its menu.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The Caps Lock fix for #845 may help. Needs a reproduction."
     },
     {
       "number": 825,
@@ -1217,11 +1221,12 @@
       "number": 808,
       "title": "[Bug]: macOS \"Tahoe\" - after system restart icon remains in dock",
       "headline": "Icon stays in the Dock after a restart on macOS 26",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Ice showed a Dock icon for minutes after login.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "Icey now gives the app menus back as soon as no section is shown, and doesn't take them when the section closed while it was still reading the items, so the Dock icon goes away.",
+      "pr": 17,
+      "note": "Not yet tested with a restart on macOS 26."
     },
     {
       "number": 807,
@@ -1496,7 +1501,8 @@
       "fixed_in": null,
       "symptom": "Mullvad VPN's window opened when Ice hid items again.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Moving an item uses simulated clicks, which some apps treat as a real click. No safe fix yet."
     },
     {
       "number": 763,
@@ -1552,12 +1558,12 @@
       "number": 757,
       "title": "[Bug]: Pointer disappearing after clicking on icons in ICE popup bar",
       "headline": "Pointer disappears after clicking icons in the Ice Bar",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "After clicking an icon in the Ice popup bar, the pointer disappeared.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Stuck item moves now time out, which may have fixed this. Please retest.",
-      "pr": null
+      "fix": "Same fix as #751: the pointer is hidden only while each move posts its events.",
+      "note": "The link to a larger pointer size isn't explained.",
+      "pr": 17
     },
     {
       "number": 755,
@@ -1603,12 +1609,12 @@
       "number": 751,
       "title": "[Bug]: The cursor is not visible after clicking the ICE icon and then selecting a hidden icon from the ICE bar.",
       "headline": "Pointer stays hidden until Ice quits",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "After clicking the Ice icon and then a hidden item in the Ice Bar, the pointer stayed invisible until Ice was quit.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Stuck item moves now time out, which may have fixed this. Please retest.",
-      "pr": null
+      "fix": "Icey now hides the pointer only while each move posts its events, not while it waits for the mouse to stop, so it no longer stays hidden while you move it.",
+      "note": "Please retest.",
+      "pr": 17
     },
     {
       "number": 750,
@@ -2282,7 +2288,8 @@
       "fixed_in": null,
       "symptom": "A faint shadow appeared at the top with the appearance settings on.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The report predates Icey's matching change to the dimming. Needs a check on macOS 26."
     },
     {
       "number": 658,
@@ -2298,12 +2305,12 @@
       "number": 657,
       "title": "[Bug]: the Menu Bar's height with \"Shape kind = full\" is a few pixels too short on second monitor",
       "headline": "Full shape is a few pixels too short on a second display",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "The full shape is slightly shorter than the menu bar on displays without a notch.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "The inset may be deliberate.",
-      "pr": null
+      "fix": "Shapes with square ends now fill the menu bar's full height on displays without a notch, as they already did on notched displays.",
+      "note": "Not yet checked on an external display.",
+      "pr": 17
     },
     {
       "number": 656,
@@ -2382,11 +2389,12 @@
       "number": 644,
       "title": "[Bug]: <Option-Click works randomly>",
       "headline": "Option-click works randomly",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Option-clicking sometimes didn't show the always-hidden section.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "Option-click and Control-click now look only at Shift, Control, Option and Command, read from the click itself, so Caps Lock or the Fn key no longer turn them into a plain click.",
+      "pr": 17,
+      "note": "The Caps Lock and Fn cause comes from the code, not a reproduction."
     },
     {
       "number": 643,
@@ -2534,22 +2542,23 @@
       "number": 621,
       "title": "[Bug]: Can't fully interact with hidden menu items",
       "headline": "Can't fully use hidden menu items",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A hidden item's submenu (Citrix) closed while in use.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "A click inside an app's menu or popover no longer counts as a click outside, so smart rehide doesn't close it mid-use.",
+      "pr": 17,
+      "note": "Not yet tested with Citrix."
     },
     {
       "number": 620,
       "title": "[Bug]:Hide application menus when showing menu bar items",
       "headline": "\"Hide application menus\" doesn't work on an M1 MacBook Air",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Application menus weren't hidden on macOS 15.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "The #434 fix may help. Please retest.",
-      "pr": null
+      "fix": "Same fix as #879: Icey now activates even when macOS refuses its request, so the app menus hide.",
+      "note": "Not yet tested on an M1 MacBook Air.",
+      "pr": 17
     },
     {
       "number": 619,
@@ -2612,7 +2621,8 @@
       "fixed_in": null,
       "symptom": "A leftover image stayed after the Ice Bar closed in fullscreen.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Possibly the Ice Bar not noticing the menu bar hiding in fullscreen. Needs a reproduction."
     },
     {
       "number": 604,
@@ -2693,7 +2703,8 @@
       "fixed_in": null,
       "symptom": "ProtonVPN's item opened again after it was hidden from the Ice Bar.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Same cause as #766."
     },
     {
       "number": 584,
@@ -2741,11 +2752,12 @@
       "number": 567,
       "title": "[Bug]: Clicking on the menus in some apps triggers Ice",
       "headline": "Clicking app menus triggers Ice",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Clicking some apps' menus showed hidden items.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "Show on click and show on hover now do nothing while an app's menu is open, so moving between its menus no longer shows the hidden items.",
+      "pr": 17,
+      "note": "The first click on a menu title still depends on measuring the app menus."
     },
     {
       "number": 566,
@@ -2761,11 +2773,12 @@
       "number": 563,
       "title": "[Bug]: Ice occasionally crashes.",
       "headline": "Ice occasionally crashes",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "An unsymbolicated crash in Ice 0.11.12.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "The crash was an empty list in the code that shows a hidden item when Ice couldn't find its divider. Icey checks for that case and doesn't crash.",
+      "pr": 17,
+      "note": "Traced from the attached crash log against Ice 0.11.12."
     },
     {
       "number": 560,
@@ -2903,12 +2916,12 @@
       "number": 526,
       "title": "[Bug]: Ice Causing issues with the behaviour of the Motioncontrol Light app. The brights slider keeps disappearing when trying to adjust screen brightness",
       "headline": "Another app's brightness slider keeps disappearing",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "MotionControl Light's brightness slider closed while it was being adjusted, because Ice hid the items again.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Same as #403.",
-      "pr": null
+      "fix": "Same fix as #403: dragging a slider in another app's popover no longer hides the items and closes it.",
+      "note": "Not yet tested with MotionControl Light.",
+      "pr": 17
     },
     {
       "number": 525,
@@ -2989,7 +3002,8 @@
       "fixed_in": null,
       "symptom": "The shadow moved during the App Exposé animation.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Likely fixed by keeping the overlay out of Exposé, but that may show it over Mission Control (#216). Needs testing."
     },
     {
       "number": 513,
@@ -3189,12 +3203,12 @@
       "number": 452,
       "title": "[Bug]: Automatically rehide takes affect even when inside a hidden items menu options",
       "headline": "Rehide closes an open item menu",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Automatic rehide hid items while one of their menus was open.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Needs a safe way to detect open menus.",
-      "pr": null
+      "fix": "Timed rehide and show on hover now wait while an item's menu or popover is open below the menu bar, instead of hiding the items and closing it.",
+      "note": "A menu bar app that keeps a window open under the menu bar all the time would also hold rehide off.",
+      "pr": 17
     },
     {
       "number": 451,
@@ -3273,12 +3287,12 @@
       "number": 409,
       "title": "[Bug]: macOS Sequoia requires a restart of Ice to render the menubar border",
       "headline": "Border needs an Ice restart after login on macOS 15",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "The menu bar border didn't show until Ice was relaunched.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Possibly the menu bar not existing yet when Icey starts.",
-      "pr": null
+      "fix": "Icey now tries again for about two minutes when the menu bar isn't there yet at login, instead of giving up until the next space change.",
+      "note": "Not yet tested with a login on macOS 15.",
+      "pr": 17
     },
     {
       "number": 406,
@@ -3305,11 +3319,12 @@
       "number": 403,
       "title": "[Bug]: Make smart mode smarter: Don't collapse the menu bar icons when toggling switches of switch app",
       "headline": "Smart rehide closes other apps' popovers",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Using a switch or slider in another app's menu bar popover closed it, because Ice hid the items.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "Smart rehide now ignores clicks inside menus and menu bar app popovers, so switches and sliders in them stay open.",
+      "pr": 17,
+      "note": "Not yet tested with OnlySwitch."
     },
     {
       "number": 401,
@@ -3335,12 +3350,11 @@
       "number": 392,
       "title": "[Bug]: Modified menu bar item spacing value is not shown when settings appears after launch",
       "headline": "Item spacing value isn't shown after launch",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "The spacing slider showed 0 after relaunching.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Current code loads the value when the pane appears. Please retest.",
-      "pr": null
+      "fix": "The slider now follows the saved value once settings load, so it no longer shows the default after launch.",
+      "pr": 17
     },
     {
       "number": 383,
@@ -3501,11 +3515,12 @@
       "number": 329,
       "title": "[Bug]: When turning off \"Show ice icon\" and the turning it back on, the icon doesn't automatically repopulate",
       "headline": "Ice icon doesn't come back after turning it off and on",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Turning \"Show Ice icon\" off and on again didn't bring the icon back.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "The Icey icon now applies its image and width again when it's turned back on.",
+      "pr": 17,
+      "note": "Couldn't be reproduced upstream either."
     },
     {
       "number": 326,
@@ -3571,12 +3586,12 @@
       "number": 300,
       "title": "[Bug]: Rearranging icons with multiple instances of OneDrive",
       "headline": "One OneDrive item disappears when rearranging",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "With two OneDrive accounts, one OneDrive item sometimes disappeared from Menu Bar Layout while rearranging.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Related to #857, which this release fixes for the Ice Bar. The layout pane case is not confirmed fixed.",
-      "pr": null
+      "fix": "A section could stay frozen, or an item blank, after a drag. Both now redraw when the drag ends.",
+      "note": "Not yet tested with several OneDrive accounts.",
+      "pr": 17
     },
     {
       "number": 299,
@@ -3613,11 +3628,12 @@
       "number": 283,
       "title": "[Bug]: Ice's view of the menu bar is missing the icon for AltTab",
       "headline": "AltTab missing from the layout pane",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "AltTab's item didn't show in Menu Bar Layout on 0.10.3.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "A section of the layout pane could stop updating after an item was dragged out of it, so new items didn't appear. It now catches up when the drag ends.",
+      "pr": 17,
+      "note": "May not be the reporter's trigger; please retest."
     },
     {
       "number": 273,
@@ -3643,11 +3659,12 @@
       "number": 260,
       "title": "[Bug]: Both inset menu bar shape and Ice Bar are too short on notched display when set to a lower resolution",
       "headline": "Inset shape and Ice Bar too short on notched displays at lower resolutions",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "At scaled resolutions, the inset shape and Ice Bar clipped the icons.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "The inset shape and the Ice Bar now shrink their inset on a shorter menu bar, so they're never shorter than the items. Default resolutions look the same as before.",
+      "pr": 17,
+      "note": "Not yet tested at a lower resolution on a notched display."
     },
     {
       "number": 254,
@@ -3763,11 +3780,12 @@
       "number": 233,
       "title": "[Bug]:  Re-arranging/dragging  items  in the \"Hidden\" settings pane makes them disappear ",
       "headline": "Dragging items in the Hidden layout pane makes them disappear",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Rearranging items in the layout pane made them vanish, with separate Spaces per display.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "The pane no longer stays stale after rearranging, which is one way items seemed to disappear.",
+      "pr": 17,
+      "note": "Items vanishing from the real menu bar with separate Spaces per display isn't explained."
     },
     {
       "number": 227,
@@ -3797,7 +3815,8 @@
       "fixed_in": null,
       "symptom": "The appearance overlay was drawn above Mission Control.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "There is no public way to detect Mission Control."
     },
     {
       "number": 214,
@@ -3913,12 +3932,12 @@
       "number": 144,
       "title": "[Bug]: Doing opt click after click does not hide app menus",
       "headline": "Option-click after a click doesn't hide app menus",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Showing the always-hidden section with Option-click after a click left the app menus in place.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Icey may check the items before they have moved.",
-      "pr": null
+      "fix": "Icey now waits for the items to move before checking whether they reach the app menus, and checks once more, so Option-click after a click hides the menus.",
+      "note": "Adds about 100 ms before the menus hide.",
+      "pr": 17
     },
     {
       "number": 141,
@@ -4025,12 +4044,12 @@
       "number": 53,
       "title": "[Bug]: Any change in monitors while Mac is asleep removes styling",
       "headline": "Menu bar styling is lost after a display change during sleep",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "After sleep with a display change, the menu bar appearance disappeared until a space or display change.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Possibly the menu bar not existing yet after wake. Needs a sleep test.",
-      "pr": null
+      "fix": "Icey now shows the styling again when the displays wake, and keeps trying if the menu bar comes back late.",
+      "note": "Not yet tested with a display change during sleep.",
+      "pr": 17
     },
     {
       "number": 46,

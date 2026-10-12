@@ -97,6 +97,7 @@ final class LayoutBarPaddingView: NSView {
                         move(item: draggingSource.item, to: .leftOfItem(targetItem))
                     } else {
                         Logger.default.error("No target item for layout bar drag")
+                        LayoutBarContainer.restoreFromCacheRequests.send()
                     }
                 }
             } else if arrangedViews.indices.contains(index + 1) {
@@ -124,6 +125,9 @@ final class LayoutBarPaddingView: NSView {
                 appState.itemManager.removeTemporarilyShownItemFromCache(for: item)
             } catch {
                 Logger.default.error("Error moving menu bar item: \(error, privacy: .public)")
+                // The item didn't move, so show it where it actually is, rather
+                // than where it was dropped.
+                LayoutBarContainer.restoreFromCacheRequests.send()
                 let alert = NSAlert(error: error)
                 alert.runModal()
             }

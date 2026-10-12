@@ -276,6 +276,14 @@ final class MenuBarSection {
                 !hidEventManager.isMouseInsideOrAwaitingIceBar(appState: appState)
         }
 
+        // Asked only when the timer fires, never per event.
+        let isMenuBarInterfaceOpen = { [weak appState] (screen: NSScreen) -> Bool in
+            guard let appState else {
+                return false
+            }
+            return !appState.hidEventManager.menuBarInterfaceWindows(on: screen).isEmpty
+        }
+
         rehideMonitor = EventMonitor.universal(for: .mouseMoved) { [weak self] event in
             guard
                 let self,
@@ -295,7 +303,11 @@ final class MenuBarSection {
                         else {
                             return
                         }
-                        if isMouseOutside(screen) {
+                        // A menu or popover of an item hangs below the menu
+                        // bar, so the pointer is outside it while the menu is
+                        // in use. Hiding the items closed the menu under the
+                        // pointer (jordanbaird/Ice#452), so wait for it to close.
+                        if isMouseOutside(screen), !isMenuBarInterfaceOpen(screen) {
                             Task {
                                 await self.hide()
                             }

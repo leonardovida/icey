@@ -24,13 +24,27 @@ fail() { echo "error: $1" >&2; exit 1; }
 PBX="Ice.xcodeproj/project.pbxproj"
 grep -q "MARKETING_VERSION = \"${TAG#v}\";" "$PBX" || fail "MARKETING_VERSION isn't ${TAG#v}. Run Scripts/bump-version.sh $TAG first."
 BUILD="$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*;' "$PBX" | grep -o '[0-9]\{2,\}' | sort -n | tail -1)"
-LIVE="$(curl -fsL https://github.com/leonardovida/icey/releases/latest/download/appcast.xml 2>/dev/null \
-  | grep -o '<sparkle:version>[0-9]*' | grep -o '[0-9]*$' || true)"
-[ -z "$LIVE" ] || [ "$BUILD" -gt "$LIVE" ] \
-  || fail "Build number $BUILD isn't higher than the published $LIVE, so Sparkle wouldn't offer it. Run Scripts/bump-version.sh $TAG."
+# A 404 means no published release has an appcast yet. Anything else that
+# yields no build number must stop the release, or the check would be skipped.
+FEED="https://github.com/leonardovida/icey/releases/latest/download/appcast.xml"
+mkdir -p "$(dirname "$OUT")"
+STATUS="$(curl -sL -o "$OUT.live-appcast.xml" -w '%{http_code}' "$FEED" || echo 000)"
+if [ "$STATUS" = 200 ]; then
+  LIVE="$(grep -o '<sparkle:version>[0-9]*' "$OUT.live-appcast.xml" | grep -o '[0-9]*$' || true)"
+  rm -f "$OUT.live-appcast.xml"
+  [ -n "$LIVE" ] || fail "Couldn't read the build number from the published appcast ($FEED)."
+  [ "$BUILD" -gt "$LIVE" ] \
+    || fail "Build number $BUILD isn't higher than the published $LIVE, so Sparkle wouldn't offer it. Run Scripts/bump-version.sh $TAG."
+elif [ "$STATUS" != 404 ]; then
+  rm -f "$OUT.live-appcast.xml"
+  fail "Couldn't download the published appcast (HTTP $STATUS), so the build number can't be checked. Try again."
+fi
+rm -f "$OUT.live-appcast.xml"
 [ -f "release-notes/$TAG.md" ] || fail "release-notes/$TAG.md is missing. Copy release-notes/TEMPLATE.md and fill it in."
-[ -z "$(git status --porcelain --untracked-files=no)" ] || [ -n "${ALLOW_DIRTY:-}" ] \
-  || fail "Uncommitted changes would ship in the release. Commit them first, or set ALLOW_DIRTY=1."
+# Untracked files count too: Xcode compiles every file in the synchronized
+# Ice/, Shared/ and MenuBarItemService/ folders, committed or not.
+[ -z "$(git status --porcelain -- . ':!build')" ] || [ -n "${ALLOW_DIRTY:-}" ] \
+  || fail "Uncommitted or untracked files would ship in the release, and the tag wouldn't match it. Commit them first, or set ALLOW_DIRTY=1."
 
 rm -rf "$OUT" "$OUT.dmgroot"; mkdir -p "$OUT" "$OUT.dmgroot"
 # publish-release.sh tags this commit, so the tag always matches the binaries.

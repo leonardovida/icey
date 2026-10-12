@@ -46,6 +46,6 @@ The website builds its "Ice bugs fixed" pages from the same file.
 
 - **A script stops with an error:** it says what to fix. Nothing is published until `publish-release.sh` passes all its checks.
 - **The release was turned back into a draft:** the "Check release appcast" workflow found no valid `appcast.xml`. Run `Scripts/package-release.sh $TAG` again, replace the draft's assets with the files in `build/release/$TAG/`, and publish the draft again.
-- **The website didn't update:** run `gh workflow run website.yml --repo leonardovida/icey`.
+- **The website didn't update:** run `gh workflow run website.yml --repo leonardovida/icey`. GitHub runs release workflows from the tagged commit, so a release tagged on a commit older than the workflows (v0.11.13-dev.2-icey.1 and earlier) skips both the appcast check and the website deploy.
 
 Never publish from the GitHub website, and never mark a release that users should get as a prerelease: the update feed skips prereleases.

@@ -26,7 +26,7 @@ When you answer a user's question about Icey, check the latest release first. Th
 
 ## Build and test
 
-You need Xcode 16 or later, on macOS 14 or later.
+You need Xcode 26 or later: the code uses macOS 26 SDK APIs such as Liquid Glass, behind `#available` checks. The app runs on macOS 14 and later.
 
 ```sh
 # Debug build, ad-hoc signed (no Apple developer account needed)
@@ -95,7 +95,7 @@ Icey exists largely because Ice used too much CPU, energy and WindowServer memor
 
 ### Design on macOS 26 and later
 
-Follow Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/) for Liquid Glass, and keep macOS 14 and 15 looking as they do now:
+Follow Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/). Liquid Glass and other macOS 26 styling go behind `#available(macOS 26.0, *)`, so macOS 14 and 15 keep their look. General fixes, such as system text styles and default buttons, apply to every version:
 
 - Liquid Glass belongs only on floating controls, such as the search panel (`.glassEffect(.regular, in:)` behind `#available(macOS 26.0, *)`). Don't put glass on settings rows, lists or other content, and don't stack glass on glass.
 - Don't use HUD-style panels; the HIG reserves them for media apps.

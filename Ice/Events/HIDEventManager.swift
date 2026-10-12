@@ -922,8 +922,9 @@ extension HIDEventManager {
             // against the edge, and shown items collapsed as soon as it moved
             // down onto the revealed menu bar (jordanbaird/Ice#708). The Ice icon
             // is as tall as the menu bar it sits in, so while it is on this
-            // screen, its bottom edge is the menu bar's.
-            if iceIconFrame.midX >= screen.frame.minX && iceIconFrame.midX <= screen.frame.maxX {
+            // screen, its bottom edge is the menu bar's. The whole midpoint is
+            // checked, because stacked displays can share a horizontal range.
+            if screen.frame.contains(CGPoint(x: iceIconFrame.midX, y: iceIconFrame.midY)) {
                 menuBarMinY = min(menuBarMinY, iceIconFrame.minY)
             }
         }

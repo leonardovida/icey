@@ -482,7 +482,7 @@ final class ControlItem {
 
         switch event.type {
         case .leftMouseDown:
-            let modifierFlags = NSEvent.modifierFlags
+            let modifierFlags = event.modifierFlags.clickModifiers
 
             // Running this from a Task seems to improve the visual
             // responsiveness of the status item's button.

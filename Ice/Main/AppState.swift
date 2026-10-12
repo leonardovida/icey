@@ -306,7 +306,11 @@ final class AppState: ObservableObject {
     }
 
     /// Activates the app and sets its activation policy.
-    func activate(withPolicy policy: NSApplication.ActivationPolicy? = nil) {
+    ///
+    /// - Returns: Whether the system allowed the request. Activation is a
+    ///   request since macOS 14, and the system can refuse it.
+    @discardableResult
+    func activate(withPolicy policy: NSApplication.ActivationPolicy? = nil) -> Bool {
         if let policy {
             NSApp.setActivationPolicy(policy)
         }
@@ -314,10 +318,9 @@ final class AppState: ObservableObject {
         // no suitable alternative for explicit activation, so we activate
         // through NSRunningApplication.current for now.
         guard let frontmost = NSWorkspace.shared.frontmostApplication else {
-            NSRunningApplication.current.activate()
-            return
+            return NSRunningApplication.current.activate()
         }
-        NSRunningApplication.current.activate(from: frontmost)
+        return NSRunningApplication.current.activate(from: frontmost)
     }
 
     /// Deactivates the app and sets its activation policy.

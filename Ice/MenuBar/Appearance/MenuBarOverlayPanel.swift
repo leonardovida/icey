@@ -490,6 +490,13 @@ final class MenuBarOverlayPanel: NSPanel {
         }
     }
 
+    override func close() {
+        // A closed panel has been replaced, so it must not show again.
+        showRetryTask?.cancel()
+        showRetryTask = nil
+        super.close()
+    }
+
     /// Tries to show the panel again later, backing off between attempts.
     ///
     /// The panel is shown over its display's menu bar window, and gave up when

@@ -17,8 +17,24 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DD="$ROOT/build/release-derived"
 OUT="$ROOT/build/release/$TAG"
 TEAM="${DEVELOPMENT_TEAM:-2597HBX46V}"
-rm -rf "$OUT" "$OUT.dmgroot"; mkdir -p "$OUT" "$OUT.dmgroot"
 cd "$ROOT"
+
+# Checks that would otherwise only fail after the build and notarization.
+fail() { echo "error: $1" >&2; exit 1; }
+PBX="Ice.xcodeproj/project.pbxproj"
+grep -q "MARKETING_VERSION = \"${TAG#v}\";" "$PBX" || fail "MARKETING_VERSION isn't ${TAG#v}. Run Scripts/bump-version.sh $TAG first."
+BUILD="$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*;' "$PBX" | grep -o '[0-9]\{2,\}' | sort -n | tail -1)"
+LIVE="$(curl -fsL https://github.com/leonardovida/icey/releases/latest/download/appcast.xml 2>/dev/null \
+  | grep -o '<sparkle:version>[0-9]*' | grep -o '[0-9]*$' || true)"
+[ -z "$LIVE" ] || [ "$BUILD" -gt "$LIVE" ] \
+  || fail "Build number $BUILD isn't higher than the published $LIVE, so Sparkle wouldn't offer it. Run Scripts/bump-version.sh $TAG."
+[ -f "release-notes/$TAG.md" ] || fail "release-notes/$TAG.md is missing. Copy release-notes/TEMPLATE.md and fill it in."
+[ -z "$(git status --porcelain --untracked-files=no)" ] || [ -n "${ALLOW_DIRTY:-}" ] \
+  || fail "Uncommitted changes would ship in the release. Commit them first, or set ALLOW_DIRTY=1."
+
+rm -rf "$OUT" "$OUT.dmgroot"; mkdir -p "$OUT" "$OUT.dmgroot"
+# publish-release.sh tags this commit, so the tag always matches the binaries.
+git rev-parse HEAD > "$OUT.commit"
 
 # CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO keeps get-task-allow out, which notarization rejects.
 xcodebuild -project Ice.xcodeproj -scheme Ice -configuration Release -destination platform=macOS \

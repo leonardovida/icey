@@ -14,6 +14,7 @@ What changed in each version is in GitHub Releases. That is the main source for 
 
 ## Install
 
+- [Website](https://leonardovida.github.io/icey/): overview, download and FAQ
 - [Latest release](https://github.com/leonardovida/icey/releases/latest): DMG and zip for Apple silicon and Intel, signed with a Developer ID and notarized by Apple. There is no Homebrew cask yet.
 - [Install and switching from Ice](https://github.com/leonardovida/icey#install)
 
@@ -22,7 +23,8 @@ What changed in each version is in GitHub Releases. That is the main source for 
 - [Releases](https://github.com/leonardovida/icey/releases): full notes for every version
 - [Breaking changes](https://github.com/leonardovida/icey/blob/main/BREAKING_CHANGES.md): what users must do when upgrading
 - [Changelog](https://github.com/leonardovida/icey/blob/main/CHANGELOG.md): one-line index of releases
-- [Ice issues fixed in Icey](https://github.com/leonardovida/icey/blob/main/docs/upstream-issues.md)
+- [Ice bugs fixed in Icey](https://leonardovida.github.io/icey/fixes/): every fixed Ice issue, with what was wrong and what changed
+- [Issue tracker data](https://github.com/leonardovida/icey/blob/main/docs/issues.json): the same list as JSON
 
 ## Help and contributing
 

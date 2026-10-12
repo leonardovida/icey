@@ -1,0 +1,730 @@
+{
+  "about": "Tracks every upstream Ice (jordanbaird/Ice) issue triaged for Icey. Scripts/build-site.py turns it into docs/upstream-issues.md and the website. Edit this file, never the generated page. status: fixed | partial | open | not-a-bug | feature. fixed_in: the Icey release tag that ships the fix, or null if it is not released yet. pr: the Icey pull request with the fix.",
+  "issues": [
+    {
+      "number": 334,
+      "title": "Ice has noticeable energy impact during mouse movement",
+      "headline": "Ice uses energy every time you move the mouse",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Moving the mouse raised Ice's energy use in Activity Monitor, even with \"Show on hover\" turned off.",
+      "fix": "Icey only listens to mouse, scroll and drag events while a setting that needs them is on.",
+      "pr": 1
+    },
+    {
+      "number": 479,
+      "title": "Energy impact",
+      "headline": "Ice has a high energy impact in Activity Monitor",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice showed a high energy impact in Activity Monitor during normal use.",
+      "fix": "Icey stops listening to system-wide mouse events it doesn't need, so it stays near zero energy impact while idle.",
+      "pr": 1
+    },
+    {
+      "number": 578,
+      "title": "High CPU usage",
+      "headline": "Ice uses a lot of CPU after switching apps",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With menu bar appearance settings on, Ice's CPU use spiked after every app switch, because it polled the app menu every millisecond.",
+      "fix": "Icey polls with a back-off, and only for the split shape, which needs the app menu's width.",
+      "pr": 1
+    },
+    {
+      "number": 819,
+      "title": "memory leak in WindowServer caused by Ice?",
+      "headline": "WindowServer memory grows while Ice runs",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "After the Ice Bar was shown once, Ice captured the menu bar every 5 seconds forever, which kept WindowServer busy and growing.",
+      "fix": "Icey only captures the menu bar while the Ice Bar is visible, and only captures the wallpaper for shapes that draw it.",
+      "note": "Icey takes far fewer captures. A WindowServer leak inside macOS itself can't be ruled out.",
+      "pr": 1
+    },
+    {
+      "number": 530,
+      "title": "high memory usage",
+      "headline": "Ice's memory use grows over time",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice's memory grew over long runtimes.",
+      "fix": "A screen capture leak is fixed, and the menu bar item image cache is pruned instead of growing without limit.",
+      "pr": 1
+    },
+    {
+      "number": 973,
+      "title": "Menu bar layout shown nothing on the sections",
+      "headline": "Menu Bar Layout shows empty sections on macOS 26 Tahoe",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26 Tahoe, the Menu Bar Layout pane showed empty sections or \"Unable to display menu bar items\".",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "pr": 5
+    },
+    {
+      "number": 951,
+      "title": "Can't view the icons on Menu Bar Layout",
+      "headline": "Icons don't appear in Menu Bar Layout on macOS 26 Tahoe",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The Menu Bar Layout pane showed no icons, so items couldn't be rearranged.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "pr": 5
+    },
+    {
+      "number": 999,
+      "title": "Can't see layout",
+      "headline": "Menu Bar Layout is blank",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The Menu Bar Layout pane stayed blank.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "pr": 5
+    },
+    {
+      "number": 921,
+      "title": "Icons in re-arrange menu in settings aren't visible",
+      "headline": "Icons in the settings rearrange view aren't visible",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The icons in the Menu Bar Layout settings didn't show, so nothing could be rearranged.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "pr": 5
+    },
+    {
+      "number": 916,
+      "title": "I can't edit my layout, because it's all blank",
+      "headline": "Menu Bar Layout is blank and can't be edited",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The Menu Bar Layout pane was blank, so the layout couldn't be edited.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "pr": 5
+    },
+    {
+      "number": 913,
+      "title": "Settings Menu: Menu Bar Layout Icons Do Not Appear",
+      "headline": "Menu Bar Layout icons don't appear in settings",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "No icons appeared in the Menu Bar Layout pane.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "pr": 5
+    },
+    {
+      "number": 957,
+      "title": "Starts but nothing much more",
+      "headline": "Ice starts but its layout, Ice Bar and search show nothing",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Ice launched, but its menu bar layout, Ice Bar and search showed no items.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably.",
+      "pr": 5
+    },
+    {
+      "number": 947,
+      "title": "app crash after click in menubar",
+      "headline": "Ice crashes when you click the menu bar",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26, Ice could crash when you clicked the menu bar.",
+      "fix": "The code that crashed is gone, and similar conversions elsewhere no longer crash on unexpected values.",
+      "pr": 5
+    },
+    {
+      "number": 977,
+      "title": "crashes whenever I use the trigger button in the menu bar",
+      "headline": "Ice crashes when you click its menu bar icon",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26, clicking Ice's own menu bar icon to show hidden items crashed the app.",
+      "fix": "The code that crashed is gone, and similar conversions elsewhere no longer crash on unexpected values.",
+      "pr": 5
+    },
+    {
+      "number": 925,
+      "title": "Crash when enabling \"Use Ice Bar\" with Dynamic location",
+      "headline": "Ice crashes when you enable the Ice Bar with the Dynamic location",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Turning on \"Use Ice Bar\" with the Dynamic location crashed Ice.",
+      "fix": "The code that crashed is gone, and similar conversions elsewhere no longer crash on unexpected values.",
+      "pr": 5
+    },
+    {
+      "number": 905,
+      "title": "(untitled report)",
+      "headline": "Ice crashes at launch with the Ice Bar on macOS 26.4",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With the Ice Bar enabled, Ice 0.11.12 crashed at launch or while running on macOS 26.4, on a main-thread check while reading the menu bar's window.",
+      "fix": "Icey doesn't have the Ice 0.11.12 code that crashed.",
+      "pr": 5
+    },
+    {
+      "number": 969,
+      "title": "update dialog keeps open and cannot be closed after launch",
+      "headline": "The update dialog stays open and can't be closed",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The \"Check for updates automatically?\" dialog opened on launch and couldn't be closed.",
+      "fix": "The dialog now comes to the front, accepts input, and stays answered.",
+      "pr": 5
+    },
+    {
+      "number": 937,
+      "title": "Check for automatic updates keeps appearing when clicking",
+      "headline": "The automatic updates prompt keeps coming back",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The \"Check for updates automatically?\" prompt came back again and again.",
+      "fix": "The dialog now comes to the front, accepts input, and stays answered.",
+      "pr": 5
+    },
+    {
+      "number": 931,
+      "title": "Check for updates automatically dialog box doesnt accept input",
+      "headline": "The automatic updates dialog doesn't accept clicks",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The \"Check for updates automatically?\" dialog ignored clicks.",
+      "fix": "The dialog now comes to the front, accepts input, and stays answered.",
+      "pr": 5
+    },
+    {
+      "number": 912,
+      "title": "Update window won't shut down after clicking on update option",
+      "headline": "The update window won't close after you choose an option",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "After choosing an update option, the update window stayed open.",
+      "fix": "The dialog now comes to the front, accepts input, and stays answered.",
+      "pr": 5
+    },
+    {
+      "number": 932,
+      "title": "(untitled report)",
+      "headline": "The update dialog doesn't let you click its options",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26.4.1, none of the options in the update dialog could be clicked.",
+      "fix": "The dialog now comes to the front, accepts input, and stays answered.",
+      "pr": 5
+    },
+    {
+      "number": 926,
+      "title": "(untitled report)",
+      "headline": "The \"Check for updates automatically\" pop-up won't close",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Right after opening Ice on macOS 26.3.1, the \"Check for updates automatically\" pop-up stayed open after either option was chosen.",
+      "fix": "The dialog now comes to the front, accepts input, and stays answered.",
+      "pr": 5
+    },
+    {
+      "number": 986,
+      "title": "Ice Bar leaves a ghost/visual artifact on the primary display when a video enters fullscreen on a secondary display",
+      "headline": "The Ice Bar leaves an empty ghost bar when a video goes fullscreen on another display",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "If a space or display changed while the Ice Bar was opening, for example a video entering fullscreen on another display, an empty bar stayed on screen.",
+      "fix": "The Ice Bar now stays closed when the space or display changes while it opens.",
+      "pr": 5
+    },
+    {
+      "number": 959,
+      "title": "Split menu bar does not function like expected in full screen",
+      "headline": "The split menu bar shape breaks in fullscreen",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The menu bar appearance used the fullscreen state of whichever display had focus, so the split shape broke in fullscreen.",
+      "fix": "Each display now uses its own fullscreen state.",
+      "pr": 5
+    },
+    {
+      "number": 988,
+      "title": "Ice Bar fullscreen expansion behaves differently depending on which display contains the active window",
+      "headline": "The Ice Bar behaves differently in fullscreen depending on the active display",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "In fullscreen, the Ice Bar expanded differently depending on which display had the active window.",
+      "fix": "Each display now uses its own fullscreen state.",
+      "pr": 5
+    },
+    {
+      "number": 968,
+      "title": "Ice stuck / menu bar stays hidden after form dropdown hang",
+      "headline": "Ice gets stuck and the menu bar stays hidden when an app hangs",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "When an app stopped responding, Ice could get stuck waiting for it, and the menu bar stayed hidden.",
+      "fix": "Accessibility calls now give up after 1 second, and stuck item moves and clicks time out and retry.",
+      "pr": 5
+    },
+    {
+      "number": 1014,
+      "title": "With an app item among the system items, clicking the battery opens that app and Wi-Fi does not open",
+      "headline": "On macOS 27, clicking the battery opens another app and Wi-Fi doesn't open",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27, with an app's item placed among the system items, clicking the battery opened that app, and Wi-Fi didn't open.",
+      "fix": "Each click now reaches the item you clicked.",
+      "pr": 5
+    },
+    {
+      "number": 954,
+      "title": "Ice in menu bar not working anymore (MacOS Golden Gate 27)",
+      "headline": "Ice stops hiding menu bar items on macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27, Ice could no longer hide items, and Screen Mirroring disappeared from the menu bar.",
+      "fix": "Icey includes early macOS 27 support: hiding, the Ice Bar and the layout editor work again, and Screen Mirroring stays.",
+      "note": "Early macOS 27 support, built from community work for Ice. Please report anything that doesn't work.",
+      "pr": 5
+    },
+    {
+      "number": 1007,
+      "title": "An app launched while concealed gets a squashed (3 pt) menu bar item that never recovers",
+      "headline": "On macOS 27, an app launched while items are hidden gets a squashed menu bar item",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27, an app that launched while items were hidden got a 3-point-wide menu bar item that never recovered.",
+      "fix": "Icey's macOS 27 support sorts items into the right section when an app launches or quits.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 1006,
+      "title": "What got Ice working with PR #995, plus two things to look into",
+      "headline": "Getting Ice working on macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Ice didn't work on macOS 27 without the unmerged community pull request jordanbaird/Ice#995 and further fixes.",
+      "fix": "Icey includes jordanbaird/Ice#995 and the follow-up fixes this issue describes.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 1010,
+      "title": "always loading meum bar items",
+      "headline": "Menu bar items keep loading forever on macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27, the menu bar items list kept loading and never showed anything.",
+      "fix": "Icey includes early macOS 27 support, so the layout editor loads your items.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 1009,
+      "title": "(untitled report)",
+      "headline": "Menu Bar Layout stuck on \"Loading menu bar items\" on macOS 27.2 beta",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27.2 beta 3, the Menu Bar Layout pane showed \"Loading menu bar items...\" with a spinner forever.",
+      "fix": "Icey includes early macOS 27 support, so the layout editor loads your items on macOS 27.",
+      "note": "Early macOS 27 support. macOS 27.2 betas are untested.",
+      "pr": 5
+    },
+    {
+      "number": 1008,
+      "title": "Not functioning since MacOS 27 update on my Macbook pro M3 pro",
+      "headline": "Ice stops working after updating to macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "After updating to macOS 27, Ice stopped working.",
+      "fix": "Icey includes early macOS 27 support: hiding, the Ice Bar and the layout editor work again.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 1003,
+      "title": "Updated to MacOS 27.0.1 and cannot customize Menu Bar Layout on Ice",
+      "headline": "Menu Bar Layout can't be customized on macOS 27.0.1",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27.0.1, the Menu Bar Layout couldn't be customized.",
+      "fix": "Icey includes early macOS 27 support, so the layout editor works again.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 996,
+      "title": "Ice not working properly on macOS 27 Golden Gate",
+      "headline": "Ice doesn't work properly on macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27, hiding items, the Ice Bar and the layout editor didn't work.",
+      "fix": "Icey includes early macOS 27 support: hiding, the Ice Bar and the layout editor work again.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 992,
+      "title": "unavailable under MacOS27",
+      "headline": "Ice is unusable on macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Ice was unusable on macOS 27.",
+      "fix": "Icey includes early macOS 27 support: hiding, the Ice Bar and the layout editor work again.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 991,
+      "title": "MacOS 27 Update",
+      "headline": "Ice breaks after the macOS 27 update",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Ice broke after the macOS 27 update.",
+      "fix": "Icey includes early macOS 27 support: hiding, the Ice Bar and the layout editor work again.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 970,
+      "title": "Not automatically hiding in MacOS 27",
+      "headline": "Menu bar items don't hide automatically on macOS 27",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 27, items didn't hide again automatically.",
+      "fix": "Icey includes early macOS 27 support for hiding and showing items.",
+      "note": "Early macOS 27 support. Auto-rehide is untested on macOS 27.",
+      "pr": 5
+    },
+    {
+      "number": 965,
+      "title": "Menubar layout broken/spinning in MacOS 27 Public Beta",
+      "headline": "Menu Bar Layout keeps spinning on the macOS 27 beta",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On the macOS 27 public beta, the Menu Bar Layout pane showed a spinner forever.",
+      "fix": "Icey includes early macOS 27 support, so the layout editor loads your items.",
+      "note": "Early macOS 27 support.",
+      "pr": 5
+    },
+    {
+      "number": 914,
+      "title": "Ice Bar auto-hides before cursor reaches it (latest beta)",
+      "headline": "The Ice Bar closes before the pointer reaches it",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With timed or hover auto-rehide, the Ice Bar could close while you moved the pointer down to it.",
+      "fix": "The Ice Bar's area now counts as inside the menu bar, including during the moment before it appears.",
+      "pr": 6
+    },
+    {
+      "number": 943,
+      "title": "Ligthing error when enabeling split shape in menu bar appearance",
+      "headline": "The split menu bar shape looks brighter than the rest of the menu bar",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With the split shape, the area around the shape looked brighter than the rest of the menu bar.",
+      "fix": "Icey now captures the wallpaper with the system's dimming layer, so the colors match.",
+      "pr": 6
+    },
+    {
+      "number": 919,
+      "title": "Ice icon dissappeared",
+      "headline": "The Ice icon disappears and the layout pane keeps loading",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "When Ice's divider was missing from the menu bar, for example after turning Ice off in System Settings > Menu Bar, the icon was gone and the Menu Bar Layout pane loaded forever.",
+      "fix": "The layout pane now says what's wrong and how to get the icon back.",
+      "pr": 6
+    },
+    {
+      "number": 1004,
+      "title": "Unable to proceed past permissions request.",
+      "headline": "Ice keeps asking for a permission that is already enabled",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "System Settings showed Accessibility or Screen Recording as enabled, but Ice still asked for it.",
+      "fix": "Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch.",
+      "pr": 5
+    },
+    {
+      "number": 929,
+      "title": "Menu bar scaling and layout issues on external/built-in displays",
+      "headline": "Menu bar icons are scaled wrong on external displays",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With an external and a built-in display, item images were shown at the wrong scale.",
+      "fix": "Item images now use the scale of the display they were captured on.",
+      "note": "Not yet confirmed on a two-display setup.",
+      "pr": 5
+    },
+    {
+      "number": 987,
+      "title": "Ice Bar icons shrink drastically when expanded on an external display",
+      "headline": "Ice Bar icons shrink on an external display",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On an external display, the Ice Bar's icons were drawn much smaller than they should be.",
+      "fix": "Item images now take their scale from the capture itself.",
+      "note": "Not yet confirmed on a two-display setup.",
+      "pr": 5
+    },
+    {
+      "number": 955,
+      "title": "Scale error and auto-deploying",
+      "headline": "Ice Bar icons are scaled wrong on another display",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Ice Bar icons were scaled wrong when shown on another display.",
+      "fix": "Item images now take their scale from the capture itself.",
+      "note": "Not yet confirmed on a two-display setup.",
+      "pr": 5
+    },
+    {
+      "number": 910,
+      "title": "iPad appearance tint shows on main monitor when the iPad is used as an extended display",
+      "headline": "The menu bar tint shows on the wrong display with an iPad as a second screen",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With an iPad used as an extended display (Sidecar), a tint strip from the menu bar appearance showed on the main display.",
+      "fix": "An appearance overlay that ends up on another display now hides itself.",
+      "note": "Not yet confirmed with an iPad.",
+      "pr": 6
+    },
+    {
+      "number": 908,
+      "title": "Ice appears to have caused system-wide freeze & kernel panic after ~33 hours of uptime",
+      "headline": "System freeze after long uptime with Ice running",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "A Mac froze after about 33 hours of uptime with Ice running. Ice retried moving an item every 3 seconds forever when it couldn't put it back.",
+      "fix": "The crashing code from Ice 0.11.12 is gone. Retries now back off and stop after five rounds, and Icey recovers when its divider reappears.",
+      "note": "The freeze itself hasn't been reproduced.",
+      "pr": 6
+    },
+    {
+      "number": 946,
+      "title": "MacOS Tahoe 26.5 update broke hidden elements in ice layout",
+      "headline": "Hidden items are shown as always-hidden after macOS Tahoe 26.5",
+      "status": "open",
+      "fixed_in": null,
+      "symptom": "After updating to macOS 26.5, items in the hidden section showed up in the wrong section of the layout.",
+      "fix": "Needs a reproduction in Icey.",
+      "pr": null
+    },
+    {
+      "number": 918,
+      "title": "When icon for Intego One is moved from hidden to visible bar in settings, the icon disappears",
+      "headline": "An app's icon disappears when moved from hidden to visible",
+      "status": "open",
+      "fixed_in": null,
+      "symptom": "Moving Intego One's icon from the hidden to the visible section made it disappear.",
+      "fix": "Needs a reproduction in Icey.",
+      "pr": null
+    },
+    {
+      "number": 930,
+      "title": "Removed icon from tray and can't get it back",
+      "headline": "Ice's icon was removed from the menu bar and won't come back",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Ice's own icon was removed from the menu bar.",
+      "fix": "Turn the icon back on in System Settings > Menu Bar.",
+      "pr": null
+    },
+    {
+      "number": 934,
+      "title": "Nothing happens when I try to run Ice",
+      "headline": "Nothing happens when you open Ice",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Ice seemed not to start.",
+      "fix": "Ice is running but its icon has no room in the menu bar, for example next to the notch. It shows up on a wider display. Hide or remove other items, or reduce item spacing.",
+      "pr": null
+    },
+    {
+      "number": 906,
+      "title": "App opens in dock when expanding the bar",
+      "headline": "A Dock icon appears when you show hidden items",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Showing hidden items made the app appear in the Dock for a moment.",
+      "fix": "This is how \"Hide application menus\" works: it makes the app active for a moment. Turn that setting off, or use the Ice Bar.",
+      "pr": null
+    },
+    {
+      "number": 974,
+      "title": "Orphaned application menu-bar windows stuck at CGWindow layer 101, invisible to accessibility",
+      "headline": "Orphaned menu bar windows stuck at layer 101",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Invisible menu bar windows stayed on screen.",
+      "fix": "Not caused by Ice: the reporter saw it with the setting off and after removing Ice.",
+      "pr": null
+    },
+    {
+      "number": 909,
+      "title": "OneDrive icons",
+      "headline": "OneDrive icons move to the always-hidden section",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "OneDrive's icons ended up in the always-hidden section.",
+      "fix": "Some apps don't remember their item positions, so macOS places them in the always-hidden section. See the frequent issues page.",
+      "pr": null
+    },
+    {
+      "number": 915,
+      "title": "Unsplash client crashes shortly after being hidden by ICE",
+      "headline": "An app crashes after its menu bar item is hidden",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "The Unsplash app crashed shortly after its item was hidden.",
+      "fix": "The other app crashes when its item is off screen. See the frequent issues page.",
+      "pr": null
+    },
+    {
+      "number": 949,
+      "title": "How to uninstall?",
+      "headline": "How to uninstall Ice",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "How to quit and uninstall the app.",
+      "fix": "See the frequent issues page.",
+      "pr": null
+    },
+    {
+      "number": 1015,
+      "title": "Is the project still alive?",
+      "headline": "Is the Ice project still alive?",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Users asked whether Ice is still maintained.",
+      "fix": "Ice is no longer maintained. Icey continues it.",
+      "pr": null
+    },
+    {
+      "number": 993,
+      "title": "This project is no longer maintained by the original author",
+      "headline": "Is Ice still maintained?",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Users asked whether Ice is still maintained.",
+      "fix": "Ice is no longer maintained. Icey continues it.",
+      "pr": null
+    },
+    {
+      "number": 939,
+      "title": "IS THIS PROJECT ABANDONED?",
+      "headline": "Is Ice abandoned?",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Users asked whether Ice is still maintained.",
+      "fix": "Ice is no longer maintained. Icey continues it.",
+      "pr": null
+    },
+    {
+      "number": 1011,
+      "title": "Some Golden Gate Clarity",
+      "headline": "Will Ice support macOS 27?",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Users asked whether Ice is still maintained.",
+      "fix": "Ice is no longer maintained. Icey continues it, with early macOS 27 support.",
+      "pr": null
+    },
+    {
+      "number": 966,
+      "title": "Unofficial macOS 26-compatible build of Ice",
+      "headline": "Unofficial macOS 26 build of Ice",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "An announcement for another unofficial build.",
+      "fix": "Not a bug.",
+      "pr": null
+    },
+    {
+      "number": 935,
+      "title": "Website SSL cert expired",
+      "headline": "Ice's website certificate expired",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Upstream's website showed a certificate error.",
+      "fix": "This is about upstream's website, not the app.",
+      "pr": null
+    },
+    {
+      "number": 938,
+      "title": "Option that lets you choose location of new items",
+      "headline": "Choose which section new menu bar items appear in",
+      "status": "feature",
+      "fixed_in": null,
+      "symptom": "A request for a setting that decides where new menu bar items go.",
+      "fix": "Not started. Needs a way to recognize new items and move them automatically. Pull requests welcome.",
+      "pr": null
+    },
+    {
+      "number": 961,
+      "title": "No dock icon",
+      "headline": "Keep the app out of the Dock",
+      "status": "feature",
+      "fixed_in": null,
+      "symptom": "A request to never show a Dock icon.",
+      "fix": "Not started. Needs an option to keep Icey out of the Dock while Settings is open. Pull requests welcome.",
+      "pr": null
+    }
+  ],
+  "upstream_prs": [
+    {
+      "numbers": [
+        995
+      ],
+      "kind": "pull",
+      "summary": "restore hiding, the Ice Bar and the layout editor on macOS 27."
+    },
+    {
+      "numbers": [
+        1001
+      ],
+      "kind": "issue",
+      "summary": "follow-ups for the remaining macOS 27 gaps."
+    },
+    {
+      "numbers": [
+        953,
+        950
+      ],
+      "kind": "pull",
+      "summary": "helper connection on macOS 26 (adapted)."
+    },
+    {
+      "numbers": [
+        956,
+        967
+      ],
+      "kind": "pull",
+      "summary": "crash fixes (adapted)."
+    },
+    {
+      "numbers": [
+        945,
+        870
+      ],
+      "kind": "pull",
+      "summary": "update prompt fixes (adapted)."
+    },
+    {
+      "numbers": [
+        928
+      ],
+      "kind": "pull",
+      "summary": "pick up permissions granted after launch (adapted)."
+    },
+    {
+      "numbers": [
+        922,
+        942,
+        972,
+        1012
+      ],
+      "kind": "pull",
+      "summary": "smaller fixes."
+    }
+  ]
+}

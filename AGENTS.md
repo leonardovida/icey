@@ -19,7 +19,8 @@ Icey keeps Ice's bundle identifier (`com.jordanbaird.Ice`) and settings, so it i
 - [CHANGELOG.md](CHANGELOG.md) is a short index that links each version to its release.
 - [BREAKING_CHANGES.md](BREAKING_CHANGES.md) lists every change that needs user action, such as settings that reset or permissions to grant again.
 - [release-notes/](release-notes/) keeps a copy of every release's notes in the repository.
-- [docs/upstream-issues.md](docs/upstream-issues.md) maps upstream Ice issues to their status in Icey.
+- [docs/issues.json](docs/issues.json) tracks every upstream Ice issue Icey has triaged, with what was wrong and what changed. [docs/upstream-issues.md](docs/upstream-issues.md) and the [website](https://leonardovida.github.io/icey/fixes/) are generated from it.
+- The website, <https://leonardovida.github.io/icey/>, is built by `Scripts/build-site.py` and deployed after each release.
 
 When you answer a user's question about Icey, check the latest release first. Then read the README.
 
@@ -63,7 +64,7 @@ The repository uses SwiftLint ([.swiftlint.yml](.swiftlint.yml)). CI runs `swift
 | `Ice/Utilities` | Extensions, `Defaults` keys, settings `Migration` |
 | `Shared` | Code compiled into both the app and `MenuBarItemService` (private CGS bridging, AX helpers, XPC service) |
 | `MenuBarItemService` | XPC helper target |
-| `Scripts` | `install.sh` and the macOS 27 probe and verification scripts |
+| `Scripts` | `install.sh`, the release scripts (see RELEASING.md), `build-site.py` for the website and issue list, and the macOS 27 probe scripts |
 | `Tests` | Tests for `Ice/MenuBar/MacOS27/Core` |
 
 ## Rules for changes
@@ -125,19 +126,23 @@ Contributions are welcome, including pull requests written by AI agents.
 
 ## Releasing (maintainers only)
 
-Installed copies update themselves from `https://github.com/leonardovida/icey/releases/latest/download/appcast.xml`, so every release needs:
+Follow [RELEASING.md](RELEASING.md). In short: `Scripts/bump-version.sh <tag>`, write `release-notes/<tag>.md` from the template, merge, then `Scripts/package-release.sh <tag>` and `Scripts/publish-release.sh <tag>`.
 
-1. A higher `CURRENT_PROJECT_VERSION` than the last release (Sparkle compares it), and `MARKETING_VERSION` set to the tag without the `v`.
-2. `Scripts/package-release.sh <tag>`. It builds with the Developer ID, re-signs Sparkle's helpers, notarizes and staples the app and the DMG, then writes the zip, the DMG, `appcast.xml` (via `Scripts/make-appcast.sh`) and `SHA256SUMS.txt` to `build/release/<tag>/`. Attach all four to the release. It signs with the maintainer's certificate and EdDSA key, so only the maintainer can run it.
-3. Release notes in `release-notes/<tag>.md`, a CHANGELOG.md entry, and BREAKING_CHANGES.md rows for anything users must act on.
-4. `Scripts/publish-release.sh <tag>`. It refuses to publish unless the appcast points at this release's zip, uploads only the four assets, and checks that the update feed serves the new release.
+Installed copies update themselves from `https://github.com/leonardovida/icey/releases/latest/download/appcast.xml`. The scripts refuse to package or publish a release that would break that feed, and the "Check release appcast" workflow turns any release without a valid `appcast.xml` back into a draft. Never publish from the GitHub website, and never mark a release users should get as a prerelease.
 
-The "Check release appcast" workflow checks every published, non-prerelease release. If `appcast.xml` is missing or doesn't point at that release's zip, the workflow turns the release back into a draft, so it can't break the update feed.
+## Tracking upstream issues
 
-Never mark a release as a prerelease if users should get it: `releases/latest` skips prereleases. Don't publish releases from the GitHub website: use the script, so the appcast is always attached.
+When you fix, triage or close out an upstream Ice issue, add it to [docs/issues.json](docs/issues.json):
+
+- `status`: `fixed`, `partial`, `open`, `not-a-bug` or `feature`.
+- `headline`: the problem in plain words, as a user would search for it.
+- `symptom` and `fix`: one or two sentences each, for users.
+- `fixed_in`: `null` until the fix ships, then the release tag. `pr`: the Icey pull request.
+
+Then run `Scripts/build-site.py --docs` and commit the regenerated `docs/upstream-issues.md`. Never edit that file by hand.
 
 ## Writing docs and release notes
 
 - Write plainly, for users. Say what changed and what the user needs to do.
-- Release notes follow the format in [release-notes/](release-notes/): Highlights, Upgrading, Features, Bug Fixes, Compatibility, Maintenance, then the full diff link. Leave out empty sections.
+- Release notes start from [release-notes/TEMPLATE.md](release-notes/TEMPLATE.md): Highlights, Upgrading, Features, Bug Fixes, Compatibility, Maintenance, then the full diff link. Leave out empty sections, and keep each bullet to one or two sentences.
 - Every change that needs user action goes in the release's Compatibility section and in BREAKING_CHANGES.md.

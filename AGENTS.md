@@ -93,6 +93,16 @@ Icey exists largely because Ice used too much CPU, energy and WindowServer memor
 - Do not change the bundle identifier, the Sparkle feed URL or the signing setup without an issue that discusses it first. Users' settings and permissions depend on them.
 - Do not add Swift packages without discussing it in an issue first.
 
+### Design on macOS 26 and later
+
+Follow Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/) for Liquid Glass, and keep macOS 14 and 15 looking as they do now:
+
+- Liquid Glass belongs only on floating controls, such as the search panel (`.glassEffect(.regular, in:)` behind `#available(macOS 26.0, *)`). Don't put glass on settings rows, lists or other content, and don't stack glass on glass.
+- Don't use HUD-style panels; the HIG reserves them for media apps.
+- In the status item menu, give each new item an SF Symbol with `setMenuSymbol(_:)` (macOS 26 and later only), consistently within its group.
+- The app icon is `Ice/Resources/AppIcon.icon`, an Icon Composer document. See [Resources/AppIcon/README.md](Resources/AppIcon/README.md).
+- macOS 27 APIs (such as `NSStatusItem.expandedInterfaceDelegate` for the Ice Bar, `NSMenuItem.preferredImageVisibility` and `NSView.cornerConfiguration`) need Xcode 27 and the macOS 27 SDK.
+
 ### Style
 
 - Match the surrounding code: naming, comment density, `// MARK:` sections and doc comments on types and non-obvious members.

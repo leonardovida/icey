@@ -57,12 +57,26 @@ final class MenuBarSearchPanel: NSPanel {
 
     /// Creates a menu bar search panel.
     init() {
-        super.init(
-            contentRect: .zero,
-            styleMask: [.titled, .fullSizeContentView, .nonactivatingPanel, .utilityWindow, .hudWindow],
-            backing: .buffered,
-            defer: false
-        )
+        if #available(macOS 26.0, *) {
+            // A borderless panel whose content draws Liquid Glass, like Spotlight. The HIG
+            // reserves the HUD style for media apps.
+            super.init(
+                contentRect: .zero,
+                styleMask: [.borderless, .fullSizeContentView, .nonactivatingPanel],
+                backing: .buffered,
+                defer: false
+            )
+            self.isOpaque = false
+            self.backgroundColor = .clear
+            self.hasShadow = true
+        } else {
+            super.init(
+                contentRect: .zero,
+                styleMask: [.titled, .fullSizeContentView, .nonactivatingPanel, .utilityWindow, .hudWindow],
+                backing: .buffered,
+                defer: false
+            )
+        }
         self.titlebarAppearsTransparent = true
         self.isMovableByWindowBackground = false
         self.animationBehavior = .none
@@ -204,14 +218,12 @@ private struct MenuBarSearchContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            searchField
-            mainContent
-            bottomBar
-        }
-        .background {
-            VisualEffectView(material: .sheet, blendingMode: .behindWindow)
-                .opacity(0.5)
+        panelBackground {
+            VStack(spacing: 0) {
+                searchField
+                mainContent
+                bottomBar
+            }
         }
         .frame(width: 600, height: 400)
         .fixedSize()
@@ -230,20 +242,46 @@ private struct MenuBarSearchContentView: View {
         }
     }
 
+    /// Draws the panel's background: Liquid Glass on macOS 26 and later, and a
+    /// translucent sheet material before that.
+    @ViewBuilder
+    private func panelBackground(@ViewBuilder content: () -> some View) -> some View {
+        if #available(macOS 26.0, *) {
+            let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
+            content()
+                .clipShape(shape)
+                .glassEffect(.regular, in: shape)
+                .containerShape(shape)
+        } else {
+            content()
+                .background {
+                    VisualEffectView(material: .sheet, blendingMode: .behindWindow)
+                        .opacity(0.5)
+                }
+        }
+    }
+
     @ViewBuilder
     private var searchField: some View {
         let promptText = Text("Search menu bar items…")
 
         VStack(spacing: 0) {
-            TextField(text: $model.searchText, prompt: promptText) {
-                promptText
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 18))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+
+                TextField(text: $model.searchText, prompt: promptText) {
+                    promptText
+                }
+                .labelsHidden()
+                .textFieldStyle(.plain)
+                .multilineTextAlignment(.leading)
+                .font(.system(size: 18))
+                .focused($searchFieldIsFocused)
             }
-            .labelsHidden()
-            .textFieldStyle(.plain)
-            .multilineTextAlignment(.leading)
-            .font(.system(size: 18))
             .padding(15)
-            .focused($searchFieldIsFocused)
 
             Divider()
         }
@@ -251,7 +289,10 @@ private struct MenuBarSearchContentView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        if hasItems {
+        if hasItems && model.displayedItems.isEmpty && !model.searchText.isEmpty {
+            ContentUnavailableView.search(text: model.searchText)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if hasItems {
             SectionedList(selection: $model.selection, items: $model.displayedItems)
                 .contentPadding(8)
                 .scrollContentBackground(.hidden)
@@ -287,7 +328,13 @@ private struct MenuBarSearchContentView: View {
             }
         }
         .padding(bottomBarPadding)
-        .background(.thinMaterial)
+        .background {
+            // On macOS 26, the bar sits directly on the panel's glass. A material
+            // on top of glass would hide it.
+            if #unavailable(macOS 26.0) {
+                Rectangle().fill(.thinMaterial)
+            }
+        }
         .buttonStyle(BottomBarButtonStyle())
         .overlay(alignment: .top) {
             Divider()

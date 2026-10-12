@@ -31,8 +31,23 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// The currently managed menu bar overlay panels.
     private(set) var overlayPanels = Set<MenuBarOverlayPanel>()
 
-    /// The amount to inset the menu bar if called for by the configuration.
-    let menuBarInsetAmount: CGFloat = if #available(macOS 26.0, *) { 3.5 } else { 5 }
+    /// The amount to inset the menu bar if called for by the configuration,
+    /// on a menu bar tall enough to take it.
+    private let preferredMenuBarInsetAmount: CGFloat = if #available(macOS 26.0, *) { 3.5 } else { 5 }
+
+    /// Returns the amount to inset a menu bar of the given height if called
+    /// for by the configuration.
+    ///
+    /// The inset is a fixed amount, but a notched display set to a lower
+    /// resolution has a shorter menu bar. At 1168x755 the inset shape and
+    /// the Ice Bar, which are both inset by this amount at the top and
+    /// bottom, became shorter than the menu bar items and cut them off
+    /// (jordanbaird/Ice#260). Keep the inset shape at least as tall as a
+    /// status item.
+    func menuBarInsetAmount(forMenuBarHeight menuBarHeight: CGFloat) -> CGFloat {
+        let availableInset = (menuBarHeight - NSStatusBar.system.thickness) / 2
+        return max(0, min(preferredMenuBarInsetAmount, availableInset))
+    }
 
     /// Performs initial setup of the manager.
     func performSetup(with appState: AppState) {
@@ -63,12 +78,13 @@ final class MenuBarAppearanceManager: ObservableObject {
                 guard let self else {
                     return
                 }
-                while let panel = overlayPanels.popFirst() {
-                    panel.orderOut(self)
-                }
-                if Set(overlayPanels.map { $0.owningScreen }) != Set(NSScreen.screens) {
-                    configureOverlayPanels(with: configuration)
-                }
+                // Rebuild the panels for the new set of displays. This used to
+                // order the old panels out without closing them, which left them
+                // alive with their timers and observers running, and compared
+                // the displays against the set it had just emptied, so it rebuilt
+                // whenever any display was attached. `configureOverlayPanels(with:)`
+                // closes the old panels.
+                configureOverlayPanels(with: configuration)
             }
             .store(in: &c)
 

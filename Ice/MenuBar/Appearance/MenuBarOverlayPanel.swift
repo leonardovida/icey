@@ -73,6 +73,13 @@ final class MenuBarOverlayPanel: NSPanel {
     /// The context that manages panel update tasks.
     private let updateTaskContext = UpdateTaskContext()
 
+    /// The task that tries to show the panel again after its display had no
+    /// menu bar to show over.
+    private var showRetryTask: Task<Void, Never>?
+
+    /// The number of times in a row the panel has tried to show again.
+    private var showRetryCount = 0
+
     /// The shared app state.
     private(set) weak var appState: AppState?
 
@@ -107,14 +114,20 @@ final class MenuBarOverlayPanel: NSPanel {
     private func configureCancellables() {
         var c = Set<AnyCancellable>()
 
-        // Show the panel on the active space.
-        NSWorkspace.shared.notificationCenter
-            .publisher(for: NSWorkspace.activeSpaceDidChangeNotification)
-            .debounce(for: 0.1, scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.needsShow = true
-            }
-            .store(in: &c)
+        // Show the panel on the active space, and again when the displays wake,
+        // as the menu bar may not have been back when a display change during
+        // sleep rebuilt the panels (jordanbaird/Ice#53).
+        Publishers.Merge(
+            NSWorkspace.shared.notificationCenter
+                .publisher(for: NSWorkspace.activeSpaceDidChangeNotification),
+            NSWorkspace.shared.notificationCenter
+                .publisher(for: NSWorkspace.screensDidWakeNotification)
+        )
+        .debounce(for: 0.1, scheduler: DispatchQueue.main)
+        .sink { [weak self] _ in
+            self?.needsShow = true
+        }
+        .store(in: &c)
 
         // Update when light/dark mode changes.
         DistributedNotificationCenter.default()
@@ -447,8 +460,13 @@ final class MenuBarOverlayPanel: NSPanel {
         }
 
         guard let menuBarHeight = owningScreen.getMenuBarHeight() else {
+            scheduleShowRetry()
             return
         }
+
+        showRetryTask?.cancel()
+        showRetryTask = nil
+        showRetryCount = 0
 
         let newFrame = CGRect(
             x: owningScreen.frame.minX,
@@ -469,6 +487,35 @@ final class MenuBarOverlayPanel: NSPanel {
 
         if !appState.menuBarManager.isMenuBarHiddenBySystem {
             animator().alphaValue = 1
+        }
+    }
+
+    /// Tries to show the panel again later, backing off between attempts.
+    ///
+    /// The panel is shown over its display's menu bar window, and gave up when
+    /// there was none. Nothing tried again until the next space change, so an
+    /// appearance applied while the menu bar was not there yet never showed:
+    /// at login, where the border only appeared after Ice was restarted
+    /// (jordanbaird/Ice#409), and after the displays changed during sleep,
+    /// which rebuilds the panels while the new displays have no menu bar yet
+    /// (jordanbaird/Ice#53). Retries stop after about two minutes.
+    private func scheduleShowRetry() {
+        let maxRetryCount = 16
+        guard showRetryCount < maxRetryCount else {
+            MenuBarOverlayPanel.logger.notice(
+                "No menu bar on display \(self.owningScreen.displayID, privacy: .public). Giving up showing overlay panel."
+            )
+            return
+        }
+        let delay = min(Duration.milliseconds(250) * (1 << min(showRetryCount, 6)), .seconds(10))
+        showRetryCount += 1
+        showRetryTask?.cancel()
+        showRetryTask = Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled else {
+                return
+            }
+            self?.needsShow = true
         }
     }
 
@@ -616,7 +663,13 @@ private final class MenuBarOverlayPanelContentView: NSView {
         let insetRect: CGRect = if !screen.hasNotch {
             switch (leadingEndCap, trailingEndCap) {
             case (.square, .square):
-                CGRect(x: rect.origin.x, y: rect.origin.y + 1, width: rect.width, height: rect.height - 2)
+                // A shape with square ends fills the menu bar's height, as it
+                // does on a notched display. Insetting it by a point at the top
+                // and bottom left a strip of wallpaper above and below the full
+                // shape, so on a display without a notch it looked a few pixels
+                // shorter than the menu bar (jordanbaird/Ice#657). Shapes with
+                // a rounded end keep the inset.
+                rect
             case (.square, .round):
                 CGRect(x: rect.origin.x, y: rect.origin.y + 1, width: rect.width - 1, height: rect.height - 2)
             case (.round, .square):
@@ -670,13 +723,14 @@ private final class MenuBarOverlayPanelContentView: NSView {
         var rect = rect
         let shouldInset = isInset && screen.hasNotch
         if shouldInset {
-            rect = rect.insetBy(dx: 0, dy: appearanceManager.menuBarInsetAmount)
+            let insetAmount = appearanceManager.menuBarInsetAmount(forMenuBarHeight: rect.height)
+            rect = rect.insetBy(dx: 0, dy: insetAmount)
             if info.leadingEndCap == .round {
-                rect.origin.x += appearanceManager.menuBarInsetAmount
-                rect.size.width -= appearanceManager.menuBarInsetAmount
+                rect.origin.x += insetAmount
+                rect.size.width -= insetAmount
             }
             if info.trailingEndCap == .round {
-                rect.size.width -= appearanceManager.menuBarInsetAmount
+                rect.size.width -= insetAmount
             }
         }
         return shapePath(
@@ -694,14 +748,15 @@ private final class MenuBarOverlayPanelContentView: NSView {
         }
         var rect = rect
         let shouldInset = isInset && screen.hasNotch
+        let insetAmount = appearanceManager.menuBarInsetAmount(forMenuBarHeight: rect.height)
         if shouldInset {
-            rect = rect.insetBy(dx: 0, dy: appearanceManager.menuBarInsetAmount)
+            rect = rect.insetBy(dx: 0, dy: insetAmount)
             if info.leading.leadingEndCap == .round {
-                rect.origin.x += appearanceManager.menuBarInsetAmount
-                rect.size.width -= appearanceManager.menuBarInsetAmount
+                rect.origin.x += insetAmount
+                rect.size.width -= insetAmount
             }
             if info.trailing.trailingEndCap == .round {
-                rect.size.width -= appearanceManager.menuBarInsetAmount
+                rect.size.width -= insetAmount
             }
         }
         let leadingPathBounds: CGRect = {
@@ -714,7 +769,7 @@ private final class MenuBarOverlayPanelContentView: NSView {
             if shouldInset {
                 maxX += 10
                 if info.leading.leadingEndCap == .square {
-                    maxX += appearanceManager.menuBarInsetAmount
+                    maxX += insetAmount
                 }
             } else {
                 maxX += 20
@@ -743,7 +798,7 @@ private final class MenuBarOverlayPanelContentView: NSView {
             if shouldInset {
                 position += 4
                 if info.trailing.trailingEndCap == .square {
-                    position -= appearanceManager.menuBarInsetAmount
+                    position -= insetAmount
                 }
             } else {
                 position -= 7

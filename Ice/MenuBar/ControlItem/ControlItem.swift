@@ -452,6 +452,10 @@ final class ControlItem {
             return
         }
         statusItem.isVisible = true
+        // Apply the image and length again. Turning "Show Icey icon" off and
+        // on brought the item back blank until it was hovered or clicked
+        // (jordanbaird/Ice#329).
+        updateStatusItem()
     }
 
     /// Removes the control item from the menu bar.

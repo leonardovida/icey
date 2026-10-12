@@ -41,7 +41,29 @@ final class LayoutBarContainer: NSView {
 
     /// A Boolean value that indicates whether the container can
     /// set its arranged views.
-    var canSetArrangedViews = true
+    ///
+    /// When this becomes `true` again, the container catches up with
+    /// any change to the item cache that it missed in the meantime.
+    var canSetArrangedViews = true {
+        didSet {
+            if canSetArrangedViews, !oldValue, hasMissedCacheUpdate {
+                restoreArrangedViewsFromCache()
+            }
+        }
+    }
+
+    /// A Boolean value that indicates whether the item cache changed
+    /// while the container could not set its arranged views.
+    private var hasMissedCacheUpdate = false
+
+    /// Sends when every container should rebuild its arranged views
+    /// from the item cache.
+    ///
+    /// A drag rearranges the views before the item is moved. If the move
+    /// fails, the item cache doesn't change, so without this the views
+    /// kept showing the item where it was dropped rather than where it is
+    /// (jordanbaird/Ice#861, jordanbaird/Ice#918).
+    static let restoreFromCacheRequests = PassthroughSubject<Void, Never>()
 
     /// The contaner's arranged views.
     ///
@@ -96,6 +118,13 @@ final class LayoutBarContainer: NSView {
                         return
                     }
                     layoutArrangedViews()
+                }
+                .store(in: &c)
+
+            Self.restoreFromCacheRequests
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] in
+                    self?.restoreArrangedViewsFromCache()
                 }
                 .store(in: &c)
         }
@@ -172,14 +201,17 @@ final class LayoutBarContainer: NSView {
     /// Sets the container's arranged views with the given items.
     ///
     /// - Note: If the value of the container's ``canSetArrangedViews``
-    ///   property is `false`, this function returns early.
+    ///   property is `false`, this function returns early, and the
+    ///   container catches up once the property is `true` again.
     func setArrangedViews(items: [MenuBarItem]?) {
-        guard
-            let appState,
-            canSetArrangedViews
-        else {
+        guard let appState else {
             return
         }
+        guard canSetArrangedViews else {
+            hasMissedCacheUpdate = true
+            return
+        }
+        hasMissedCacheUpdate = false
         guard let items else {
             arrangedViews.removeAll()
             return
@@ -194,6 +226,15 @@ final class LayoutBarContainer: NSView {
             }
         }
         arrangedViews = newViews
+    }
+
+    /// Sets the container's arranged views with the items in the current
+    /// item cache, discarding any arrangement left behind by a drag.
+    func restoreArrangedViewsFromCache() {
+        guard let appState else {
+            return
+        }
+        setArrangedViews(items: appState.itemManager.itemCache.managedItems(for: section))
     }
 
     /// Updates the positions of the container's arranged views using the

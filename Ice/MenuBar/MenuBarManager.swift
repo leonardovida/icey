@@ -373,6 +373,7 @@ final class MenuBarManager: ObservableObject {
             return
         }
         logger.info("Hiding application menus")
+        let frontmostPID = NSWorkspace.shared.frontmostApplication?.processIdentifier
         let isAllowed = appState.activate(withPolicy: .regular)
         isHidingApplicationMenus = true
 
@@ -380,12 +381,17 @@ final class MenuBarManager: ObservableObject {
         // can refuse a request that it did not yield for. The Dock icon then
         // appeared, from the activation policy, but the application menus
         // stayed (jordanbaird/Ice#620, #879). The user has just asked for
-        // the items, so Icey takes activation instead.
+        // the items, so Icey takes activation instead, unless the user has
+        // switched to another app in the meantime.
         Task {
             if isAllowed {
                 try await Task.sleep(for: .milliseconds(250))
             }
-            guard isHidingApplicationMenus, !NSApp.isActive else {
+            guard
+                isHidingApplicationMenus,
+                !NSApp.isActive,
+                NSWorkspace.shared.frontmostApplication?.processIdentifier == frontmostPID
+            else {
                 return
             }
             logger.info("Activation was refused, activating regardless")

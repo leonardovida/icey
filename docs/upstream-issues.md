@@ -6,7 +6,7 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (139)
+## Fixed in Icey (154)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
@@ -57,6 +57,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#890](https://github.com/jordanbaird/Ice/issues/890) | Ice Bar only says "Unable to display menu bar items" | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#882](https://github.com/jordanbaird/Ice/issues/882) | Automatic updates dialog can't be dismissed during setup | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#880](https://github.com/jordanbaird/Ice/issues/880) | Ice keeps crashing on an iMac | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#879](https://github.com/jordanbaird/Ice/issues/879) | "Hide application menus" shows the Dock icon but doesn't hide the menus | Next release (Not yet tested on macOS 15 or 26.) |
 | [#877](https://github.com/jordanbaird/Ice/issues/877) | Ice crashes and its layout pane is blank on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#872](https://github.com/jordanbaird/Ice/issues/872) | Layout area is broken and Ice crashes on macOS 26.1 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#871](https://github.com/jordanbaird/Ice/issues/871) | Ice Bar disappears before you can click an item | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Depends on your rehide setting. Please retest.) |
@@ -78,6 +79,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#814](https://github.com/jordanbaird/Ice/issues/814) | "Use Ice Bar" doesn't work with any location | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#813](https://github.com/jordanbaird/Ice/issues/813) | Ice Bar closes right after opening | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#810](https://github.com/jordanbaird/Ice/issues/810) | Ice crashes with the Ice Bar on an M1 Pro | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#808](https://github.com/jordanbaird/Ice/issues/808) | Icon stays in the Dock after a restart on macOS 26 | Next release (Not yet tested with a restart on macOS 26.) |
 | [#807](https://github.com/jordanbaird/Ice/issues/807) | Ice stops responding on an M4 Pro MacBook Pro | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#802](https://github.com/jordanbaird/Ice/issues/802) | Layout settings disappeared after a macOS update | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#796](https://github.com/jordanbaird/Ice/issues/796) | Ice crashes when showing hidden items | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
@@ -125,30 +127,43 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#668](https://github.com/jordanbaird/Ice/issues/668) | Search shows items as "Item-0" and the wrong icons | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#665](https://github.com/jordanbaird/Ice/issues/665) | Ice Bar is invisible on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#664](https://github.com/jordanbaird/Ice/issues/664) | Menu bar layout editor is all white on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#657](https://github.com/jordanbaird/Ice/issues/657) | Full shape is a few pixels too short on a second display | Next release (Not yet checked on an external display.) |
 | [#647](https://github.com/jordanbaird/Ice/issues/647) | Ice doesn't work at all on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#646](https://github.com/jordanbaird/Ice/issues/646) | Clicks at the top of a display without a menu bar trigger Icey | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested on a multi-display setup.) |
+| [#644](https://github.com/jordanbaird/Ice/issues/644) | Option-click works randomly | Next release (The Caps Lock and Fn cause comes from the code, not a reproduction.) |
 | [#639](https://github.com/jordanbaird/Ice/issues/639) | Right-click on a browser tab on a second display opens Ice's menu | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested on a multi-display setup.) |
 | [#635](https://github.com/jordanbaird/Ice/issues/635) | Clicking empty menu bar space shows an empty box on a macOS 26 beta | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#633](https://github.com/jordanbaird/Ice/issues/633) | Ice doesn't work on a macOS 26 beta | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#621](https://github.com/jordanbaird/Ice/issues/621) | Can't fully use hidden menu items | Next release (Not yet tested with Citrix.) |
+| [#620](https://github.com/jordanbaird/Ice/issues/620) | "Hide application menus" doesn't work on an M1 MacBook Air | Next release (Not yet tested on an M1 MacBook Air.) |
 | [#603](https://github.com/jordanbaird/Ice/issues/603) | Ice crashes at launch on a macOS 26 beta | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Crash log is unsymbolicated; matches the same family of crashes.) |
 | [#595](https://github.com/jordanbaird/Ice/issues/595) | Option-click doesn't expand when the always-hidden section is off | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#590](https://github.com/jordanbaird/Ice/issues/590) | Ice appears twice in the Dock on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#563](https://github.com/jordanbaird/Ice/issues/563) | Ice occasionally crashes | Next release (Traced from the attached crash log against Ice 0.11.12.) |
 | [#545](https://github.com/jordanbaird/Ice/issues/545) | Ice Bar sometimes shows nothing | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#544](https://github.com/jordanbaird/Ice/issues/544) | Turn off Ice in fullscreen mode | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#526](https://github.com/jordanbaird/Ice/issues/526) | Another app's brightness slider keeps disappearing | Next release (Not yet tested with MotionControl Light.) |
 | [#521](https://github.com/jordanbaird/Ice/issues/521) | Wallpaper shows over fullscreen apps with the split shape | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#468](https://github.com/jordanbaird/Ice/issues/468) | Turn off or customize the menu bar appearance in fullscreen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#456](https://github.com/jordanbaird/Ice/issues/456) | Right-clicking a window title on a display without a menu bar opens Ice's menu | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested on a multi-display setup.) |
+| [#452](https://github.com/jordanbaird/Ice/issues/452) | Rehide closes an open item menu | Next release (A menu bar app that keeps a window open under the menu bar all the time would also hold rehide off.) |
 | [#451](https://github.com/jordanbaird/Ice/issues/451) | Split shape shows the wallpaper after swiping to a fullscreen app | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#434](https://github.com/jordanbaird/Ice/issues/434) | "Hide application menus" only works with the always-hidden section on | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Some reports where it also fails with the always-hidden section on have a different cause, tracked in #620 and #879.) |
+| [#409](https://github.com/jordanbaird/Ice/issues/409) | Border needs an Ice restart after login on macOS 15 | Next release (Not yet tested with a login on macOS 15.) |
 | [#404](https://github.com/jordanbaird/Ice/issues/404) | Two OneDrive items both become visible after clicking one | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested with several OneDrive accounts.) |
+| [#403](https://github.com/jordanbaird/Ice/issues/403) | Smart rehide closes other apps' popovers | Next release (Not yet tested with OnlySwitch.) |
 | [#401](https://github.com/jordanbaird/Ice/issues/401) | Ice Bar won't close with show on hover and no delay | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#392](https://github.com/jordanbaird/Ice/issues/392) | Item spacing value isn't shown after launch | Next release |
 | [#383](https://github.com/jordanbaird/Ice/issues/383) | Ice acts as if every display has a menu bar when Spaces are shared | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested on a multi-display setup.) |
 | [#331](https://github.com/jordanbaird/Ice/issues/331) | Hidden icons can't be shown when the menu bar hides automatically in fullscreen | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested with an auto-hiding menu bar.) |
 | [#312](https://github.com/jordanbaird/Ice/issues/312) | No items in the Ice Bar or layout pane until you switch spaces | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#286](https://github.com/jordanbaird/Ice/issues/286) | Show on click and scroll don't work with an auto-hidden menu bar | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested with an auto-hiding menu bar.) |
+| [#260](https://github.com/jordanbaird/Ice/issues/260) | Inset shape and Ice Bar too short on notched displays at lower resolutions | Next release (Not yet tested at a lower resolution on a notched display.) |
 | [#254](https://github.com/jordanbaird/Ice/issues/254) | Ice Bar items are transparent in fullscreen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#234](https://github.com/jordanbaird/Ice/issues/234) | Switching spaces quickly breaks Ice Bar images | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#212](https://github.com/jordanbaird/Ice/issues/212) | Ice Bar color doesn't update on a new desktop | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#144](https://github.com/jordanbaird/Ice/issues/144) | Option-click after a click doesn't hide app menus | Next release (Adds about 100 ms before the menus hide.) |
+| [#53](https://github.com/jordanbaird/Ice/issues/53) | Menu bar styling is lost after a display change during sleep | Next release (Not yet tested with a display change during sleep.) |
 
 ## Partly addressed
 
@@ -156,31 +171,42 @@ These have a fix that couldn't be confirmed yet, or that covers part of the repo
 
 | Upstream issue | Problem | Status |
 |---|---|---|
-| [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch. |
+| [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch. The permissions window now also has a link that opens the right System Settings list, where a stale entry can be removed. |
 | [#929](https://github.com/jordanbaird/Ice/issues/929) | Menu bar icons are scaled wrong on external displays | Item images now use the scale of the display they were captured on. Not yet confirmed on a two-display setup. |
 | [#987](https://github.com/jordanbaird/Ice/issues/987) | Ice Bar icons shrink on an external display | Item images now take their scale from the capture itself. Not yet confirmed on a two-display setup. |
 | [#955](https://github.com/jordanbaird/Ice/issues/955) | Ice Bar icons are scaled wrong on another display | Item images now take their scale from the capture itself. Not yet confirmed on a two-display setup. |
 | [#910](https://github.com/jordanbaird/Ice/issues/910) | The menu bar tint shows on the wrong display with an iPad as a second screen | An appearance overlay that ends up on another display now hides itself. Not yet confirmed with an iPad. |
 | [#908](https://github.com/jordanbaird/Ice/issues/908) | System freeze after long uptime with Ice running | The crashing code from Ice 0.11.12 is gone. Retries now back off and stop after five rounds, and Icey recovers when its divider reappears. The freeze itself hasn't been reproduced. |
+| [#918](https://github.com/jordanbaird/Ice/issues/918) | An app's icon disappears when moved from hidden to visible | After a failed move, the pane now redraws instead of dropping the icon. The slow response looks specific to Intego. |
+| [#899](https://github.com/jordanbaird/Ice/issues/899) | Clicking just under the menu bar in fullscreen triggers Ice | With the Ice icon on another display, the top of a fullscreen display now counts as the menu bar only while its menu bar is showing. Doesn't cover a single display. |
 | [#888](https://github.com/jordanbaird/Ice/issues/888) | Ice Bar can't be used after switching windows or spaces | A space change while the Ice Bar opens now keeps it closed, and stuck moves and clicks time out. Probably fixed. Please retest in Icey. |
 | [#863](https://github.com/jordanbaird/Ice/issues/863) | Black square in the corner of the main display when another display is fullscreen | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
+| [#861](https://github.com/jordanbaird/Ice/issues/861) | Unable to move icons to the hidden section | After a failed move, the pane now redraws to show where the item really is, instead of where it was dropped. The timeout itself isn't addressed. |
 | [#858](https://github.com/jordanbaird/Ice/issues/858) | Menu bar overlay drawn on the wrong display | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
+| [#845](https://github.com/jordanbaird/Ice/issues/845) | Shown hidden items can't be selected | With Caps Lock on, Icey waited for a key release that never came, so items clicked in the Ice Bar never opened. Caps Lock no longer blocks clicks. May not be the reporter's cause; please retest. |
 | [#834](https://github.com/jordanbaird/Ice/issues/834) | Ice keeps asking for permissions it already has | Remove the app from the list in System Settings > Privacy & Security with the minus button, then add Icey again. Same as #1004. |
 | [#829](https://github.com/jordanbaird/Ice/issues/829) | Ice Bar has the wrong size with a second monitor connected | Item images now use the scale of the display they were captured on. Same cause as #987 and #929. Not yet confirmed on two displays. |
 | [#825](https://github.com/jordanbaird/Ice/issues/825) | Ice Bar is drawn at a small resolution on a secondary screen | Item images now use the scale of the display they were captured on. Same cause as #987 and #929. Not yet confirmed on two displays. |
 | [#790](https://github.com/jordanbaird/Ice/issues/790) | Ice freezes with multiple monitors | Item captures no longer take the slow path caused by the scale mismatch, and Accessibility calls time out. Shares a cause with #987. Not yet confirmed on two displays. |
 | [#780](https://github.com/jordanbaird/Ice/issues/780) | Menu bar appearance is wrong on vertical monitors | An appearance overlay that lands on another display now hides itself. Same as #910. Not yet confirmed on a vertical display. |
+| [#757](https://github.com/jordanbaird/Ice/issues/757) | Pointer disappears after clicking icons in the Ice Bar | Same fix as #751: the pointer is hidden only while each move posts its events. The link to a larger pointer size isn't explained. |
+| [#751](https://github.com/jordanbaird/Ice/issues/751) | Pointer stays hidden until Ice quits | Icey now hides the pointer only while each move posts its events, not while it waits for the mouse to stop, so it no longer stays hidden while you move it. Please retest. |
 | [#750](https://github.com/jordanbaird/Ice/issues/750) | A line is always drawn on the secondary monitor | An appearance overlay that lands on another display now hides itself. Same as #910. Not yet confirmed on two displays. |
 | [#729](https://github.com/jordanbaird/Ice/issues/729) | An item opened from the Ice Bar stays in the menu bar for good | If the item next to its old spot was recreated in the meantime, Icey now finds it again, or puts the item back in the hidden section, instead of failing to move it back. The link to Live Activities is inferred from the code, not reproduced. |
 | [#698](https://github.com/jordanbaird/Ice/issues/698) | Items are different sizes on the monitor and the laptop on macOS 26 | Item images now use the scale of the display they were captured on. Same cause as #987 and #929. Not yet confirmed on two displays. |
 | [#636](https://github.com/jordanbaird/Ice/issues/636) | Odd menu bar cutout appears on a connected monitor | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
 | [#609](https://github.com/jordanbaird/Ice/issues/609) | A random bar appears in the middle of the screen | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
 | [#576](https://github.com/jordanbaird/Ice/issues/576) | Menu bar shape appears on the main display during fullscreen video | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
+| [#567](https://github.com/jordanbaird/Ice/issues/567) | Clicking app menus triggers Ice | Show on click and show on hover now do nothing while an app's menu is open, so moving between its menus no longer shows the hidden items. The first click on a menu title still depends on measuring the app menus. |
 | [#550](https://github.com/jordanbaird/Ice/issues/550) | Empty menu bar drawn on an external display with VMware | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
 | [#517](https://github.com/jordanbaird/Ice/issues/517) | Menu bar shape appears in the middle of the screen | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
 | [#445](https://github.com/jordanbaird/Ice/issues/445) | Rounded menu bar appears in the middle of the screen after fullscreen | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
 | [#444](https://github.com/jordanbaird/Ice/issues/444) | Icons are too large in the Menu Bar Layout pane | Item images now use the scale of the display they were captured on. Same cause as #987 and #929. Not yet confirmed on two displays. |
 | [#359](https://github.com/jordanbaird/Ice/issues/359) | Split shape is wrong with an external display | Each display now uses its own application menu and fullscreen state for the split shape. Not yet confirmed on two displays. Please retest in Icey. |
+| [#329](https://github.com/jordanbaird/Ice/issues/329) | Ice icon doesn't come back after turning it off and on | The Icey icon now applies its image and width again when it's turned back on. Couldn't be reproduced upstream either. |
+| [#300](https://github.com/jordanbaird/Ice/issues/300) | One OneDrive item disappears when rearranging | A section could stay frozen, or an item blank, after a drag. Both now redraw when the drag ends. Not yet tested with several OneDrive accounts. |
+| [#283](https://github.com/jordanbaird/Ice/issues/283) | AltTab missing from the layout pane | A section of the layout pane could stop updating after an item was dragged out of it, so new items didn't appear. It now catches up when the drag ends. May not be the reporter's trigger; please retest. |
+| [#233](https://github.com/jordanbaird/Ice/issues/233) | Dragging items in the Hidden layout pane makes them disappear | The pane no longer stays stale after rearranging, which is one way items seemed to disappear. Items vanishing from the real menu bar with separate Spaces per display isn't explained. |
 
 ## Open in Icey too
 
@@ -189,24 +215,16 @@ These need a reproduction or more information. If you can reproduce one in Icey,
 | Upstream issue | Problem |
 |---|---|
 | [#946](https://github.com/jordanbaird/Ice/issues/946) | Hidden items are shown as always-hidden after macOS Tahoe 26.5 |
-| [#918](https://github.com/jordanbaird/Ice/issues/918) | An app's icon disappears when moved from hidden to visible |
 | [#920](https://github.com/jordanbaird/Ice/issues/920) | Empty report |
-| [#899](https://github.com/jordanbaird/Ice/issues/899) | Clicking just under the menu bar in fullscreen triggers Ice |
-| [#879](https://github.com/jordanbaird/Ice/issues/879) | "Hide application menus" shows the Dock icon but doesn't hide the menus |
 | [#865](https://github.com/jordanbaird/Ice/issues/865) | Ice can't expand on a macOS 26.3 beta |
-| [#861](https://github.com/jordanbaird/Ice/issues/861) | Unable to move icons to the hidden section |
-| [#845](https://github.com/jordanbaird/Ice/issues/845) | Shown hidden items can't be selected |
 | [#836](https://github.com/jordanbaird/Ice/issues/836) | Ice doesn't work on an external display with an auto-hiding menu bar |
 | [#830](https://github.com/jordanbaird/Ice/issues/830) | Many bugs and heat |
 | [#826](https://github.com/jordanbaird/Ice/issues/826) | Battery item doesn't open from the hidden section |
 | [#817](https://github.com/jordanbaird/Ice/issues/817) | User (login) item can't be customized |
-| [#808](https://github.com/jordanbaird/Ice/issues/808) | Icon stays in the Dock after a restart on macOS 26 |
 | [#799](https://github.com/jordanbaird/Ice/issues/799) | Menu bar items don't hide again |
 | [#769](https://github.com/jordanbaird/Ice/issues/769) | Layout order is lost when Ice quits |
 | [#766](https://github.com/jordanbaird/Ice/issues/766) | Mullvad VPN's menu appears as items hide |
-| [#757](https://github.com/jordanbaird/Ice/issues/757) | Pointer disappears after clicking icons in the Ice Bar |
 | [#755](https://github.com/jordanbaird/Ice/issues/755) | Menu bar clicks are dropped |
-| [#751](https://github.com/jordanbaird/Ice/issues/751) | Pointer stays hidden until Ice quits |
 | [#746](https://github.com/jordanbaird/Ice/issues/746) | "Event operation timed out" errors |
 | [#733](https://github.com/jordanbaird/Ice/issues/733) | Strange rendering issue |
 | [#732](https://github.com/jordanbaird/Ice/issues/732) | Docker ends up in the always-hidden section over time |
@@ -219,27 +237,20 @@ These need a reproduction or more information. If you can reproduce one in Icey,
 | [#676](https://github.com/jordanbaird/Ice/issues/676) | Split menu bar keeps blank space on the left of the right half |
 | [#659](https://github.com/jordanbaird/Ice/issues/659) | Slight shadow at the top of the screen on macOS 26 |
 | [#658](https://github.com/jordanbaird/Ice/issues/658) | Games lose focus while Ice runs |
-| [#657](https://github.com/jordanbaird/Ice/issues/657) | Full shape is a few pixels too short on a second display |
 | [#656](https://github.com/jordanbaird/Ice/issues/656) | Live Activities can't be moved between sections |
 | [#655](https://github.com/jordanbaird/Ice/issues/655) | Some apps are missing from the layout pane |
 | [#649](https://github.com/jordanbaird/Ice/issues/649) | Split menu bar moves when showing the desktop |
-| [#644](https://github.com/jordanbaird/Ice/issues/644) | Option-click works randomly |
 | [#642](https://github.com/jordanbaird/Ice/issues/642) | Clicking BusyCal in the hidden section opened the Apple menu |
 | [#640](https://github.com/jordanbaird/Ice/issues/640) | Pointer behaves strangely after clicking a hidden icon |
 | [#627](https://github.com/jordanbaird/Ice/issues/627) | Menu bar appearance not displayed |
 | [#625](https://github.com/jordanbaird/Ice/issues/625) | Hidden bar is oversized |
 | [#623](https://github.com/jordanbaird/Ice/issues/623) | Layout icons disappear after using the Ice Bar in fullscreen |
-| [#621](https://github.com/jordanbaird/Ice/issues/621) | Can't fully use hidden menu items |
-| [#620](https://github.com/jordanbaird/Ice/issues/620) | "Hide application menus" doesn't work on an M1 MacBook Air |
 | [#608](https://github.com/jordanbaird/Ice/issues/608) | Split menu bar holds a large blank space |
 | [#606](https://github.com/jordanbaird/Ice/issues/606) | Ice Bar leaves an artifact when auto-hiding in fullscreen |
 | [#586](https://github.com/jordanbaird/Ice/issues/586) | ProtonVPN item clicks itself after being hidden |
 | [#573](https://github.com/jordanbaird/Ice/issues/573) | Hidden menu stays visible on widescreen monitors |
-| [#567](https://github.com/jordanbaird/Ice/issues/567) | Clicking app menus triggers Ice |
-| [#563](https://github.com/jordanbaird/Ice/issues/563) | Ice occasionally crashes |
 | [#541](https://github.com/jordanbaird/Ice/issues/541) | Split view breaks with extended screens |
 | [#529](https://github.com/jordanbaird/Ice/issues/529) | Split shape's right half is too long on an ultrawide display |
-| [#526](https://github.com/jordanbaird/Ice/issues/526) | Another app's brightness slider keeps disappearing |
 | [#525](https://github.com/jordanbaird/Ice/issues/525) | Split menu bar disabled on macOS 15.3.2 |
 | [#514](https://github.com/jordanbaird/Ice/issues/514) | Menu bar shadow moves with App Exposé |
 | [#513](https://github.com/jordanbaird/Ice/issues/513) | Hidden icons end up in the visible section |
@@ -249,27 +260,16 @@ These need a reproduction or more information. If you can reproduce one in Icey,
 | [#480](https://github.com/jordanbaird/Ice/issues/480) | Ice conflicts with Alcove |
 | [#472](https://github.com/jordanbaird/Ice/issues/472) | Item spacing doesn't apply |
 | [#462](https://github.com/jordanbaird/Ice/issues/462) | Keyboard Maestro can't be moved to visible |
-| [#452](https://github.com/jordanbaird/Ice/issues/452) | Rehide closes an open item menu |
 | [#435](https://github.com/jordanbaird/Ice/issues/435) | Glitch when toggling the Dock |
-| [#409](https://github.com/jordanbaird/Ice/issues/409) | Border needs an Ice restart after login on macOS 15 |
-| [#403](https://github.com/jordanbaird/Ice/issues/403) | Smart rehide closes other apps' popovers |
-| [#392](https://github.com/jordanbaird/Ice/issues/392) | Item spacing value isn't shown after launch |
 | [#337](https://github.com/jordanbaird/Ice/issues/337) | Previous space's wallpaper shown after swiping in Mission Control |
 | [#336](https://github.com/jordanbaird/Ice/issues/336) | Split shape keeps the previous space's wallpaper |
 | [#330](https://github.com/jordanbaird/Ice/issues/330) | Doesn't work with Focus's menu bar item |
-| [#329](https://github.com/jordanbaird/Ice/issues/329) | Ice icon doesn't come back after turning it off and on |
-| [#300](https://github.com/jordanbaird/Ice/issues/300) | One OneDrive item disappears when rearranging |
-| [#283](https://github.com/jordanbaird/Ice/issues/283) | AltTab missing from the layout pane |
 | [#272](https://github.com/jordanbaird/Ice/issues/272) | Extra spaces on an iPad Sidecar display |
-| [#260](https://github.com/jordanbaird/Ice/issues/260) | Inset shape and Ice Bar too short on notched displays at lower resolutions |
 | [#241](https://github.com/jordanbaird/Ice/issues/241) | Gap in menu bar items on the inactive display |
 | [#239](https://github.com/jordanbaird/Ice/issues/239) | Menu bar clipped with the split shape |
-| [#233](https://github.com/jordanbaird/Ice/issues/233) | Dragging items in the Hidden layout pane makes them disappear |
 | [#216](https://github.com/jordanbaird/Ice/issues/216) | Menu bar appearance shows above Mission Control after deleting a space |
 | [#194](https://github.com/jordanbaird/Ice/issues/194) | Moved items look dimmed |
-| [#144](https://github.com/jordanbaird/Ice/issues/144) | Option-click after a click doesn't hide app menus |
 | [#94](https://github.com/jordanbaird/Ice/issues/94) | Icons aren't hidden on an ultrawide screen |
-| [#53](https://github.com/jordanbaird/Ice/issues/53) | Menu bar styling is lost after a display change during sleep |
 
 ## Not a bug in Ice or Icey
 

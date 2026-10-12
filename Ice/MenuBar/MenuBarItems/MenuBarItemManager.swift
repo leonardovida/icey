@@ -546,10 +546,19 @@ extension MenuBarItemManager {
     /// Returns a Boolean value that indicates whether the user has
     /// paused input for at least the given duration.
     ///
+    /// Caps Lock is a lock, not a key being held, so it does not count
+    /// as input. Counting it meant that while Caps Lock was on, Ice
+    /// waited for a key release that never came: items clicked in the
+    /// Ice Bar or the search panel never opened, and shown items stayed
+    /// in view until Caps Lock was turned off.
+    ///
     /// - Parameter duration: The duration that certain types of input
     ///   events must not have occured within in order to return `true`.
     private nonisolated func hasUserPausedInput(for duration: Duration) -> Bool {
-        NSEvent.modifierFlags.isEmpty &&
+        NSEvent.modifierFlags
+            .intersection(.deviceIndependentFlagsMask)
+            .subtracting(.capsLock)
+            .isEmpty &&
         !MouseHelpers.lastMovementOccurred(within: duration) &&
         !MouseHelpers.lastScrollWheelOccurred(within: duration) &&
         !MouseHelpers.isButtonPressed()
@@ -1760,10 +1769,12 @@ extension MenuBarItemManager {
 
         logger.debug("Rehiding temporarily shown items")
 
-        MouseHelpers.hideCursor()
-        defer {
-            MouseHelpers.showCursor()
-        }
+        // Don't hide the pointer for the whole rehide. Each move hides it
+        // once the user has paused input, and only while its events are
+        // posted. Hiding it out here also hid it while each move waited for
+        // the user to stop moving the mouse, so the pointer vanished for as
+        // long as the user moved it looking for it, and through every retry
+        // of an item that would not move back (jordanbaird/Ice#751, #757).
 
         let windowIDs = Set(items.map { $0.windowID })
 

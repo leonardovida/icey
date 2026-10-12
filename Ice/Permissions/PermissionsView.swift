@@ -170,6 +170,12 @@ struct PermissionsView: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+
+                    Button("Open \(permission.title) Settings") {
+                        permission.openPrivacyList()
+                    }
+                    .buttonStyle(.link)
+                    .font(.callout)
                 }
 
                 if !permission.isRequired {

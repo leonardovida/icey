@@ -339,18 +339,33 @@ extension HIDEventManager {
             }
 
             // Get the window that was clicked.
+            guard let mouseLocation = MouseHelpers.locationCoreGraphics else {
+                return
+            }
+            let windowsUnderMouse = WindowInfo.createWindows(option: .onScreen).filter { window in
+                window.layer < CGWindowLevelForKey(.cursorWindow) && window.bounds.contains(mouseLocation)
+            }
             guard
-                let mouseLocation = MouseHelpers.locationCoreGraphics,
-                let windowUnderMouse = WindowInfo.createWindows(option: .onScreen)
-                    .filter({ $0.layer < CGWindowLevelForKey(.cursorWindow) })
-                    .first(where: { $0.bounds.contains(mouseLocation) && $0.title?.isEmpty == false }),
-                let owningApplication = windowUnderMouse.owningApplication
+                let windowIndex = windowsUnderMouse.firstIndex(where: { $0.title?.isEmpty == false }),
+                let owningApplication = windowsUnderMouse[windowIndex].owningApplication
             else {
                 return
             }
+            let windowUnderMouse = windowsUnderMouse[windowIndex]
 
-            // Note: The Dock is an exception to the following check.
+            // Note: The Dock is an exception to the following checks.
             if owningApplication.bundleIdentifier != "com.apple.dock" {
+                // Don't hide the sections for a click in one of the app's menus
+                // or popovers, which sit above normal windows. It is likely the
+                // interface of one of the shown items, which closed as soon as
+                // its item was hidden (jordanbaird/Ice#621).
+                guard !windowsUnderMouse[...windowIndex].contains(where: { window in
+                    window.ownerPID == windowUnderMouse.ownerPID &&
+                    window.layer > CGWindowLevelForKey(.normalWindow)
+                }) else {
+                    return
+                }
+
                 // Only continue if the clicked app is active, and has
                 // a regular activation policy.
                 guard

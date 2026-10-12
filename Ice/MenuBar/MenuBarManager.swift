@@ -161,6 +161,20 @@ final class MenuBarManager: ObservableObject {
                     return
                 }
 
+                let isShowingSection = sections.contains { $0.controlItem.state == .showSection }
+
+                // Give the menus back once no section is shown. This used to sit behind
+                // the checks below, so a section hidden while one of them failed (in a
+                // fullscreen space, say) left Ice active, with its icon in the Dock,
+                // until a section was next shown (jordanbaird/Ice#808). The settings
+                // window still keeps Ice active, as it needs a Dock icon of its own.
+                if !isShowingSection {
+                    if isHidingApplicationMenus, !appState.navigationState.isSettingsPresented {
+                        showApplicationMenus()
+                    }
+                    return
+                }
+
                 // Don't continue if:
                 //   * The "HideApplicationMenus" setting isn't enabled.
                 //   * Using the Ice Bar.
@@ -177,57 +191,63 @@ final class MenuBarManager: ObservableObject {
                     return
                 }
 
-                if sections.contains(where: { $0.controlItem.state == .showSection }) {
-                    guard let screen = NSScreen.main else {
+                guard let screen = NSScreen.main else {
+                    return
+                }
+
+                // Get the application menu frame for the display.
+                guard let applicationMenuFrame = screen.getApplicationMenuFrame() else {
+                    return
+                }
+
+                Task {
+                    // Get all items.
+                    var items = await MenuBarItem.getMenuBarItems(on: screen.displayID, option: .activeSpace)
+
+                    // Filter the items down according to the currently enabled/shown sections.
+                    if
+                        let alwaysHiddenSection = self.section(withName: .alwaysHidden),
+                        alwaysHiddenSection.isEnabled
+                    {
+                        if alwaysHiddenSection.controlItem.state == .hideSection {
+                            if let alwaysHiddenControlItem = items.firstIndex(matching: .alwaysHiddenControlItem).map({ items.remove(at: $0) }) {
+                                items.trimPrefix { $0.bounds.maxX <= alwaysHiddenControlItem.bounds.minX }
+                            }
+                        }
+                    } else if
+                        // Only leave out the hidden items while their section is
+                        // hidden. Without the always-hidden section, this code runs
+                        // when the hidden section is shown, so the items left out
+                        // were the very ones now covering the application menus,
+                        // and the menus were never hidden (jordanbaird/Ice#434).
+                        let hiddenSection = self.section(withName: .hidden),
+                        hiddenSection.controlItem.state == .hideSection
+                    {
+                        if let hiddenControlItem = items.firstIndex(matching: .hiddenControlItem).map({ items.remove(at: $0) }) {
+                            items.trimPrefix { $0.bounds.maxX <= hiddenControlItem.bounds.minX }
+                        }
+                    }
+
+                    // Get the leftmost item on the screen.
+                    guard let leftmostItem = items.min(by: { $0.bounds.minX < $1.bounds.minX }) else {
                         return
                     }
 
-                    // Get the application menu frame for the display.
-                    guard let applicationMenuFrame = screen.getApplicationMenuFrame() else {
+                    // Reading the items takes a moment, and longer at login on macOS 26,
+                    // where each item's owner comes from the item service. A section hidden
+                    // in the meantime got no call to give the menus back, as they were not
+                    // hidden yet, and Ice then hid them with nothing shown. It stayed active,
+                    // with its icon in the Dock, until a section was next shown and hidden
+                    // (jordanbaird/Ice#808).
+                    guard self.sections.contains(where: { $0.controlItem.state == .showSection }) else {
                         return
                     }
 
-                    Task {
-                        // Get all items.
-                        var items = await MenuBarItem.getMenuBarItems(on: screen.displayID, option: .activeSpace)
-
-                        // Filter the items down according to the currently enabled/shown sections.
-                        if
-                            let alwaysHiddenSection = self.section(withName: .alwaysHidden),
-                            alwaysHiddenSection.isEnabled
-                        {
-                            if alwaysHiddenSection.controlItem.state == .hideSection {
-                                if let alwaysHiddenControlItem = items.firstIndex(matching: .alwaysHiddenControlItem).map({ items.remove(at: $0) }) {
-                                    items.trimPrefix { $0.bounds.maxX <= alwaysHiddenControlItem.bounds.minX }
-                                }
-                            }
-                        } else if
-                            // Only leave out the hidden items while their section is
-                            // hidden. Without the always-hidden section, this code runs
-                            // when the hidden section is shown, so the items left out
-                            // were the very ones now covering the application menus,
-                            // and the menus were never hidden (jordanbaird/Ice#434).
-                            let hiddenSection = self.section(withName: .hidden),
-                            hiddenSection.controlItem.state == .hideSection
-                        {
-                            if let hiddenControlItem = items.firstIndex(matching: .hiddenControlItem).map({ items.remove(at: $0) }) {
-                                items.trimPrefix { $0.bounds.maxX <= hiddenControlItem.bounds.minX }
-                            }
-                        }
-
-                        // Get the leftmost item on the screen.
-                        guard let leftmostItem = items.min(by: { $0.bounds.minX < $1.bounds.minX }) else {
-                            return
-                        }
-
-                        // If the minX of the item is less than or equal to the maxX of the
-                        // application menu frame, activate the app to hide the menu.
-                        if leftmostItem.bounds.minX <= applicationMenuFrame.maxX {
-                            self.hideApplicationMenus()
-                        }
+                    // If the minX of the item is less than or equal to the maxX of the
+                    // application menu frame, activate the app to hide the menu.
+                    if leftmostItem.bounds.minX <= applicationMenuFrame.maxX {
+                        self.hideApplicationMenus()
                     }
-                } else if isHidingApplicationMenus {
-                    showApplicationMenus()
                 }
             }
             .store(in: &c)

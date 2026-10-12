@@ -193,6 +193,21 @@ extension MenuBarItemManager {
             return nil
         }
 
+        /// Returns the address of the given menu bar item, if it exists
+        /// in the cache.
+        ///
+        /// Several items of one app can share a tag, so the item's window
+        /// is looked for first.
+        func address(of item: MenuBarItem) -> (section: MenuBarSection.Name, index: Int)? {
+            for (section, items) in storage {
+                guard let index = items.firstIndex(where: { $0.windowID == item.windowID }) else {
+                    continue
+                }
+                return (section, index)
+            }
+            return address(for: item.tag)
+        }
+
         /// Inserts the given menu bar item into the cache at the specified
         /// destination.
         mutating func insert(_ item: MenuBarItem, at destination: MoveDestination) {
@@ -218,7 +233,7 @@ extension MenuBarItemManager {
                 return
             }
 
-            guard case (let section, var index)? = address(for: targetTag) else {
+            guard case (let section, var index)? = address(of: destination.targetItem) else {
                 return
             }
 
@@ -317,6 +332,7 @@ extension MenuBarItemManager {
         displayID: CGDirectDisplayID?
     ) async {
         var context = CacheContext(controlItems: controlItems, displayID: displayID)
+        let windowIDs = Set(items.map { $0.windowID })
 
         for item in items where context.isValidForCaching(item) {
             if item.sourcePID == nil {
@@ -324,7 +340,7 @@ extension MenuBarItemManager {
                 context.shouldClearCachedItemWindowIDs = true
             }
 
-            if let temp = temporarilyShownItemContexts.first(where: { $0.tag == item.tag }) {
+            if let temp = temporarilyShownItemContexts.first(where: { $0.matches(item, windowIDs: windowIDs) }) {
                 // Cache temporarily shown items as if they were in their original locations.
                 // Keep track of them separately and use their return destinations to insert
                 // them into the cache once all other items have been handled.
@@ -1477,6 +1493,9 @@ extension MenuBarItemManager {
         /// The tag associated with the item.
         let tag: MenuBarItemTag
 
+        /// The item's window at the time it was shown.
+        let windowID: CGWindowID
+
         /// The destination to return the item to.
         let returnDestination: MoveDestination
 
@@ -1511,16 +1530,39 @@ extension MenuBarItemManager {
             return current.isOnScreen
         }
 
-        init(tag: MenuBarItemTag, returnDestination: MoveDestination) {
-            self.tag = tag
+        init(item: MenuBarItem, returnDestination: MoveDestination) {
+            self.tag = item.tag
+            self.windowID = item.windowID
             self.returnDestination = returnDestination
+        }
+
+        /// Returns a Boolean value that indicates whether the given item
+        /// is the one that was shown.
+        ///
+        /// Several items of one app can share a tag, such as OneDrive's
+        /// items with more than one account signed in. Matching by tag
+        /// alone treated all of them as shown, and they all dropped out
+        /// of the cache (jordanbaird/Ice#857). The tag is only used when
+        /// the shown item's window is gone, as when the app recreated
+        /// the item.
+        ///
+        /// - Parameters:
+        ///   - item: The item to check.
+        ///   - windowIDs: The windows of the current menu bar items.
+        func matches(_ item: MenuBarItem, windowIDs: Set<CGWindowID>) -> Bool {
+            if windowIDs.contains(windowID) {
+                return item.windowID == windowID
+            }
+            return item.tag == tag
         }
     }
 
     /// Gets the destination to return the given item to after it is
     /// temporarily shown.
     private func getReturnDestination(for item: MenuBarItem, in items: [MenuBarItem]) -> MoveDestination? {
-        guard let index = items.firstIndex(matching: item.tag) else {
+        // Look for the item's window first. Several items of one app can
+        // share a tag, and the first of them is not necessarily this one.
+        guard let index = items.firstIndex(where: { $0.windowID == item.windowID }) ?? items.firstIndex(matching: item.tag) else {
             return nil
         }
         if items.indices.contains(index + 1) {
@@ -1637,7 +1679,7 @@ extension MenuBarItemManager {
             return
         }
 
-        let context = TemporarilyShownItemContext(tag: item.tag, returnDestination: destination)
+        let context = TemporarilyShownItemContext(item: item, returnDestination: destination)
         temporarilyShownItemContexts.append(context)
 
         rehideTimer?.invalidate()
@@ -1706,12 +1748,14 @@ extension MenuBarItemManager {
             MouseHelpers.showCursor()
         }
 
+        let windowIDs = Set(items.map { $0.windowID })
+
         while let context = currentContexts.popLast() {
-            guard let item = items.first(matching: context.tag) else {
+            guard let item = items.first(where: { context.matches($0, windowIDs: windowIDs) }) else {
                 continue
             }
             do {
-                try await move(item: item, to: context.returnDestination)
+                try await move(item: item, to: currentReturnDestination(for: context, item: item, in: items))
             } catch {
                 context.rehideAttempts += 1
                 logger.warning(
@@ -1774,14 +1818,51 @@ extension MenuBarItemManager {
         return min(3 * pow(2, Double(exponent)), 60)
     }
 
+    /// Returns the destination to return a temporarily shown item to,
+    /// using the current window of the item it goes next to.
+    ///
+    /// That item can be recreated while the shown item is out, which gives
+    /// it a new window. Moving next to the old window failed on every
+    /// attempt, and the shown item stayed in view (jordanbaird/Ice#729). If
+    /// the neighbor is gone altogether, the item goes back to the right end
+    /// of the hidden section.
+    private func currentReturnDestination(
+        for context: TemporarilyShownItemContext,
+        item: MenuBarItem,
+        in items: [MenuBarItem]
+    ) -> MoveDestination {
+        let destination = context.returnDestination
+        let target = destination.targetItem
+        let others = items.filter { $0.windowID != item.windowID }
+        guard
+            let currentTarget = others.first(where: { $0.windowID == target.windowID }) ??
+                others.first(matching: target.tag)
+        else {
+            guard let hiddenControlItem = others.first(matching: .hiddenControlItem) else {
+                return destination
+            }
+            logger.debug("Return destination for \(item.logString, privacy: .public) is gone, using the hidden section")
+            return .leftOfItem(hiddenControlItem)
+        }
+        return switch destination {
+        case .leftOfItem: .leftOfItem(currentTarget)
+        case .rightOfItem: .rightOfItem(currentTarget)
+        }
+    }
+
     /// Removes a temporarily shown item from the cache, ensuring that
     /// the item is _not_ returned to its original location.
-    func removeTemporarilyShownItemFromCache(with tag: MenuBarItemTag) {
-        while let index = temporarilyShownItemContexts.firstIndex(where: { $0.tag == tag }) {
+    func removeTemporarilyShownItemFromCache(for item: MenuBarItem) {
+        // Several items of one app can share a tag, so a context for the
+        // item's own window takes precedence over one that shares its tag.
+        let hasWindowMatch = temporarilyShownItemContexts.contains { $0.windowID == item.windowID }
+        while let index = temporarilyShownItemContexts.firstIndex(where: { context in
+            hasWindowMatch ? context.windowID == item.windowID : context.tag == item.tag
+        }) {
             logger.debug(
                 """
                 Removing temporarily shown item from cache: \
-                \(tag, privacy: .public)
+                \(item.tag, privacy: .public)
                 """
             )
             temporarilyShownItemContexts.remove(at: index)

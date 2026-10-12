@@ -125,7 +125,13 @@ final class MenuBarOverlayPanel: NSPanel {
         )
         .debounce(for: 0.1, scheduler: DispatchQueue.main)
         .sink { [weak self] _ in
-            self?.needsShow = true
+            guard let self else {
+                return
+            }
+            // A fresh request gets a fresh set of retries, so retries used up
+            // while the displays slept don't stop the panel showing on wake.
+            showRetryCount = 0
+            needsShow = true
         }
         .store(in: &c)
 

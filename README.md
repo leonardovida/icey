@@ -3,7 +3,7 @@
     <h1>Icey</h1>
     <p><strong>The maintained replacement for <a href="https://github.com/jordanbaird/Ice">Ice</a>, the free and open-source macOS menu bar manager.</strong></p>
     <p>Works on macOS 14 Sonoma, 15 Sequoia, 26 Tahoe and 27. Faster, lighter, and with the bugs fixed that Ice left open.</p>
-    <p><a href="https://leonardovida.github.io/icey/download/"><strong>Download Icey</strong></a> · <a href="https://leonardovida.github.io/icey/">Website</a> · <a href="https://github.com/leonardovida/icey/releases">What's new</a> · <a href="BREAKING_CHANGES.md">Breaking changes</a> · <a href="https://github.com/leonardovida/icey/issues/new/choose">Report a bug or request a feature</a></p>
+    <p><a href="https://github.com/leonardovida/icey/releases/latest"><strong>Download Icey</strong></a> · <a href="https://github.com/leonardovida/icey/releases">What's new</a> · <a href="BREAKING_CHANGES.md">Breaking changes</a> · <a href="https://github.com/leonardovida/icey/issues/new/choose">Report a bug or request a feature</a></p>
 </div>
 
 ![Platform](https://img.shields.io/badge/platform-macOS-blue?style=flat-square)
@@ -26,14 +26,13 @@ Icey is a drop-in replacement. It installs over Ice and keeps your settings.
 | | |
 |---|---|
 | What it is | A macOS menu bar manager: hide, show, rearrange and style menu bar icons |
-| Website | [leonardovida.github.io/icey](https://leonardovida.github.io/icey/) |
 | Replaces | [Ice](https://github.com/jordanbaird/Ice) (jordanbaird/Ice), which is no longer updated |
 | Supported macOS | 14 Sonoma, 15 Sequoia, 26 Tahoe, 27 (early support) |
 | Architectures | Apple silicon and Intel (universal binary) |
 | Download | [Latest release](https://github.com/leonardovida/icey/releases/latest): DMG or zip, signed with a Developer ID and notarized by Apple |
 | What's new | [Releases](https://github.com/leonardovida/icey/releases) (full notes for every version) · [CHANGELOG.md](CHANGELOG.md) |
 | Upgrade notes | [BREAKING_CHANGES.md](BREAKING_CHANGES.md) |
-| Ice bugs fixed | [Ice bugs fixed in Icey](https://leonardovida.github.io/icey/fixes/), with what was wrong and what changed ([docs/upstream-issues.md](docs/upstream-issues.md)) |
+| Ice bugs fixed | [docs/upstream-issues.md](docs/upstream-issues.md), with what was wrong and what changed |
 | Price and license | Free, [GPL-3.0](LICENSE) |
 | Contributing | Issues, feature requests and pull requests are welcome, including from AI agents ([CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md)) |
 
@@ -41,7 +40,7 @@ Icey is a drop-in replacement. It installs over Ice and keeps your settings.
 
 ### Download
 
-1. [Download Icey](https://leonardovida.github.io/icey/download/) (the DMG from the [latest release](https://github.com/leonardovida/icey/releases/latest)).
+1. Download `Icey-<version>.dmg` from the [latest release](https://github.com/leonardovida/icey/releases/latest).
 2. Open it and drag `Icey.app` to Applications. If Ice is installed, quit it first. Releases before the rename install as `Ice.app`; if you still have one, move it to the Trash after Icey runs.
 3. Open Icey from Applications, and grant Accessibility and Screen Recording when asked.
 
@@ -96,7 +95,7 @@ The latest highlights:
   - Multi-display and fullscreen glitches are fixed.
   - A hung app no longer freezes Icey.
 
-See [Ice bugs fixed in Icey](https://leonardovida.github.io/icey/fixes/) for every Ice issue Icey fixes, with what was wrong and what changed.
+See [docs/upstream-issues.md](docs/upstream-issues.md) for every Ice issue Icey fixes, with what was wrong and what changed.
 
 ## FAQ
 

@@ -858,9 +858,14 @@ extension HIDEventManager {
 
         let averageDelta = (event.scrollingDeltaX + event.scrollingDeltaY) / 2
 
-        if averageDelta > 5 {
+        // Trackpads report deltas in points. A mouse wheel reports them in
+        // lines, about one per notch, so the threshold for points was never
+        // reached with a wheel (jordanbaird/Ice#717).
+        let threshold: CGFloat = event.hasPreciseScrollingDeltas ? 5 : 0
+
+        if averageDelta > threshold {
             hiddenSection.show()
-        } else if averageDelta < -5 {
+        } else if averageDelta < -threshold {
             hiddenSection.hide()
         }
     }
@@ -883,6 +888,20 @@ extension HIDEventManager {
             return false
         }
 
+        // With "Displays have separate Spaces" turned off, only the primary
+        // display has a menu bar. The top of every other display is ordinary
+        // window space, and counting it as a menu bar swallowed clicks there
+        // and opened Ice's menu on right-click (jordanbaird/Ice#456, #646).
+        guard
+            NSScreen.screensHaveSeparateSpaces ||
+            screen.displayID == NSScreen.screens.first?.displayID
+        else {
+            return false
+        }
+
+        // The bottom edge of the menu bar.
+        var menuBarMinY = screen.visibleFrame.maxY
+
         // Ice icon must be vertically visible. Otherwise, we can infer
         // that the menu bar is hidden and the mouse is not inside.
         //
@@ -897,13 +916,23 @@ extension HIDEventManager {
             else {
                 return false
             }
+            // A menu bar that the system hides and shows automatically takes no
+            // space from the visible frame, so only the top row of the screen
+            // counted as the menu bar. Show on hover and click needed the pointer
+            // against the edge, and shown items collapsed as soon as it moved
+            // down onto the revealed menu bar (jordanbaird/Ice#708). The Ice icon
+            // is as tall as the menu bar it sits in, so while it is on this
+            // screen, its bottom edge is the menu bar's.
+            if iceIconFrame.midX >= screen.frame.minX && iceIconFrame.midX <= screen.frame.maxX {
+                menuBarMinY = min(menuBarMinY, iceIconFrame.minY)
+            }
         }
 
         // Infer the menu bar frame from the screen frame.
         return mouseLocation.x >= screen.frame.minX &&
         mouseLocation.x <= screen.frame.maxX &&
         mouseLocation.y <= screen.frame.maxY &&
-        mouseLocation.y >= screen.visibleFrame.maxY
+        mouseLocation.y >= menuBarMinY
     }
 
     /// A Boolean value that indicates whether the mouse pointer is within

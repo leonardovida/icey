@@ -1,0 +1,44 @@
+name: Website
+
+# Builds the website (https://leonardovida.github.io/icey/) with
+# Scripts/build-site.py and deploys it to GitHub Pages. It runs after a release
+# passes "Check release appcast", so the download button always points at a
+# release whose update feed works. Run it by hand after changing docs/issues.json
+# or the site: `gh workflow run website.yml --repo leonardovida/icey`.
+
+on:
+  workflow_run:
+    workflows: ["Check release appcast"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - name: Build the site
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 Scripts/build-site.py --check --out _site
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

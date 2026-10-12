@@ -109,7 +109,7 @@ def build_docs(data):
         f"This page maps bugs reported against [Ice]({UPSTREAM}) (jordanbaird/Ice) to their status in Icey. "
         "If you hit one of these in Ice, [install Icey](../README.md#install) instead. Icey replaces Ice and keeps your settings.",
         "",
-        f"Each fix is described in the [release]({GH}/releases) that ships it. "
+        f"Each fix is described in the [release]({GH}/releases) that ships it, and on [Icey's website]({SITE_URL}/fixes/). "
         f"Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey]({GH}/issues/new/choose).",
         "",
         f"## Fixed in Icey ({len(by['fixed'])})",

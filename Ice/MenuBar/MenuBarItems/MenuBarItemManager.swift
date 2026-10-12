@@ -1499,6 +1499,9 @@ extension MenuBarItemManager {
         /// The destination to return the item to.
         let returnDestination: MoveDestination
 
+        /// The section the item came from.
+        let returnSection: MenuBarSection.Name
+
         /// The window of the item's shown interface.
         var shownInterfaceWindow: WindowInfo?
 
@@ -1530,10 +1533,11 @@ extension MenuBarItemManager {
             return current.isOnScreen
         }
 
-        init(item: MenuBarItem, returnDestination: MoveDestination) {
+        init(item: MenuBarItem, returnDestination: MoveDestination, returnSection: MenuBarSection.Name) {
             self.tag = item.tag
             self.windowID = item.windowID
             self.returnDestination = returnDestination
+            self.returnSection = returnSection
         }
 
         /// Returns a Boolean value that indicates whether the given item
@@ -1636,6 +1640,19 @@ extension MenuBarItemManager {
             return
         }
 
+        // The section the item returns to if its neighbor is gone by then.
+        // Items left of the always-hidden control item are always-hidden.
+        let returnSection: MenuBarSection.Name = {
+            guard
+                let alwaysHiddenIndex = items.firstIndex(matching: .alwaysHiddenControlItem),
+                let itemIndex = items.firstIndex(where: { $0.windowID == item.windowID }),
+                itemIndex < alwaysHiddenIndex
+            else {
+                return .hidden
+            }
+            return .alwaysHidden
+        }()
+
         // Remove all items up to and including the hidden control item.
         if let index = items.firstIndex(matching: .hiddenControlItem) {
             items.removeSubrange(...index)
@@ -1679,7 +1696,7 @@ extension MenuBarItemManager {
             return
         }
 
-        let context = TemporarilyShownItemContext(item: item, returnDestination: destination)
+        let context = TemporarilyShownItemContext(item: item, returnDestination: destination, returnSection: returnSection)
         temporarilyShownItemContexts.append(context)
 
         rehideTimer?.invalidate()
@@ -1825,7 +1842,7 @@ extension MenuBarItemManager {
     /// it a new window. Moving next to the old window failed on every
     /// attempt, and the shown item stayed in view (jordanbaird/Ice#729). If
     /// the neighbor is gone altogether, the item goes back to the right end
-    /// of the hidden section.
+    /// of the section it came from.
     private func currentReturnDestination(
         for context: TemporarilyShownItemContext,
         item: MenuBarItem,
@@ -1838,11 +1855,14 @@ extension MenuBarItemManager {
             let currentTarget = others.first(where: { $0.windowID == target.windowID }) ??
                 others.first(matching: target.tag)
         else {
-            guard let hiddenControlItem = others.first(matching: .hiddenControlItem) else {
+            // Return the item to the right end of the section it came from, so a
+            // temporary show never moves an always-hidden item to the hidden section.
+            let controlItemTag: MenuBarItemTag = context.returnSection == .alwaysHidden ? .alwaysHiddenControlItem : .hiddenControlItem
+            guard let controlItem = others.first(matching: controlItemTag) else {
                 return destination
             }
-            logger.debug("Return destination for \(item.logString, privacy: .public) is gone, using the hidden section")
-            return .leftOfItem(hiddenControlItem)
+            logger.debug("Return destination for \(item.logString, privacy: .public) is gone, using the \(context.returnSection.logString, privacy: .public) section")
+            return .leftOfItem(controlItem)
         }
         return switch destination {
         case .leftOfItem: .leftOfItem(currentTarget)

@@ -330,4 +330,41 @@ final class AppState: ObservableObject {
         }
         NSApp.deactivate()
     }
+
+    /// The activation policy the app takes while the settings window is open.
+    ///
+    /// The window gives Icey a Dock icon unless the user turned that off
+    /// (jordanbaird/Ice#724). An accessory app can still be activated and
+    /// take keyboard focus, so the window works the same without one. Hidden
+    /// application menus need the regular policy, so a window opened while
+    /// they are hidden keeps it.
+    var settingsActivationPolicy: NSApplication.ActivationPolicy {
+        if settings.advanced.showInDockWhileSettingsOpen || menuBarManager.isHidingApplicationMenus {
+            .regular
+        } else {
+            .accessory
+        }
+    }
+
+    /// Activates the app with ``settingsActivationPolicy`` and opens the
+    /// settings window.
+    func activateAndOpenSettings() {
+        activate(withPolicy: settingsActivationPolicy)
+        openWindow(.settings)
+    }
+
+    /// Applies ``settingsActivationPolicy`` to a settings window that is
+    /// already open, after the user changes the Dock setting.
+    func updateSettingsActivationPolicy() {
+        let policy = settingsActivationPolicy
+        guard
+            navigationState.isSettingsPresented,
+            NSApp.activationPolicy() != policy
+        else {
+            return
+        }
+        // Changing the policy can cost the app its active state, which
+        // would leave the window without keyboard focus.
+        activate(withPolicy: policy)
+    }
 }

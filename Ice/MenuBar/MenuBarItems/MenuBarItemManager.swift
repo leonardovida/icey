@@ -43,6 +43,19 @@ final class MenuBarItemManager: ObservableObject {
     /// Cached timeouts for move operations.
     private var moveOperationTimeouts = [MenuBarItemTag: Duration]()
 
+    /// The menu bar items Icey has seen, loaded from the defaults on first use.
+    private var knownItems: KnownItems?
+
+    /// New menu bar items waiting to be moved to the section chosen for them.
+    private var pendingNewItems = [MenuBarItem]()
+
+    /// The task that moves new menu bar items, while it runs.
+    private var newItemPlacementTask: Task<Void, Never>?
+
+    /// The number of cache updates that have put off remembering the
+    /// items for the first time, as some items' apps were not yet known.
+    private var knownItemsSeedDeferrals = 0
+
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
@@ -445,6 +458,7 @@ extension MenuBarItemManager {
                 await enforceControlItemOrder(controlItems: controlItems)
             }
             await uncheckedCacheItems(items: items, controlItems: controlItems, displayID: displayID)
+            recordNewItems(controlItems: controlItems)
         }
     }
 
@@ -1897,6 +1911,234 @@ extension MenuBarItemManager {
                 """
             )
             temporarilyShownItemContexts.remove(at: index)
+        }
+    }
+}
+
+// MARK: - New Items
+
+extension MenuBarItemManager {
+    /// The apps whose menu bar items Icey has seen, so that an item from an
+    /// app that adds one for the first time can be told apart from one that
+    /// was there before.
+    ///
+    /// Items are remembered by their app, not their full tag: some apps change
+    /// an item's title as their state changes, and each new title would look
+    /// like a new item, moved again and again. An app that adds a second item
+    /// later is not new, so that item stays where macOS puts it. The list keeps the order the items were
+    /// first seen in, and is pruned from the oldest end once it grows past
+    /// ``maxCount``, keeping any item that is in the menu bar.
+    struct KnownItems {
+        /// The number of items to remember.
+        static let maxCount = 512
+
+        /// The remembered keys, oldest first.
+        private(set) var keys: [String]
+
+        /// The remembered keys, for lookup.
+        private var lookup: Set<String>
+
+        /// Creates a list with the given keys, oldest first.
+        init(keys: [String]) {
+            self.keys = keys
+            self.lookup = Set(keys)
+        }
+
+        /// Returns the key to remember the item with the given tag by, or
+        /// `nil` if the tag does not identify its app across launches.
+        ///
+        /// A tag gets a random UUID namespace on macOS 26 when the app that
+        /// created its item can't be found, and a `null` namespace when the
+        /// owning process has no name. Neither names the same app twice.
+        static func key(for tag: MenuBarItemTag) -> String? {
+            guard tag.namespace.isString else {
+                return nil
+            }
+            return tag.namespace.description
+        }
+
+        /// Adds the given key, and returns a Boolean value that indicates
+        /// whether it was not remembered before.
+        @discardableResult
+        mutating func insert(_ key: String) -> Bool {
+            guard lookup.insert(key).inserted else {
+                return false
+            }
+            keys.append(key)
+            return true
+        }
+
+        /// Forgets the oldest keys until no more than ``maxCount`` are left,
+        /// skipping the given keys of items that are in the menu bar.
+        mutating func prune(keeping present: Set<String>) {
+            var excess = keys.count - Self.maxCount
+            guard excess > 0 else {
+                return
+            }
+            keys.removeAll { key in
+                guard excess > 0, !present.contains(key) else {
+                    return false
+                }
+                excess -= 1
+                lookup.remove(key)
+                return true
+            }
+        }
+    }
+
+    /// Remembers the items in the cache that Icey has not seen before,
+    /// and queues them to be moved to the section chosen for new items.
+    ///
+    /// This runs after each cache update, so it adds no polling of its own.
+    /// The first time it runs, every item is remembered and none is moved.
+    /// An item is remembered before it is moved and is never moved again,
+    /// so an item the user moves afterwards stays where they put it.
+    private func recordNewItems(controlItems: ControlItemPair) {
+        var candidates = [(item: MenuBarItem, section: MenuBarSection.Name, key: String)]()
+        for section in MenuBarSection.Name.allCases {
+            // The cache already leaves out items that can't be hidden.
+            for item in itemCache[section] where !item.isControlItem && item.isMovable {
+                guard let key = KnownItems.key(for: item.tag) else {
+                    continue
+                }
+                candidates.append((item, section, key))
+            }
+        }
+
+        guard var known = knownItems ?? Defaults.stringArray(forKey: .knownMenuBarItems).map({ KnownItems(keys: $0) }) else {
+            // On macOS 26 an item's app can be missing for a moment, as when
+            // the menu bar item service is starting. Such an item has no key,
+            // and would look new once its app is found, so wait for it, up to
+            // about a minute of cache updates.
+            if
+                itemCache.managedItems.contains(where: { $0.sourcePID == nil && !$0.isControlItem }),
+                knownItemsSeedDeferrals < 12
+            {
+                knownItemsSeedDeferrals += 1
+                return
+            }
+            var seeded = KnownItems(keys: [])
+            for candidate in candidates {
+                seeded.insert(candidate.key)
+            }
+            knownItems = seeded
+            Defaults.set(seeded.keys, forKey: .knownMenuBarItems)
+            logger.info("Remembered \(seeded.keys.count, privacy: .public) menu bar items as already seen")
+            return
+        }
+
+        let target = targetSection(for: appState?.settings.general.newItemPlacement ?? .automatic, controlItems: controlItems)
+        var foundNewItems = false
+
+        // Every item of an app seen for the first time is new, not only the
+        // first one found.
+        var newKeys = Set<String>()
+        for (item, section, key) in candidates {
+            if known.insert(key) {
+                newKeys.insert(key)
+            }
+            guard newKeys.contains(key) else {
+                continue
+            }
+            foundNewItems = true
+            logger.info("Found new menu bar item \(item.logString, privacy: .public) in the \(section.logString, privacy: .public)")
+            if let target, target != section, !temporarilyShownItemContexts.contains(where: { $0.tag == item.tag }) {
+                pendingNewItems.append(item)
+            }
+        }
+
+        if foundNewItems {
+            known.prune(keeping: Set(candidates.map(\.key)))
+            Defaults.set(known.keys, forKey: .knownMenuBarItems)
+        }
+        knownItems = known
+
+        placePendingNewItems()
+    }
+
+    /// Returns the section that new items are moved to for the given
+    /// placement, or `nil` if they stay where macOS puts them.
+    ///
+    /// Without the always-hidden section, its items go to the hidden section.
+    private func targetSection(for placement: NewItemPlacement, controlItems: ControlItemPair) -> MenuBarSection.Name? {
+        guard let section = placement.section else {
+            return nil
+        }
+        if section == .alwaysHidden, controlItems.alwaysHidden == nil {
+            return .hidden
+        }
+        return section
+    }
+
+    /// Moves the queued new items one at a time, unless that is already
+    /// being done.
+    private func placePendingNewItems() {
+        guard newItemPlacementTask == nil, !pendingNewItems.isEmpty else {
+            return
+        }
+        newItemPlacementTask = Task { [weak self] in
+            guard let self else {
+                return
+            }
+            while !pendingNewItems.isEmpty {
+                await placeNewItem(pendingNewItems.removeFirst())
+            }
+            newItemPlacementTask = nil
+        }
+    }
+
+    /// Moves the given new item to the section chosen for new items, if it
+    /// is still in the menu bar and not in that section already.
+    ///
+    /// The menu bar is read again first, as the setting, the item and the
+    /// control items may all have changed since the item was queued. A move
+    /// that fails is not retried: the item is remembered either way.
+    private func placeNewItem(_ item: MenuBarItem) async {
+        guard let placement = appState?.settings.general.newItemPlacement else {
+            return
+        }
+
+        var items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
+
+        guard
+            let controlItems = ControlItemPair(items: &items),
+            let target = targetSection(for: placement, controlItems: controlItems),
+            let current = items.first(where: { $0.windowID == item.windowID })
+        else {
+            return
+        }
+
+        var context = CacheContext(controlItems: controlItems, displayID: nil)
+        guard context.findSection(for: current) != target else {
+            return
+        }
+
+        let destination: MoveDestination
+        switch target {
+        case .visible:
+            // Go to the left end of the visible section, next to its leftmost
+            // item, as a temporarily shown item does while the hidden section
+            // is collapsed.
+            let visibleItems = items.filter { other in
+                other.windowID != current.windowID && context.findSection(for: other) == .visible
+            }
+            if let leftmost = visibleItems.min(by: { $0.bounds.minX < $1.bounds.minX }) {
+                destination = .leftOfItem(leftmost)
+            } else {
+                destination = .rightOfItem(controlItems.hidden)
+            }
+        case .hidden:
+            destination = .leftOfItem(controlItems.hidden)
+        case .alwaysHidden:
+            destination = .leftOfItem(controlItems.alwaysHidden ?? controlItems.hidden)
+        }
+
+        logger.info("Moving new menu bar item \(current.logString, privacy: .public) to the \(target.logString, privacy: .public)")
+
+        do {
+            try await move(item: current, to: destination)
+        } catch {
+            logger.error("Error moving new menu bar item: \(error, privacy: .public)")
         }
     }
 }

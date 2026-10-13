@@ -50,6 +50,13 @@ struct GeneralSettingsPane: View {
             IceSection {
                 rehideOptions
             }
+            if #unavailable(macOS 27.0) {
+                // Items can't be moved on macOS 27. There, an app that isn't
+                // in the saved layout is already shown in the visible section.
+                IceSection {
+                    newItemOptions
+                }
+            }
             IceSection {
                 spacingOptions
             }
@@ -176,6 +183,7 @@ struct GeneralSettingsPane: View {
     private var iceBarOptions: some View {
         useIceBar
         if settings.useIceBar {
+            iceBarDisplaysPicker
             iceBarLocationPicker
         }
     }
@@ -184,6 +192,25 @@ struct GeneralSettingsPane: View {
     private var useIceBar: some View {
         Toggle("Use Ice Bar", isOn: $settings.useIceBar)
             .annotation("Show hidden menu bar items in a separate bar below the menu bar.")
+    }
+
+    @ViewBuilder
+    private var iceBarDisplaysPicker: some View {
+        IcePicker("Use on", selection: $settings.iceBarDisplays) {
+            ForEach(IceBarDisplays.allCases) { displays in
+                Text(displays.localized).tag(displays)
+            }
+        }
+        .annotation {
+            switch settings.iceBarDisplays {
+            case .all:
+                Text("The Ice Bar is used on every display.")
+            case .withNotch:
+                Text("Displays without a notch show hidden menu bar items in the menu bar.")
+            case .builtIn:
+                Text("Other displays show hidden menu bar items in the menu bar.")
+            }
+        }
     }
 
     @ViewBuilder
@@ -258,6 +285,27 @@ struct GeneralSettingsPane: View {
                     in: 0...30,
                     step: 1
                 )
+            }
+        }
+    }
+
+    // MARK: New Item Options
+
+    @ViewBuilder
+    private var newItemOptions: some View {
+        IcePicker("New items appear in", selection: $settings.newItemPlacement) {
+            ForEach(NewItemPlacement.allCases) { placement in
+                Text(placement.localized).tag(placement)
+            }
+        }
+        .annotation {
+            switch settings.newItemPlacement {
+            case .automatic:
+                Text("macOS adds new menu bar items at the far left of the menu bar, in the leftmost section.")
+            case .alwaysHidden where !appState.settings.advanced.enableAlwaysHiddenSection:
+                Text("The always-hidden section is turned off, so Icey moves new menu bar items to the hidden section.")
+            case .visible, .hidden, .alwaysHidden:
+                Text("Icey moves each menu bar item it hasn't seen before to this section once. Items you move afterwards stay where you put them.")
             }
         }
     }

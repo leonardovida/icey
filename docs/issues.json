@@ -1293,11 +1293,11 @@
       "number": 797,
       "title": "[Feature Request]: only on screens with a notch",
       "headline": "Ice Bar only on displays with a notch",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to use the Ice Bar on screens with a notch and expand items inline elsewhere.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > Use Ice Bar > Use on: choose All displays, Displays with a notch, or Built-in display. Other displays show hidden items in the menu bar.",
+      "pr": 19
     },
     {
       "number": 796,
@@ -1486,12 +1486,12 @@
       "number": 767,
       "title": "[Feature Request]: Have new menubar items appear in always shown, or customizable",
       "headline": "Choose the section where new items appear",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request for new items to appear in the visible section.",
-      "fix": "Not started. Pull requests welcome.",
-      "note": "Same request as #938.",
-      "pr": null
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
+      "note": "Not available on macOS 27, where Icey can't move items yet.",
+      "pr": 19
     },
     {
       "number": 766,
@@ -1815,12 +1815,11 @@
       "number": 724,
       "title": "[Feature Request]: Hide Ice icon from dock",
       "headline": "Hide the Ice icon from the Dock",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to keep the app out of the Dock.",
-      "fix": "Not started. Pull requests welcome.",
-      "note": "Same request as #961.",
-      "pr": null
+      "fix": "Settings > Advanced > \"Show Icey in the Dock while Settings is open\" can be turned off to keep Icey out of the Dock and the app switcher.",
+      "pr": 19
     },
     {
       "number": 723,
@@ -1990,11 +1989,11 @@
       "number": 703,
       "title": "[Feature Request]: Ice Bar only on Macs with a Notch",
       "headline": "Ice Bar only on Macs with a notch",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to turn on the Ice Bar only for Macs whose display has a notch.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > Use Ice Bar > Use on: choose All displays, Displays with a notch, or Built-in display. Other displays show hidden items in the menu bar.",
+      "pr": 19
     },
     {
       "number": 702,
@@ -2794,11 +2793,12 @@
       "number": 555,
       "title": "[Feature Request]: <Disable / alt settings with external monitor>",
       "headline": "Different settings with an external monitor",
-      "status": "feature",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "A request for per-display settings.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > Use Ice Bar > Use on: choose All displays, Displays with a notch, or Built-in display. Other displays show hidden items in the menu bar.",
+      "pr": 19,
+      "note": "Only the Ice Bar can differ per display; other settings can't."
     },
     {
       "number": 554,
@@ -3172,11 +3172,12 @@
       "number": 463,
       "title": "[Feature Request]: Make the \"Use Ice Bar\" toggle dynamic",
       "headline": "Turn on the Ice Bar automatically per display",
-      "status": "feature",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "A request for a dynamic \"Use Ice Bar\" setting.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > Use Ice Bar > Use on: choose All displays, Displays with a notch, or Built-in display. Other displays show hidden items in the menu bar.",
+      "pr": 19,
+      "note": "There is no automatic switch based on free space; the display rule covers the common notched laptop plus external display case."
     },
     {
       "number": 462,
@@ -3526,11 +3527,11 @@
       "number": 326,
       "title": "[Feature Request]: Custom configuration path / export settings",
       "headline": "Export settings or choose a config path",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request for settings export.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > Advanced > Export Settings… saves Icey's settings to a JSON file, and Import Settings… loads one and relaunches Icey. Item order and spacing aren't included.",
+      "pr": 19
     },
     {
       "number": 321,
@@ -3576,11 +3577,12 @@
       "number": 303,
       "title": "[Feature Request]: Use Ice Bar only when screen size is smaller than <enter resolution>",
       "headline": "Use the Ice Bar only below a screen size",
-      "status": "feature",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "A request for a resolution-based Ice Bar.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > Use Ice Bar > Use on: choose All displays, Displays with a notch, or Built-in display. Other displays show hidden items in the menu bar.",
+      "pr": 19,
+      "note": "There is no screen-size threshold."
     },
     {
       "number": 300,
@@ -3801,11 +3803,11 @@
       "number": 223,
       "title": "[Feature Request]: Ability to enable Ice Bar only when on built-in display",
       "headline": "Ice Bar only on the built-in display",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to use the Ice Bar on the laptop screen only.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > Use Ice Bar > Use on: choose All displays, Displays with a notch, or Built-in display. Other displays show hidden items in the menu bar.",
+      "pr": 19
     },
     {
       "number": 216,
@@ -3963,11 +3965,12 @@
       "number": 95,
       "title": "[Feature Request]: Cross-Device Syncing",
       "headline": "Sync settings across Macs",
-      "status": "feature",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "A request for settings sync.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings can be moved between Macs by hand with Export and Import Settings in Settings > Advanced.",
+      "pr": 19,
+      "note": "There is no automatic sync."
     },
     {
       "number": 94,
@@ -4085,12 +4088,12 @@
       "number": 6,
       "title": "[Feature Request] Change the location where new menu bar icons come up.",
       "headline": "Choose where new menu bar items appear",
-      "status": "feature",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "A request to change the location where new menu bar icons show up, instead of the far left.",
-      "fix": "Not started. Pull requests welcome.",
-      "note": "Same request as #938.",
-      "pr": null
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
+      "note": "An app that forgets its item's position comes back at the far left each launch; Icey only moves it the first time.",
+      "pr": 19
     }
   ],
   "upstream_prs": [

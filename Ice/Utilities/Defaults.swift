@@ -143,6 +143,7 @@ extension Defaults {
         case customIceIconIsTemplate = "CustomIceIconIsTemplate"
         case useIceBar = "UseIceBar"
         case iceBarLocation = "IceBarLocation"
+        case iceBarDisplays = "IceBarDisplays"
         case showOnClick = "ShowOnClick"
         case showOnHover = "ShowOnHover"
         case showOnScroll = "ShowOnScroll"
@@ -150,6 +151,7 @@ extension Defaults {
         case rehideStrategy = "RehideStrategy"
         case rehideInterval = "RehideInterval"
         case itemSpacingOffset = "ItemSpacingOffset"
+        case newItemPlacement = "NewItemPlacement"
 
         // MARK: Hotkeys Settings
         case hotkeys = "Hotkeys"
@@ -162,6 +164,10 @@ extension Defaults {
         case enableSecondaryContextMenu = "EnableSecondaryContextMenu"
         case showOnHoverDelay = "ShowOnHoverDelay"
         case tempShowInterval = "TempShowInterval"
+        case showInDockWhileSettingsOpen = "ShowInDockWhileSettingsOpen"
+
+        // MARK: Menu Bar Items
+        case knownMenuBarItems = "KnownMenuBarItems"
 
         // MARK: Appearance Settings
         case menuBarAppearanceConfigurationV2 = "MenuBarAppearanceConfigurationV2"
@@ -182,6 +188,7 @@ extension Defaults {
         case hasMigrated0_11_10 = "hasMigrated0_11_10"
         case hasMigrated0_11_13 = "hasMigrated0_11_13"
         case hasMigrated0_11_13_1 = "hasMigrated0_11_13_1"
+        case hasMigratedIcey3 = "hasMigratedIcey3"
 
         // MARK: Deprecated (Appearance Settings)
         case menuBarHasBorder = "MenuBarHasBorder"

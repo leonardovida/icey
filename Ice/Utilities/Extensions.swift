@@ -535,6 +535,11 @@ extension NSScreen {
         safeAreaInsets.top != 0
     }
 
+    /// A Boolean value that indicates whether the screen is the Mac's built-in display.
+    var isBuiltIn: Bool {
+        CGDisplayIsBuiltin(displayID) != 0
+    }
+
     /// The frame of the screen's notch, if it has one.
     var frameOfNotch: CGRect? {
         guard

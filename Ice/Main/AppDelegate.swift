@@ -74,6 +74,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        // Keep the sections and the Icey icon where they are for the next launch.
+        appState.itemManager.saveControlItemPositions()
+    }
+
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
     }

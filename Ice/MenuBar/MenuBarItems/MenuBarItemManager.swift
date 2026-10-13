@@ -1965,10 +1965,22 @@ extension MenuBarItemManager {
             !item.isControlItem && !item.isSystemClone && item.bounds.maxX <= hiddenBounds.minX
         }
         let previousHiddenItems = itemCache[.hidden]
+        // Match cached items by window first. A tag is only used for a cached
+        // window that is gone, as several items can share one tag (several
+        // OneDrive accounts, say), and one of them may be always-hidden.
+        let liveWindowIDs = Set(items.map(\.windowID))
         let itemsThatWereHidden = itemsLeftOfHidden.filter { item in
-            previousHiddenItems.contains { $0.windowID == item.windowID || $0.tag == item.tag }
+            previousHiddenItems.contains { cached in
+                if liveWindowIDs.contains(cached.windowID) {
+                    return cached.windowID == item.windowID
+                }
+                return cached.tag == item.tag
+            }
         }
-        let candidates = itemsThatWereHidden.isEmpty ? itemsLeftOfHidden : itemsThatWereHidden
+        // Only an empty cache, as at launch, says nothing about which items were
+        // hidden. A cache whose items are all gone means none of the items left
+        // of the hidden divider were hidden, so they stay always-hidden.
+        let candidates = previousHiddenItems.isEmpty ? itemsLeftOfHidden : itemsThatWereHidden
 
         let destination: MoveDestination = if let leftmost = candidates.min(by: { $0.bounds.minX < $1.bounds.minX }) {
             .leftOfItem(leftmost)

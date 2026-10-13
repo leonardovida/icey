@@ -1466,11 +1466,12 @@
       "number": 769,
       "title": "[Bug]: Menu Bar Layout gets reordered when i close the Ice app",
       "headline": "Layout order is lost when Ice quits",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "Item order reset when Ice quit or the Mac restarted.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "Icey now saves where its icon and dividers are when it quits. macOS only saves an item's position when that item is dragged, so the dividers came back at stale positions and items changed sections.",
+      "pr": 20,
+      "note": "Not yet tested across many restarts."
     },
     {
       "number": 768,
@@ -1733,12 +1734,12 @@
       "number": 732,
       "title": "[Bug]: Docker for Mac ends up in \"Always-Hidden Section\" over time",
       "headline": "Docker ends up in the always-hidden section over time",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Docker for Mac's item, and in the comments other hidden items, moved into the always-hidden section over time.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Same as #702.",
-      "pr": null
+      "fix": "Same fixes as #702: the dividers keep their places across restarts, and fixing their order no longer empties the hidden section.",
+      "note": "An app that recreates its item while Icey runs uses its own saved position, which Icey doesn't control.",
+      "pr": 20
     },
     {
       "number": 731,
@@ -2000,12 +2001,12 @@
       "number": 702,
       "title": "[Bug]: Hidden items randomly moved to always hidden items",
       "headline": "Hidden items randomly move to the always-hidden section",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "All hidden items sometimes moved into the always-hidden section at once.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Probably the dividers ending up in the wrong order. Needs logs.",
-      "pr": null
+      "fix": "When the always-hidden divider ends up on the wrong side, Icey now moves it left of the items that were hidden, instead of right next to the hidden divider, which pushed every hidden item into always-hidden. Icey also saves where its dividers are when it quits, so they come back in the same places.",
+      "note": "What puts the dividers in the wrong order in the first place isn't confirmed.",
+      "pr": 20
     },
     {
       "number": 701,
@@ -2183,12 +2184,12 @@
       "number": 676,
       "title": "[Bug]: Empty space on the left side of the right menu bar when split, MacOS Tahoe",
       "headline": "Split menu bar keeps blank space on the left of the right half",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "The split shape's right half reaches further left than the items.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Needs a window list from an affected setup.",
-      "pr": null
+      "fix": "The right half of the split shape was as wide as every item window on the display added together, counting overlapping windows and items from other displays. It now runs from the right edge to the last item in the row.",
+      "note": "Not yet tested on macOS 26 with this setup.",
+      "pr": 20
     },
     {
       "number": 675,
@@ -2326,12 +2327,12 @@
       "number": 655,
       "title": "[Bug]: ICE - Some Apps icons not appearing in the Menu Bar Layout setting",
       "headline": "Some apps are missing from the layout pane",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Some apps' items didn't show in Menu Bar Layout on macOS 15.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "The macOS 26 part is fixed; the macOS 15 part needs a retest.",
-      "pr": null
+      "fix": "An item touching a divider at a fractional position on a scaled display was in no section and was left out of the layout pane and the Ice Bar. Icey now allows the same small tolerance it uses for moves.",
+      "note": "May not be the reporter's cause; please retest.",
+      "pr": 20
     },
     {
       "number": 651,
@@ -2351,7 +2352,7 @@
       "fixed_in": null,
       "symptom": "Clicking the wallpaper to show the desktop slid the split shape away with the windows.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "A likely fix needs testing so the overlay doesn't show above Mission Control.",
+      "note": "Same as #514.",
       "pr": null
     },
     {
@@ -2606,12 +2607,12 @@
       "number": 608,
       "title": "[Bug]: Split menu bar holds onto a large amount of blank space to the",
       "headline": "Split menu bar holds a large blank space",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "With the split shape, the right half kept a large blank space to the left of the items, on an external display.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Same as #676.",
-      "pr": null
+      "fix": "The right half of the split shape was as wide as every item window on the display added together, counting overlapping windows and items from other displays. It now runs from the right edge to the last item in the row.",
+      "note": "Not yet tested on an external display.",
+      "pr": 20
     },
     {
       "number": 606,
@@ -2731,12 +2732,12 @@
       "number": 573,
       "title": "[Bug]: Widescreen Monitors Hidden Menu Always Visible",
       "headline": "Hidden menu stays visible on widescreen monitors",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "On a widescreen monitor, the hidden section's items stayed visible.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Needs testing on a very wide display.",
-      "pr": null
+      "fix": "The split shape's right half no longer stretches across the hidden items. The items themselves still show.",
+      "note": "macOS limits how far a divider can push items to about 5,000 points, which is less than the width of this display.",
+      "pr": 20
     },
     {
       "number": 570,
@@ -2895,12 +2896,12 @@
       "number": 529,
       "title": "[Bug]: The right bar is longer than expected on ultrawide screen",
       "headline": "Split shape's right half is too long on an ultrawide display",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "On an ultrawide screen, the right half of the split shape was longer than its items.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Needs testing on a very wide display.",
-      "pr": null
+      "fix": "The right half of the split shape was as wide as every item window on the display added together, counting overlapping windows and items from other displays. It now runs from the right edge to the last item in the row.",
+      "note": "Hidden items can still show on very wide displays (#94).",
+      "pr": 20
     },
     {
       "number": 527,
@@ -3003,18 +3004,18 @@
       "symptom": "The shadow moved during the App Exposé animation.",
       "fix": "Needs a reproduction in Icey.",
       "pr": null,
-      "note": "Likely fixed by keeping the overlay out of Exposé, but that may show it over Mission Control (#216). Needs testing."
+      "note": "Keeping the overlay out of Exposé would likely show it over Mission Control (#216). Needs testing."
     },
     {
       "number": 513,
       "title": "[Bug]: Hidden icons end up in the Visible section after some interactions",
       "headline": "Hidden icons end up in the visible section",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "An item opened from the Ice Bar sometimes stayed visible.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Icey stops retrying after five failed rounds. Please retest.",
-      "pr": null
+      "fix": "If an item shown from the Ice Bar is missing when it's due to go back, because its app is quitting or relaunching, Icey now keeps trying for about a minute and a half instead of forgetting it.",
+      "note": "Quitting Icey while an item is shown still leaves it visible.",
+      "pr": 20
     },
     {
       "number": 512,
@@ -3785,7 +3786,7 @@
       "symptom": "Rearranging items in the layout pane made them vanish, with separate Spaces per display.",
       "fix": "The pane no longer stays stale after rearranging, which is one way items seemed to disappear.",
       "pr": 17,
-      "note": "Items vanishing from the real menu bar with separate Spaces per display isn't explained."
+      "note": "Possibly a moved item landing in another display's area when that display is to the left. Not confirmed."
     },
     {
       "number": 227,
@@ -3977,7 +3978,7 @@
       "fixed_in": null,
       "symptom": "On a 7680-pixel-wide display, hidden icons stayed visible, as Ice pushed them only part of the way off screen.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "Needs testing on a very wide display.",
+      "note": "macOS limits how far a divider can push items to about 5,000 points (measured on macOS 26.5), so items on a wider display stay visible. A fix would need a second spacer item.",
       "pr": null
     },
     {

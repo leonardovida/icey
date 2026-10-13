@@ -754,6 +754,59 @@ private final class MenuBarOverlayPanelContentView: NSView {
         )
     }
 
+    /// Returns the left edge of the menu bar items drawn against the right edge
+    /// of the given display, before macOS 27.
+    ///
+    /// The items sit side by side from the right edge of the display, so the
+    /// right half of the split shape runs from the last of them that touches the
+    /// next. It used to be as wide as every item window on the display put
+    /// together, which counted windows that are not in that row: windows that
+    /// overlap, the clock of the display to the left, which reaches a point or
+    /// two past its edge, and hidden items pushed off one display that can land
+    /// on another. Each left a blank stretch on the left of the right half
+    /// (jordanbaird/Ice#608, jordanbaird/Ice#676, jordanbaird/Ice#529). On a
+    /// display wider than a section divider can push items, the hidden items
+    /// stay on screen, and an expanded divider counted as an item stretched the
+    /// right half across them (jordanbaird/Ice#573). The row ends at a gap or
+    /// at an expanded divider.
+    ///
+    /// Returns `nil` if no item reaches the right edge of the display.
+    private func itemsLeftEdge(for displayID: CGDirectDisplayID) -> CGFloat? {
+        // Item windows sit edge to edge (measured on macOS 26.5). Allow a little
+        // for rounding; the gap left by an expanded divider is thousands of points.
+        let maxGap: CGFloat = 10
+        // A divider is a standard status item while its section is shown. When
+        // the section is hidden, macOS caps its length at about 5000 points
+        // (measured 5016 on macOS 26.5).
+        let minExpandedDividerWidth: CGFloat = 1000
+        let dividerTitles: Set<String> = [
+            ControlItem.Identifier.hidden.rawValue,
+            ControlItem.Identifier.alwaysHidden.rawValue,
+        ]
+
+        let itemWindows = MenuBarItem.getMenuBarItemWindows(on: displayID, option: .onScreen)
+            .sorted { $0.bounds.maxX > $1.bounds.maxX }
+
+        var leftEdge = CGDisplayBounds(displayID).maxX
+        var hasItems = false
+        for window in itemWindows {
+            let bounds = window.bounds
+            guard bounds.maxX >= leftEdge - maxGap else {
+                break
+            }
+            if
+                let title = window.title,
+                dividerTitles.contains(title),
+                bounds.width >= minExpandedDividerWidth
+            {
+                break
+            }
+            leftEdge = min(leftEdge, bounds.minX)
+            hasItems = true
+        }
+        return hasItems ? leftEdge : nil
+    }
+
     /// Returns a path for the ``MenuBarShapeKind/split`` shape kind.
     private func pathForSplitShape(in rect: CGRect, info: MenuBarSplitShapeInfo, isInset: Bool, screen: NSScreen) -> NSBezierPath {
         guard let appearanceManager = overlayPanel?.appState?.appearanceManager else {
@@ -799,13 +852,10 @@ private final class MenuBarOverlayPanelContentView: NSView {
                 }
                 totalWidth = CGDisplayBounds(screen.displayID).maxX - leftEdge
             } else {
-                let itemWindows = MenuBarItem.getMenuBarItemWindows(on: screen.displayID, option: .onScreen)
-                guard !itemWindows.isEmpty else {
+                guard let leftEdge = itemsLeftEdge(for: screen.displayID) else {
                     return .zero
                 }
-                totalWidth = itemWindows.reduce(into: 0) { width, item in
-                    width += item.bounds.width
-                }
+                totalWidth = CGDisplayBounds(screen.displayID).maxX - leftEdge
             }
             var position = rect.maxX - totalWidth
             if shouldInset {

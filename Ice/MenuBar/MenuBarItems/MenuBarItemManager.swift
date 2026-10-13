@@ -43,6 +43,14 @@ final class MenuBarItemManager: ObservableObject {
     /// Cached timeouts for move operations.
     private var moveOperationTimeouts = [MenuBarItemTag: Duration]()
 
+    /// A Boolean value that indicates whether temporarily shown items are
+    /// being moved back.
+    private var isRehidingTemporarilyShownItems = false
+
+    /// The windows of the hidden and always-hidden control items, as found
+    /// by the most recent cache.
+    private var controlItemWindowIDs: (hidden: CGWindowID, alwaysHidden: CGWindowID?)?
+
     /// The menu bar items Icey has seen, loaded from the defaults on first use.
     private var knownItems: KnownItems?
 
@@ -313,22 +321,32 @@ extension MenuBarItemManager {
             return true
         }
 
+        /// Returns the section the given item is in.
+        ///
+        /// Window bounds carry sub-point values on a scaled display, so an
+        /// item flush against a control item can overlap it by a fraction of
+        /// a point. Compared exactly, that item was in no section and was
+        /// left out of the cache, so it was missing from the Menu Bar Layout
+        /// pane and the Ice Bar while it showed in the menu bar
+        /// (jordanbaird/Ice#655). The edges are compared with the same
+        /// tolerance as moves, which is far narrower than any item.
         mutating func findSection(for item: MenuBarItem) -> MenuBarSection.Name? {
             lazy var itemBounds = bestBounds(for: item)
+            let tolerance = MenuBarItemManager.positionTolerance
             return MenuBarSection.Name.allCases.first { section in
                 switch section {
                 case .visible:
-                    return itemBounds.minX >= hiddenControlItemBounds.maxX
+                    return itemBounds.minX >= hiddenControlItemBounds.maxX - tolerance
                 case .hidden:
                     if let alwaysHiddenControlItemBounds {
-                        return itemBounds.maxX <= hiddenControlItemBounds.minX &&
-                        itemBounds.minX >= alwaysHiddenControlItemBounds.maxX
+                        return itemBounds.maxX <= hiddenControlItemBounds.minX + tolerance &&
+                        itemBounds.minX >= alwaysHiddenControlItemBounds.maxX - tolerance
                     } else {
-                        return itemBounds.maxX <= hiddenControlItemBounds.minX
+                        return itemBounds.maxX <= hiddenControlItemBounds.minX + tolerance
                     }
                 case .alwaysHidden:
                     if let alwaysHiddenControlItemBounds {
-                        return itemBounds.maxX <= alwaysHiddenControlItemBounds.minX
+                        return itemBounds.maxX <= alwaysHiddenControlItemBounds.minX + tolerance
                     } else {
                         return false
                     }
@@ -455,8 +473,9 @@ extension MenuBarItemManager {
             // Moving items is not supported on macOS 27 yet (plan 2), so the dividers
             // stay where macOS placed them.
             if #unavailable(macOS 27.0) {
-                await enforceControlItemOrder(controlItems: controlItems)
+                await enforceControlItemOrder(controlItems: controlItems, items: items)
             }
+            controlItemWindowIDs = (controlItems.hidden.windowID, controlItems.alwaysHidden?.windowID)
             await uncheckedCacheItems(items: items, controlItems: controlItems, displayID: displayID)
             recordNewItems(controlItems: controlItems)
         }
@@ -1771,6 +1790,13 @@ extension MenuBarItemManager {
         var currentContexts = temporarilyShownItemContexts
         temporarilyShownItemContexts.removeAll()
 
+        // Items may still be shown until this finishes, which saving the
+        // control item positions must know about.
+        isRehidingTemporarilyShownItems = true
+        defer {
+            isRehidingTemporarilyShownItems = false
+        }
+
         let items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
         var failedContexts = [TemporarilyShownItemContext]()
 
@@ -1794,6 +1820,19 @@ extension MenuBarItemManager {
 
         while let context = currentContexts.popLast() {
             guard let item = items.first(where: { context.matches($0, windowIDs: windowIDs) }) else {
+                // The item is gone for now, usually because its app is quitting or
+                // relaunching. Dropping the context left the item where it was shown:
+                // macOS saved that position when the item was moved into view, so the
+                // app put its item back there, in the visible section, from then on
+                // (jordanbaird/Ice#513). Try again later, matching the item by its tag
+                // once its window is gone, and give up after the usual rounds.
+                context.failedRehideRounds += 1
+                if context.failedRehideRounds < Self.maxFailedRehideRounds {
+                    logger.debug("Item to rehide is missing, trying again later: \(context.tag, privacy: .public)")
+                    failedContexts.append(context)
+                } else {
+                    logger.error("Giving up on rehiding missing item \(context.tag, privacy: .public)")
+                }
                 continue
             }
             do {
@@ -2149,21 +2188,150 @@ extension MenuBarItemManager {
     /// Enforces the order of the given control items, ensuring that the
     /// control item for the always-hidden section is positioned to the
     /// left of control item for the hidden section.
-    private func enforceControlItemOrder(controlItems: ControlItemPair) async {
-        let hidden = controlItems.hidden
+    ///
+    /// The always-hidden control item goes left of the items that were in
+    /// the hidden section, not straight next to the hidden control item.
+    /// Placing it next to the hidden control item moved every hidden item
+    /// into the always-hidden section at once, leaving the hidden section
+    /// empty (jordanbaird/Ice#702). When the previous cache doesn't say
+    /// which items were hidden, as at launch, it goes left of all of them,
+    /// so no item ends up harder to reach than before.
+    ///
+    /// - Parameters:
+    ///   - controlItems: The control items, as listed with `items`.
+    ///   - items: The other menu bar items, ordered from left to right.
+    private func enforceControlItemOrder(controlItems: ControlItemPair, items: [MenuBarItem]) async {
+        guard let alwaysHidden = controlItems.alwaysHidden else {
+            return
+        }
 
+        // Check the order again with live bounds, as moving the always-hidden
+        // control item rearranges the sections.
+        let hiddenBounds = Bridging.getWindowBounds(for: controlItems.hidden.windowID) ?? controlItems.hidden.bounds
+        let alwaysHiddenBounds = Bridging.getWindowBounds(for: alwaysHidden.windowID) ?? alwaysHidden.bounds
+
+        guard hiddenBounds.maxX <= alwaysHiddenBounds.minX else {
+            return
+        }
+
+        let itemsLeftOfHidden = items.filter { item in
+            !item.isControlItem && !item.isSystemClone && item.bounds.maxX <= hiddenBounds.minX
+        }
+        let previousHiddenItems = itemCache[.hidden]
+        // Match cached items by window first. A tag is only used for a cached
+        // window that is gone, as several items can share one tag (several
+        // OneDrive accounts, say), and one of them may be always-hidden.
+        let liveWindowIDs = Set(items.map(\.windowID))
+        let itemsThatWereHidden = itemsLeftOfHidden.filter { item in
+            previousHiddenItems.contains { cached in
+                if liveWindowIDs.contains(cached.windowID) {
+                    return cached.windowID == item.windowID
+                }
+                return cached.tag == item.tag
+            }
+        }
+        // Only an empty cache, as at launch, says nothing about which items were
+        // hidden. A cache whose items are all gone means none of the items left
+        // of the hidden divider were hidden, so they stay always-hidden.
+        let candidates = previousHiddenItems.isEmpty ? itemsLeftOfHidden : itemsThatWereHidden
+
+        let destination: MoveDestination = if let leftmost = candidates.min(by: { $0.bounds.minX < $1.bounds.minX }) {
+            .leftOfItem(leftmost)
+        } else {
+            .leftOfItem(controlItems.hidden)
+        }
+
+        do {
+            logger.debug("Control items have incorrect order, moving always-hidden control item \(destination.logString, privacy: .public)")
+            try await move(item: alwaysHidden, to: destination)
+        } catch {
+            logger.error("Error enforcing control item order: \(error, privacy: .public)")
+        }
+    }
+}
+
+// MARK: - Control Item Positions
+
+extension MenuBarItemManager {
+    /// Saves where the control items are now as their preferred positions,
+    /// so that macOS puts them back in the same places at the next launch.
+    ///
+    /// macOS restores a status item to its saved preferred position, a
+    /// distance from the right edge of the screen, and saves that distance
+    /// only when the item itself is dragged. Icey's control items stay put
+    /// while other items move into and out of the sections next to them, so
+    /// their saved positions fell behind the menu bar. At the next launch the
+    /// dividers came back at the old distances: visible items and the Icey
+    /// icon ended up in the hidden section and the order looked lost
+    /// (jordanbaird/Ice#769), and hidden items ended up in the always-hidden
+    /// section (jordanbaird/Ice#702).
+    ///
+    /// Each position is one point past the right edge of the item, so the
+    /// item next to it on the right, whose saved position is no more than
+    /// that edge, stays on its right. The always-hidden control item is only
+    /// saved while the hidden section is hidden, the state the positions of
+    /// hidden items are mostly saved in by Icey's own moves. Nothing is saved
+    /// while an item is temporarily shown or being moved back, as it pushes
+    /// the hidden control item to the left.
+    func saveControlItemPositions() {
+        if #available(macOS 27.0, *) {
+            // Sections come from the saved layout on macOS 27.
+            return
+        }
         guard
-            let alwaysHidden = controlItems.alwaysHidden,
-            hidden.bounds.maxX <= alwaysHidden.bounds.minX
+            let appState,
+            temporarilyShownItemContexts.isEmpty,
+            !isRehidingTemporarilyShownItems,
+            let windowIDs = controlItemWindowIDs,
+            let hiddenBounds = Bridging.getWindowBounds(for: windowIDs.hidden)
         else {
             return
         }
 
-        do {
-            logger.debug("Control items have incorrect order")
-            try await move(item: alwaysHidden, to: .leftOfItem(hidden))
-        } catch {
-            logger.error("Error enforcing control item order: \(error, privacy: .public)")
+        // Positions count from the right edge of the display the menu bar is on.
+        let hiddenRightEdge = CGPoint(x: hiddenBounds.maxX - 1, y: hiddenBounds.midY)
+        let displays = NSScreen.screens.map { CGDisplayBounds($0.displayID) }
+        guard let displayBounds = displays.first(where: { $0.contains(hiddenRightEdge) }) else {
+            return
+        }
+
+        func preferredPosition(for bounds: CGRect) -> CGFloat? {
+            let position = (displayBounds.maxX - bounds.maxX).rounded() + 1
+            guard position.isFinite, position > 0 else {
+                return nil
+            }
+            return position
+        }
+
+        func save(_ position: CGFloat?, for identifier: ControlItem.Identifier) {
+            guard let position else {
+                return
+            }
+            logger.debug("Saving preferred position \(position, privacy: .public) for \(identifier.rawValue, privacy: .public)")
+            ControlItemDefaults[.preferredPosition, identifier.rawValue] = position
+        }
+
+        let menuBarManager = appState.menuBarManager
+
+        save(preferredPosition(for: hiddenBounds), for: .hidden)
+
+        if
+            menuBarManager.controlItem(withName: .visible)?.isAddedToMenuBar == true,
+            let visibleItem = itemCache[.visible].first(matching: .visibleControlItem),
+            let visibleBounds = Bridging.getWindowBounds(for: visibleItem.windowID),
+            visibleBounds.minX >= hiddenBounds.maxX - Self.positionTolerance
+        {
+            save(preferredPosition(for: visibleBounds), for: .visible)
+        }
+
+        if
+            menuBarManager.controlItem(withName: .hidden)?.state == .hideSection,
+            menuBarManager.controlItem(withName: .alwaysHidden)?.isAddedToMenuBar == true,
+            let alwaysHiddenWindowID = windowIDs.alwaysHidden,
+            let alwaysHiddenBounds = Bridging.getWindowBounds(for: alwaysHiddenWindowID),
+            alwaysHiddenBounds.maxX <= hiddenBounds.minX + Self.positionTolerance
+        {
+            save(preferredPosition(for: alwaysHiddenBounds), for: .alwaysHidden)
         }
     }
 }

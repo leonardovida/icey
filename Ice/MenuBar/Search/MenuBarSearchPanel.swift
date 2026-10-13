@@ -312,8 +312,7 @@ private struct MenuBarSearchContentView: View {
         HStack {
             SettingsButton {
                 closePanel()
-                itemManager.appState?.activate(withPolicy: .regular)
-                itemManager.appState?.openWindow(.settings)
+                itemManager.appState?.activateAndOpenSettings()
             }
 
             Spacer()

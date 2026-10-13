@@ -409,8 +409,7 @@ private struct IceBarContentView: View {
                 Button {
                     menuBarManager.section(withName: section)?.hide()
                     appState.navigationState.settingsNavigationIdentifier = .advanced
-                    appState.activate(withPolicy: .regular)
-                    appState.openWindow(.settings)
+                    appState.activateAndOpenSettings()
                 } label: {
                     Text("Open Icey Settings")
                 }

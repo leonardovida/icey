@@ -34,6 +34,7 @@ struct AdvancedSettingsPane: View {
                 }
             }
             IceSection("Other") {
+                showInDockWhileSettingsOpen
                 // macOS 27 folds the items that do not fit behind its own overflow button,
                 // and opens hidden items without moving them, so neither option applies.
                 if #unavailable(macOS 27.0) {
@@ -49,6 +50,9 @@ struct AdvancedSettingsPane: View {
                 IceSection("Menu Bar Indicators") {
                     showCaptureIndicator
                 }
+            }
+            IceSection("Settings File") {
+                settingsFile
             }
             IceSection("Permissions") {
                 allPermissions
@@ -86,6 +90,23 @@ struct AdvancedSettingsPane: View {
             ForEach(SectionDividerStyle.allCases) { style in
                 Text(style.localized).tag(style)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var showInDockWhileSettingsOpen: some View {
+        Toggle(
+            "Show Icey in the Dock while Settings is open",
+            isOn: $settings.showInDockWhileSettingsOpen
+        )
+        .annotation {
+            Text(
+                """
+                When this is off, the settings window opens without a Dock icon and does \
+                not appear in the app switcher.
+                """
+            )
+            .padding(.trailing, 75)
         }
     }
 
@@ -161,6 +182,41 @@ struct AdvancedSettingsPane: View {
                 }
         }
         .annotation("The amount of time to wait before hiding temporarily shown menu bar items.")
+    }
+
+    @ViewBuilder
+    private var settingsFile: some View {
+        LabeledContent {
+            HStack {
+                Button("Export Settings…") {
+                    let window = NSApp.keyWindow
+                    Task {
+                        await SettingsTransfer.exportSettings(from: window)
+                    }
+                }
+                Button("Import Settings…") {
+                    let window = NSApp.keyWindow
+                    Task {
+                        await SettingsTransfer.importSettings(from: window)
+                    }
+                }
+            }
+        } label: {
+            Text("Back up or move your settings")
+        }
+        .annotation {
+            Text(
+                """
+                Save your settings to a JSON file, then import it on another Mac or after \
+                a reinstall. The file holds the General, Hotkeys, Appearance and Advanced \
+                settings, and on macOS 27 the section of each app. It leaves out the order \
+                of the items in the menu bar, which macOS keeps rather than Icey, as well \
+                as menu bar item spacing, Launch at Login, permissions and update settings. \
+                Importing relaunches Icey.
+                """
+            )
+            .padding(.trailing, 75)
+        }
     }
 
     @ViewBuilder

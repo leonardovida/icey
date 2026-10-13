@@ -63,9 +63,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        // A settings window opened without a Dock icon leaves Icey active with
+        // the accessory policy, so give focus back in that case as well.
         if
             sender.isActive,
-            sender.activationPolicy() != .accessory,
+            sender.activationPolicy() != .accessory || !appState.settings.advanced.showInDockWhileSettingsOpen,
             appState.navigationState.isAppFrontmost
         {
             Logger.default.debug("All windows closed - deactivating with accessory activation policy")
@@ -89,8 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func openSettingsWindow() {
         // Delay makes this more reliable for some reason.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [appState] in
-            appState.activate(withPolicy: .regular)
-            appState.openWindow(.settings)
+            appState.activateAndOpenSettings()
         }
     }
 }

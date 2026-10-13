@@ -40,6 +40,7 @@ extension MigrationManager {
             migrate0_11_10(),
             migrate0_11_13(),
             migrate0_11_13_1(),
+            migrateIcey3(),
         ]
 
         for result in results {
@@ -383,6 +384,35 @@ extension MigrationManager {
                 to: identifier.rawValue
             )
         }
+    }
+}
+
+// MARK: - Migrate Icey 3
+
+extension MigrationManager {
+    /// Performs all migrations for the third Icey release.
+    ///
+    /// The release adds three settings. Each is written with the value that
+    /// keeps the behavior from before it existed, so an upgrade changes
+    /// nothing until the user picks something else.
+    private func migrateIcey3() -> MigrationResult {
+        guard !Defaults.bool(forKey: .hasMigratedIcey3) else {
+            return .success
+        }
+
+        let defaults: [(Defaults.Key, Any)] = [
+            (.iceBarDisplays, IceBarDisplays.all.rawValue),
+            (.newItemPlacement, NewItemPlacement.automatic.rawValue),
+            (.showInDockWhileSettingsOpen, true),
+        ]
+        for (key, value) in defaults where Defaults.object(forKey: key) == nil {
+            Defaults.set(value, forKey: key)
+        }
+
+        Defaults.set(true, forKey: .hasMigratedIcey3)
+        logger.info("Successfully migrated to Icey 3 settings")
+
+        return .success
     }
 }
 

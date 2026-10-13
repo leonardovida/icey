@@ -36,6 +36,10 @@ final class AdvancedSettings: ObservableObject {
     /// Time interval to temporarily show items for.
     @Published var tempShowInterval: TimeInterval = 15
 
+    /// A Boolean value that indicates whether Icey shows its icon in
+    /// the Dock while the settings window is open.
+    @Published var showInDockWhileSettingsOpen = true
+
     /// Whether Ice draws its own camera and microphone indicator while it is hiding items.
     ///
     /// Control Centre's own is not drawn at all while anything is concealed, and no allowlist can
@@ -64,6 +68,7 @@ final class AdvancedSettings: ObservableObject {
         Defaults.ifPresent(key: .showOnHoverDelay, assign: &showOnHoverDelay)
         Defaults.ifPresent(key: .showCaptureIndicator, assign: &showCaptureIndicator)
         Defaults.ifPresent(key: .tempShowInterval, assign: &tempShowInterval)
+        Defaults.ifPresent(key: .showInDockWhileSettingsOpen, assign: &showInDockWhileSettingsOpen)
 
         Defaults.ifPresent(key: .sectionDividerStyle) { rawValue in
             if let style = SectionDividerStyle(rawValue: rawValue) {
@@ -129,6 +134,14 @@ final class AdvancedSettings: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { interval in
                 Defaults.set(interval, forKey: .tempShowInterval)
+            }
+            .store(in: &c)
+
+        $showInDockWhileSettingsOpen
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] show in
+                Defaults.set(show, forKey: .showInDockWhileSettingsOpen)
+                self?.appState?.updateSettingsActivationPolicy()
             }
             .store(in: &c)
 

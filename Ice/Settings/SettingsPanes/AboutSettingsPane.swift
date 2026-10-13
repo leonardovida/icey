@@ -15,19 +15,17 @@ struct AboutSettingsPane: View {
         Bundle.main.url(forResource: "Acknowledgements", withExtension: "pdf")!
     }
 
-    private var contributeURL: URL {
+    private var repositoryURL: URL {
         // swiftlint:disable:next force_unwrapping
         URL(string: "https://github.com/leonardovida/icey")!
     }
 
-    private var issuesURL: URL {
-        contributeURL.appendingPathComponent("issues")
+    private var contributeURL: URL {
+        repositoryURL.appendingPathComponent("blob/main/CONTRIBUTING.md")
     }
 
-    /// Donations go to Jordan Baird, the author of Ice, which Icey is based on.
-    private var donateURL: URL {
-        // swiftlint:disable:next force_unwrapping
-        URL(string: "https://icemenubar.app/Donate")!
+    private var issuesURL: URL {
+        repositoryURL.appendingPathComponent("issues")
     }
 
     private var lastUpdateCheckString: String {
@@ -159,8 +157,8 @@ struct AboutSettingsPane: View {
             Button("Report a Bug") {
                 openURL(issuesURL)
             }
-            Button("Support Ice's Author", systemImage: "heart.circle.fill") {
-                openURL(donateURL)
+            Button("Star Icey on GitHub", systemImage: "star.circle.fill") {
+                openURL(repositoryURL)
             }
         }
         .padding(8)

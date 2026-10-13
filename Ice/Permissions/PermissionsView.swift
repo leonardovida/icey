@@ -117,8 +117,7 @@ struct PermissionsView: View {
             appState.performSetup(hasPermissions: true)
 
             Task {
-                appState.activate(withPolicy: .regular)
-                appState.openWindow(.settings)
+                appState.activateAndOpenSettings()
             }
         } label: {
             Text(continueButtonText)

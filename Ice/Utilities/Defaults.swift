@@ -164,6 +164,7 @@ extension Defaults {
         case enableSecondaryContextMenu = "EnableSecondaryContextMenu"
         case showOnHoverDelay = "ShowOnHoverDelay"
         case tempShowInterval = "TempShowInterval"
+        case showInDockWhileSettingsOpen = "ShowInDockWhileSettingsOpen"
 
         // MARK: Menu Bar Items
         case knownMenuBarItems = "KnownMenuBarItems"

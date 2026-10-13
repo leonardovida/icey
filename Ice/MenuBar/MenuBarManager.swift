@@ -38,7 +38,7 @@ final class MenuBarManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     /// A Boolean value that indicates whether the application menus are hidden.
-    private var isHidingApplicationMenus = false
+    private(set) var isHidingApplicationMenus = false
 
     /// The pending check of whether shown items reach the application menus.
     private var applicationMenusCheckTask: Task<Void, any Error>?

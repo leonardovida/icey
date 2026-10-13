@@ -34,6 +34,10 @@ final class GeneralSettings: ObservableObject {
     /// The location where the Ice Bar appears.
     @Published var iceBarLocation: IceBarLocation = .dynamic
 
+    /// The displays on which the Ice Bar is used when ``useIceBar``
+    /// is on. Other displays show hidden items in the menu bar.
+    @Published var iceBarDisplays: IceBarDisplays = .all
+
     /// A Boolean value that indicates whether the hidden section
     /// should be shown when the mouse pointer clicks in an empty
     /// area of the menu bar.
@@ -99,6 +103,11 @@ final class GeneralSettings: ObservableObject {
                 iceBarLocation = location
             }
         }
+        Defaults.ifPresent(key: .iceBarDisplays) { rawValue in
+            if let displays = IceBarDisplays(rawValue: rawValue) {
+                iceBarDisplays = displays
+            }
+        }
         Defaults.ifPresent(key: .rehideStrategy) { rawValue in
             if let strategy = RehideStrategy(rawValue: rawValue) {
                 rehideStrategy = strategy
@@ -115,6 +124,12 @@ final class GeneralSettings: ObservableObject {
                 lastCustomIceIcon = iceIcon
             }
         }
+    }
+
+    /// Returns a Boolean value that indicates whether hidden items shown on
+    /// the given screen go in the Ice Bar rather than in the menu bar.
+    func usesIceBar(on screen: NSScreen?) -> Bool {
+        useIceBar && iceBarDisplays.includes(screen)
     }
 
     /// Configures the internal observers for the model.
@@ -164,6 +179,13 @@ final class GeneralSettings: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { location in
                 Defaults.set(location.rawValue, forKey: .iceBarLocation)
+            }
+            .store(in: &c)
+
+        $iceBarDisplays
+            .receive(on: DispatchQueue.main)
+            .sink { displays in
+                Defaults.set(displays.rawValue, forKey: .iceBarDisplays)
             }
             .store(in: &c)
 

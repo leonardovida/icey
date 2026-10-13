@@ -54,9 +54,10 @@ final class MenuBarSection {
     /// is outside of the menu bar.
     private var rehideMonitor: EventMonitor?
 
-    /// A Boolean value that indicates whether the Ice Bar should be used.
+    /// A Boolean value that indicates whether shown sections appear in
+    /// the Ice Bar.
     private var useIceBar: Bool {
-        appState?.settings.general.useIceBar ?? false
+        menuBarManager?.isUsingIceBar ?? false
     }
 
     /// A weak reference to the menu bar manager.
@@ -159,6 +160,14 @@ final class MenuBarSection {
             return
         }
 
+        // The Ice Bar can be limited to some displays. Decide for the display
+        // it would appear on, so a display that does not use it shows the
+        // section in the menu bar instead. Hiding follows this decision.
+        let screen = screenForIceBar
+        if let appState {
+            menuBarManager.shownDisplayUsesIceBar = appState.settings.general.iceBarDisplays.includes(screen)
+        }
+
         if useIceBar {
             // Make sure hidden and always-hidden control items are collapsed.
             // Still update the visible control item (Ice icon) state to show
@@ -172,7 +181,7 @@ final class MenuBarSection {
                 }
             }
 
-            if let screen = screenForIceBar {
+            if let screen {
                 Task {
                     switch name {
                     case .visible, .hidden:

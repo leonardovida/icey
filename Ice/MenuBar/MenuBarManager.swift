@@ -66,6 +66,23 @@ final class MenuBarManager: ObservableObject {
         sections.contains { !$0.isHidden }
     }
 
+    /// A Boolean value that indicates whether the display the sections were
+    /// last shown on uses the Ice Bar, as decided by ``MenuBarSection/show()``.
+    var shownDisplayUsesIceBar = true
+
+    /// A Boolean value that indicates whether shown sections appear in the
+    /// Ice Bar rather than in the menu bar.
+    ///
+    /// The Ice Bar can be limited to some displays, so this follows the
+    /// display a section was last shown on. With the Ice Bar on every display,
+    /// it is the "Use Ice Bar" setting.
+    var isUsingIceBar: Bool {
+        guard let appState else {
+            return false
+        }
+        return appState.settings.general.useIceBar && shownDisplayUsesIceBar
+    }
+
     /// Performs the initial setup of the menu bar manager.
     func performSetup(with appState: AppState) {
         self.appState = appState
@@ -190,7 +207,7 @@ final class MenuBarManager: ObservableObject {
                 //   * The settings window is visible.
                 guard
                     appState.settings.advanced.hideApplicationMenus,
-                    !appState.settings.general.useIceBar,
+                    !isUsingIceBar,
                     !isMenuBarHiddenBySystem,
                     !appState.activeSpace.isFullscreen,
                     !appState.navigationState.isSettingsPresented

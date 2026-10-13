@@ -653,8 +653,9 @@ final class Concealer27: ObservableObject {
             // Everything is drawn while the layout window is open, so every item can be photographed.
             return .allRevealed
         }
-        if appState.settings.general.useIceBar {
-            // The Ice Bar shows hidden items in its own panel, so the bar stays concealed.
+        if appState.menuBarManager.isUsingIceBar {
+            // The Ice Bar shows hidden items in its own panel, so the bar stays concealed. A
+            // display that does not use the Ice Bar shows them in the bar, as below.
             return .allHidden
         }
         let manager = appState.menuBarManager

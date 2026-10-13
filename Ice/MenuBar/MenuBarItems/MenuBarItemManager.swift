@@ -43,9 +43,13 @@ final class MenuBarItemManager: ObservableObject {
     /// Cached timeouts for move operations.
     private var moveOperationTimeouts = [MenuBarItemTag: Duration]()
 
-    /// A Boolean value that indicates whether temporarily shown items are
-    /// being moved back.
-    private var isRehidingTemporarilyShownItems = false
+    /// The number of moves of temporarily shown items into or out of view
+    /// that are in progress.
+    ///
+    /// An item can be out of place before its context is recorded, and after
+    /// its context is taken to move it back, which saving the control item
+    /// positions must know about.
+    private var temporaryMovesInProgress = 0
 
     /// The windows of the hidden and always-hidden control items, as found
     /// by the most recent cache.
@@ -1731,6 +1735,11 @@ extension MenuBarItemManager {
 
         logger.debug("Temporarily showing \(item.logString, privacy: .public)")
 
+        temporaryMovesInProgress += 1
+        defer {
+            temporaryMovesInProgress -= 1
+        }
+
         do {
             try await move(item: item, to: .leftOfItem(targetItem))
         } catch {
@@ -1790,11 +1799,9 @@ extension MenuBarItemManager {
         var currentContexts = temporarilyShownItemContexts
         temporarilyShownItemContexts.removeAll()
 
-        // Items may still be shown until this finishes, which saving the
-        // control item positions must know about.
-        isRehidingTemporarilyShownItems = true
+        temporaryMovesInProgress += 1
         defer {
-            isRehidingTemporarilyShownItems = false
+            temporaryMovesInProgress -= 1
         }
 
         let items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
@@ -2215,7 +2222,9 @@ extension MenuBarItemManager {
         }
 
         let itemsLeftOfHidden = items.filter { item in
-            !item.isControlItem && !item.isSystemClone && item.bounds.maxX <= hiddenBounds.minX
+            // The same tolerance as `findSection(for:)`, for items flush
+            // against the divider on a scaled display.
+            !item.isControlItem && !item.isSystemClone && item.bounds.maxX <= hiddenBounds.minX + Self.positionTolerance
         }
         let previousHiddenItems = itemCache[.hidden]
         // Match cached items by window first. A tag is only used for a cached
@@ -2281,7 +2290,7 @@ extension MenuBarItemManager {
         guard
             let appState,
             temporarilyShownItemContexts.isEmpty,
-            !isRehidingTemporarilyShownItems,
+            temporaryMovesInProgress == 0,
             let windowIDs = controlItemWindowIDs,
             let hiddenBounds = Bridging.getWindowBounds(for: windowIDs.hidden)
         else {

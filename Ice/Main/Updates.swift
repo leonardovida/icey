@@ -137,8 +137,9 @@ extension UpdatesManager: @preconcurrency SPUStandardUserDriverDelegate {
         }
         if handleShowingUpdate {
             // Bring the alert Sparkle is about to show to the front, so it
-            // can receive input.
-            appState.activate(withPolicy: .regular)
+            // can receive input, with the Dock icon only if the user wants
+            // one while Icey's windows are open.
+            appState.activate(withPolicy: appState.settingsActivationPolicy)
         } else if !state.userInitiated {
             appState.userNotificationManager.addRequest(
                 with: .updateCheck,

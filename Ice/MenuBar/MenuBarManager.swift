@@ -193,8 +193,16 @@ final class MenuBarManager: ObservableObject {
                 // until a section was next shown (jordanbaird/Ice#808). The settings
                 // window still keeps Ice active, as it needs a Dock icon of its own.
                 if !isShowingSection {
-                    if isHidingApplicationMenus, !appState.navigationState.isSettingsPresented {
-                        showApplicationMenus()
+                    if isHidingApplicationMenus {
+                        if appState.navigationState.isSettingsPresented {
+                            // The settings window keeps Ice active, so only the record
+                            // is cleared. Left set, it kept the Dock icon after the user
+                            // chose not to have one while Settings is open.
+                            isHidingApplicationMenus = false
+                            appState.updateSettingsActivationPolicy()
+                        } else {
+                            showApplicationMenus()
+                        }
                     }
                     return
                 }

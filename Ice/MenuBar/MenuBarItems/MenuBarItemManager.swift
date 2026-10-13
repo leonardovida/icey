@@ -43,6 +43,10 @@ final class MenuBarItemManager: ObservableObject {
     /// Cached timeouts for move operations.
     private var moveOperationTimeouts = [MenuBarItemTag: Duration]()
 
+    /// A Boolean value that indicates whether temporarily shown items are
+    /// being moved back.
+    private var isRehidingTemporarilyShownItems = false
+
     /// The windows of the hidden and always-hidden control items, as found
     /// by the most recent cache.
     private var controlItemWindowIDs: (hidden: CGWindowID, alwaysHidden: CGWindowID?)?
@@ -1772,6 +1776,13 @@ extension MenuBarItemManager {
         var currentContexts = temporarilyShownItemContexts
         temporarilyShownItemContexts.removeAll()
 
+        // Items may still be shown until this finishes, which saving the
+        // control item positions must know about.
+        isRehidingTemporarilyShownItems = true
+        defer {
+            isRehidingTemporarilyShownItems = false
+        }
+
         let items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
         var failedContexts = [TemporarilyShownItemContext]()
 
@@ -2018,8 +2029,8 @@ extension MenuBarItemManager {
     /// that edge, stays on its right. The always-hidden control item is only
     /// saved while the hidden section is hidden, the state the positions of
     /// hidden items are mostly saved in by Icey's own moves. Nothing is saved
-    /// while an item is temporarily shown, as it pushes the hidden control
-    /// item to the left.
+    /// while an item is temporarily shown or being moved back, as it pushes
+    /// the hidden control item to the left.
     func saveControlItemPositions() {
         if #available(macOS 27.0, *) {
             // Sections come from the saved layout on macOS 27.
@@ -2028,6 +2039,7 @@ extension MenuBarItemManager {
         guard
             let appState,
             temporarilyShownItemContexts.isEmpty,
+            !isRehidingTemporarilyShownItems,
             let windowIDs = controlItemWindowIDs,
             let hiddenBounds = Bridging.getWindowBounds(for: windowIDs.hidden)
         else {

@@ -39,6 +39,8 @@ import UniformTypeIdentifiers
 /// - The positions of Icey's control items, and of every other menu bar
 ///   item, which AppKit saves for each status item. The order of the menu
 ///   bar is the system's, not a setting.
+/// - Launch at Login, a login item registered with macOS rather than a
+///   setting, which the user turns on for each Mac.
 /// - Deprecated keys, Sparkle's update keys and window frames.
 @MainActor
 struct SettingsFile {

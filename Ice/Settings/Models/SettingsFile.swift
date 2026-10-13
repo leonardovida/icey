@@ -326,6 +326,8 @@ extension SettingsFile {
         (.customIceIconIsTemplate, .bool),
         (.useIceBar, .bool),
         (.iceBarLocation, .rawValue(of: IceBarLocation.self)),
+        (.iceBarDisplays, .rawValue(of: IceBarDisplays.self)),
+        (.newItemPlacement, .rawValue(of: NewItemPlacement.self)),
         (.showOnClick, .bool),
         (.showOnHover, .bool),
         (.showOnScroll, .bool),

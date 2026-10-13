@@ -1918,11 +1918,14 @@ extension MenuBarItemManager {
 // MARK: - New Items
 
 extension MenuBarItemManager {
-    /// The menu bar items Icey has seen, so that an item that appears for
-    /// the first time can be told apart from one that was there before.
+    /// The apps whose menu bar items Icey has seen, so that an item from an
+    /// app that adds one for the first time can be told apart from one that
+    /// was there before.
     ///
-    /// Items are remembered by their tags, which stay the same when the app
-    /// that owns them relaunches. The list keeps the order the items were
+    /// Items are remembered by their app, not their full tag: some apps change
+    /// an item's title as their state changes, and each new title would look
+    /// like a new item, moved again and again. An app that adds a second item
+    /// later is not new, so that item stays where macOS puts it. The list keeps the order the items were
     /// first seen in, and is pruned from the oldest end once it grows past
     /// ``maxCount``, keeping any item that is in the menu bar.
     struct KnownItems {
@@ -1942,16 +1945,16 @@ extension MenuBarItemManager {
         }
 
         /// Returns the key to remember the item with the given tag by, or
-        /// `nil` if the tag does not identify the item across launches.
+        /// `nil` if the tag does not identify its app across launches.
         ///
         /// A tag gets a random UUID namespace on macOS 26 when the app that
         /// created its item can't be found, and a `null` namespace when the
-        /// owning process has no name. Neither names the same item twice.
+        /// owning process has no name. Neither names the same app twice.
         static func key(for tag: MenuBarItemTag) -> String? {
             guard tag.namespace.isString else {
                 return nil
             }
-            return tag.description
+            return tag.namespace.description
         }
 
         /// Adds the given key, and returns a Boolean value that indicates
@@ -2027,8 +2030,14 @@ extension MenuBarItemManager {
         let target = targetSection(for: appState?.settings.general.newItemPlacement ?? .automatic, controlItems: controlItems)
         var foundNewItems = false
 
+        // Every item of an app seen for the first time is new, not only the
+        // first one found.
+        var newKeys = Set<String>()
         for (item, section, key) in candidates {
-            guard known.insert(key) else {
+            if known.insert(key) {
+                newKeys.insert(key)
+            }
+            guard newKeys.contains(key) else {
                 continue
             }
             foundNewItems = true
@@ -2094,7 +2103,7 @@ extension MenuBarItemManager {
         guard
             let controlItems = ControlItemPair(items: &items),
             let target = targetSection(for: placement, controlItems: controlItems),
-            let current = items.first(where: { $0.windowID == item.windowID }) ?? items.first(matching: item.tag)
+            let current = items.first(where: { $0.windowID == item.windowID })
         else {
             return
         }

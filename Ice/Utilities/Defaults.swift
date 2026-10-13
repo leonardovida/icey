@@ -151,6 +151,7 @@ extension Defaults {
         case rehideStrategy = "RehideStrategy"
         case rehideInterval = "RehideInterval"
         case itemSpacingOffset = "ItemSpacingOffset"
+        case newItemPlacement = "NewItemPlacement"
 
         // MARK: Hotkeys Settings
         case hotkeys = "Hotkeys"
@@ -163,6 +164,9 @@ extension Defaults {
         case enableSecondaryContextMenu = "EnableSecondaryContextMenu"
         case showOnHoverDelay = "ShowOnHoverDelay"
         case tempShowInterval = "TempShowInterval"
+
+        // MARK: Menu Bar Items
+        case knownMenuBarItems = "KnownMenuBarItems"
 
         // MARK: Appearance Settings
         case menuBarAppearanceConfigurationV2 = "MenuBarAppearanceConfigurationV2"

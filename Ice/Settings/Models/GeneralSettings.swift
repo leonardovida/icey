@@ -56,6 +56,10 @@ final class GeneralSettings: ObservableObject {
     /// The offset to apply to the menu bar item spacing and padding.
     @Published var itemSpacingOffset: Double = 0
 
+    /// The section that menu bar items Icey has not seen before
+    /// are moved to.
+    @Published var newItemPlacement: NewItemPlacement = .automatic
+
     /// A Boolean value that indicates whether the hidden section
     /// should automatically rehide.
     @Published var autoRehide = true
@@ -111,6 +115,11 @@ final class GeneralSettings: ObservableObject {
         Defaults.ifPresent(key: .rehideStrategy) { rawValue in
             if let strategy = RehideStrategy(rawValue: rawValue) {
                 rehideStrategy = strategy
+            }
+        }
+        Defaults.ifPresent(key: .newItemPlacement) { rawValue in
+            if let placement = NewItemPlacement(rawValue: rawValue) {
+                newItemPlacement = placement
             }
         }
 
@@ -239,6 +248,13 @@ final class GeneralSettings: ObservableObject {
             }
             .store(in: &c)
 
+        $newItemPlacement
+            .receive(on: DispatchQueue.main)
+            .sink { placement in
+                Defaults.set(placement.rawValue, forKey: .newItemPlacement)
+            }
+            .store(in: &c)
+
         cancellables = c
     }
 }
@@ -262,6 +278,48 @@ enum RehideStrategy: Int, CaseIterable, Identifiable {
         case .smart: "Smart"
         case .timed: "Timed"
         case .focusedApp: "Focused app"
+        }
+    }
+}
+
+// MARK: - NewItemPlacement
+
+/// A type that determines where menu bar items that Icey has not
+/// seen before end up.
+///
+/// macOS adds an item it has no saved position for at the far left
+/// of the menu bar, which is the always-hidden section when it is
+/// enabled, and the hidden section otherwise (jordanbaird/Ice#6, #767).
+enum NewItemPlacement: Int, CaseIterable, Identifiable {
+    /// New items stay where macOS puts them.
+    case automatic = 0
+    /// New items are moved to the visible section.
+    case visible = 1
+    /// New items are moved to the hidden section.
+    case hidden = 2
+    /// New items are moved to the always-hidden section.
+    case alwaysHidden = 3
+
+    var id: Int { rawValue }
+
+    /// The section new items are moved to, or `nil` if they
+    /// stay where macOS puts them.
+    var section: MenuBarSection.Name? {
+        switch self {
+        case .automatic: nil
+        case .visible: .visible
+        case .hidden: .hidden
+        case .alwaysHidden: .alwaysHidden
+        }
+    }
+
+    /// Localized string key representation.
+    var localized: LocalizedStringKey {
+        switch self {
+        case .automatic: "Where macOS puts them"
+        case .visible: "Visible"
+        case .hidden: "Hidden"
+        case .alwaysHidden: "Always-Hidden"
         }
     }
 }

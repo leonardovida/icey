@@ -17,7 +17,7 @@ Icey hides, shows and rearranges macOS menu bar icons. It shows hidden items in 
 
 - **Support for current macOS:** macOS 26 Tahoe, and early support for macOS 27.
 - **Lower resource use:** less CPU, energy and WindowServer memory than Ice.
-- **Bug fixes:** about 40 bugs fixed that are still open in Ice. Some fixes come from community pull requests that Ice never merged.
+- **Bug fixes:** over 150 bugs fixed or improved that are still open in Ice. Some fixes come from community pull requests that Ice never merged.
 
 Icey is a drop-in replacement. It installs over Ice and keeps your settings.
 
@@ -166,6 +166,8 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 - [x] Hide application menus when they overlap with shown menu bar items
 - [x] Drag and drop interface to arrange individual menu bar items
 - [x] Display hidden menu bar items in a separate bar (e.g. for MacBooks with the notch)
+- [x] Use the Ice Bar only on some displays (e.g. only the built-in display, or only displays with a notch)
+- [x] Choose where new menu bar items appear
 - [x] Search menu bar items
 - [x] Menu bar item spacing (BETA)
 - [ ] Profiles for menu bar layout
@@ -196,6 +198,8 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 ### Other
 
 - [x] Launch at login
+- [x] Export and import settings
+- [x] Hide the Dock icon while Settings is open
 - [x] Automatic updates
 - [ ] Menu bar widgets
 

@@ -222,6 +222,8 @@ FEATURES = [
     ("Show on hover, click or scroll", "Reveal hidden items by hovering, clicking an empty area or scrolling in the menu bar, then hide them again automatically."),
     ("Search", "Find and click any menu bar item, visible or hidden, from a search panel with a hotkey."),
     ("Menu bar styling", "Tint, shadow, border and rounded or split shapes for the menu bar."),
+    ("Your displays, your rules", "Use the Ice Bar only on the built-in display or on displays with a notch, and choose where new menu bar items appear."),
+    ("Move your setup", "Export your settings to a file and import them on another Mac."),
 ]
 
 WHY = [

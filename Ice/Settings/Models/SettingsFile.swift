@@ -152,8 +152,8 @@ struct SettingsFile {
             case .macOS27Layout:
                 Defaults.set(value, forKey: key)
                 // A layout of the user's own must not be replaced by one read
-                // from the bar.
-                if let layout = value as? [String: Int], !layout.isEmpty {
+                // from the bar. An empty layout is one too: every app visible.
+                if value is [String: Int] {
                     Defaults.set(true, forKey: .macOS27LayoutSeeded)
                 }
             default:

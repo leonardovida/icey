@@ -81,9 +81,9 @@ final class UpdatesManager: NSObject, ObservableObject {
         guard let appState else {
             return
         }
-        // Activate the app in case an alert needs to be displayed.
-        appState.activate(withPolicy: .regular)
-        appState.openWindow(.settings)
+        // Activate the app in case an alert needs to be displayed, with the
+        // Dock icon only if the user wants one while Settings is open.
+        appState.activateAndOpenSettings()
         updater.checkForUpdates()
         #endif
     }

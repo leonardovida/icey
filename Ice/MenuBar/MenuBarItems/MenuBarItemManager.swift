@@ -1787,8 +1787,16 @@ extension MenuBarItemManager {
         await eventSleep(for: .milliseconds(250))
         let windowsAfterClick = WindowInfo.createWindows(option: .onScreen)
 
+        // Menu bar windows are not the item's interface. They stand at the
+        // status window level and stay on screen, so one that appeared after
+        // the click, such as an item the app added or recreated, counted as an
+        // open interface for as long as it was there, and the shown item was
+        // never hidden again (jordanbaird/Ice#799).
+        let menuBarWindowIDs = Set(Bridging.getMenuBarWindowList())
         context.shownInterfaceWindow = windowsAfterClick.first { window in
-            window.ownerPID == item.sourcePID && !idsBeforeClick.contains(window.windowID)
+            window.ownerPID == item.sourcePID &&
+            !idsBeforeClick.contains(window.windowID) &&
+            !menuBarWindowIDs.contains(window.windowID)
         }
     }
 

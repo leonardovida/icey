@@ -31,6 +31,9 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// The currently managed menu bar overlay panels.
     private(set) var overlayPanels = Set<MenuBarOverlayPanel>()
 
+    /// The displays the current overlay panels were built for.
+    private var overlayPanelDisplays = [OverlayPanelDisplay]()
+
     /// The amount to inset the menu bar if called for by the configuration,
     /// on a menu bar tall enough to take it.
     private let preferredMenuBarInsetAmount: CGFloat = if #available(macOS 26.0, *) { 3.5 } else { 5 }
@@ -76,6 +79,16 @@ final class MenuBarAppearanceManager: ObservableObject {
             .debounce(for: 0.1, scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else {
+                    return
+                }
+                // The notification is also posted when only the area the Dock
+                // leaves free changes, as when the Dock is shown or hidden with
+                // Option-Command-D. Rebuilding then made the appearance vanish and
+                // fade back in, with the shapes drawn without the wallpaper around
+                // them until it was captured again (jordanbaird/Ice#435). The
+                // panels only depend on each display and its frame.
+                let displays = Self.overlayPanelDisplays()
+                guard displays != overlayPanelDisplays || overlayPanels.isEmpty else {
                     return
                 }
                 // Rebuild the panels for the new set of displays. This used to
@@ -186,5 +199,23 @@ final class MenuBarAppearanceManager: ObservableObject {
         }
 
         self.overlayPanels = overlayPanels
+        overlayPanelDisplays = Self.overlayPanelDisplays()
     }
+
+    /// Returns each display's identifier, frame and scale, which is what the
+    /// overlay panels are built from.
+    private static func overlayPanelDisplays() -> [OverlayPanelDisplay] {
+        NSScreen.screens.map { screen in
+            OverlayPanelDisplay(displayID: screen.displayID, frame: screen.frame, scale: screen.backingScaleFactor)
+        }
+    }
+}
+
+// MARK: - OverlayPanelDisplay
+
+/// A display as the overlay panels see it.
+private struct OverlayPanelDisplay: Equatable {
+    let displayID: CGDirectDisplayID
+    let frame: CGRect
+    let scale: CGFloat
 }

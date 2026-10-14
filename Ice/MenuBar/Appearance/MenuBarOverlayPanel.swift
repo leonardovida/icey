@@ -524,7 +524,11 @@ final class MenuBarOverlayPanel: NSPanel {
         if needsDesktopWallpaper {
             updateTaskContext.setTask(for: .desktopWallpaper, timeout: .seconds(5)) {
                 try await Task.sleep(for: .seconds(1))
-                self.insertUpdateFlag(.desktopWallpaper)
+                // The task is detached, and the update flags drive the
+                // panel's updates, which belong on the main actor.
+                await MainActor.run {
+                    self.insertUpdateFlag(.desktopWallpaper)
+                }
             }
         }
 

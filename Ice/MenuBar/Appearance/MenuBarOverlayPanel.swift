@@ -81,9 +81,13 @@ final class MenuBarOverlayPanel: NSPanel {
     private var showRetryCount = 0
 
     /// The number of times in a row the panel has waited for Mission Control
-    /// to close. After about a minute it shows regardless, so that a window
+    /// to close. After about two minutes it shows regardless, so that a window
     /// mistaken for Mission Control cannot keep it away.
     private var missionControlWaitCount = 0
+
+    /// The last answer to whether Mission Control is open, shared by the
+    /// panels on every display so they ask the window server once per check.
+    private static var missionControlCheck: (date: Date, isActive: Bool)?
 
     /// The shared app state.
     private(set) weak var appState: AppState?
@@ -478,8 +482,8 @@ final class MenuBarOverlayPanel: NSPanel {
         // windows still on their way in or out (jordanbaird/Ice#337). Wait for
         // Mission Control to close.
         if
-            missionControlWaitCount < 120,
-            WindowInfo.isMissionControlActive(in: WindowInfo.createWindows(option: .onScreen))
+            missionControlWaitCount < 60,
+            Self.isMissionControlActive()
         {
             missionControlWaitCount += 1
             scheduleShowAfterMissionControl()
@@ -565,16 +569,29 @@ final class MenuBarOverlayPanel: NSPanel {
         }
     }
 
-    /// Tries to show the panel again shortly, once Mission Control may have
-    /// closed.
+    /// Returns whether Mission Control is open, asking the window server at
+    /// most once every quarter second for all panels together.
+    private static func isMissionControlActive() -> Bool {
+        if let check = missionControlCheck, Date.now.timeIntervalSince(check.date) < 0.25 {
+            return check.isActive
+        }
+        let isActive = WindowInfo.isMissionControlActive(in: WindowInfo.createWindows(option: .onScreen))
+        missionControlCheck = (.now, isActive)
+        return isActive
+    }
+
+    /// Tries to show the panel again once Mission Control may have closed.
     ///
-    /// Each try asks the window server for one window list, so this costs
-    /// little, and only runs while Mission Control is open after a space
-    /// change, for a minute at most (see ``missionControlWaitCount``).
+    /// The wait grows from a quarter second to two seconds, and each try
+    /// shares one window list with the other displays' panels (see
+    /// ``isMissionControlActive()``). It only runs while Mission Control is
+    /// open after a space change, for about two minutes at most (see
+    /// ``missionControlWaitCount``).
     private func scheduleShowAfterMissionControl() {
+        let delay = min(Duration.milliseconds(250) * (1 << min(missionControlWaitCount, 3)), .seconds(2))
         showRetryTask?.cancel()
         showRetryTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(500))
+            try? await Task.sleep(for: delay)
             guard !Task.isCancelled else {
                 return
             }

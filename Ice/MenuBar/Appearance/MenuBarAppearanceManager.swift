@@ -101,6 +101,23 @@ final class MenuBarAppearanceManager: ObservableObject {
             }
             .store(in: &c)
 
+        // The overlay panels can't find the menu bar without the Screen
+        // Recording permission (see `MenuBarOverlayPanel.show()`), and stop
+        // trying after a while. Build them again once it is granted, so the
+        // appearance applies without waiting for a space change.
+        appState?.permissions.screenRecording.$hasPermission
+            .removeDuplicates()
+            .dropFirst()
+            .filter { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else {
+                    return
+                }
+                configureOverlayPanels(with: configuration)
+            }
+            .store(in: &c)
+
         $configuration
             .encode(encoder: encoder)
             .receive(on: DispatchQueue.main)

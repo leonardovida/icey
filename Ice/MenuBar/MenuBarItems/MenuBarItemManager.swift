@@ -531,6 +531,8 @@ extension MenuBarItemManager {
         case itemResponseTimeout(MenuBarItem)
         /// A menu bar item's bounds cannot be found.
         case missingItemBounds(MenuBarItem)
+        /// A menu bar item is not on any display, so it can't be clicked.
+        case itemNotOnScreen(MenuBarItem)
 
         var description: String {
             switch self {
@@ -550,6 +552,8 @@ extension MenuBarItemManager {
                 "\(Self.self).itemResponseTimeout(item: \(item.tag))"
             case .missingItemBounds(let item):
                 "\(Self.self).missingItemBounds(item: \(item.tag))"
+            case .itemNotOnScreen(let item):
+                "\(Self.self).itemNotOnScreen(item: \(item.tag))"
             }
         }
 
@@ -571,12 +575,29 @@ extension MenuBarItemManager {
                 "\"\(item.displayName)\" took too long to respond"
             case .missingItemBounds(let item):
                 "Missing bounds rectangle for \"\(item.displayName)\""
+            case .itemNotOnScreen(let item):
+                "\"\(item.displayName)\" is not on screen"
             }
         }
 
         var recoverySuggestion: String? {
-            if case .itemNotMovable = self { return nil }
-            return "Please try again. If the error persists, please file a bug report."
+            switch self {
+            case .itemNotMovable:
+                return nil
+            case .itemResponseTimeout:
+                // The item ignored the drag on every attempt. Items macOS shows
+                // for an iPhone's Live Activities did so in every report
+                // (jordanbaird/Ice#656, #704), so say that some items can't be
+                // moved, rather than only asking for a bug report.
+                return """
+                    The item did not move when Icey dragged it. Some items, such as \
+                    the ones macOS shows for iPhone Live Activities, may not allow \
+                    being moved. Please try again. If the error persists, please \
+                    file a bug report.
+                    """
+            default:
+                return "Please try again. If the error persists, please file a bug report."
+            }
         }
     }
 
@@ -1293,17 +1314,36 @@ extension MenuBarItemManager {
                 initialOrigin: itemOrigin,
                 timeout: timeout
             )
+            // Release once, and again only if the item did not respond. Two
+            // releases were always posted, and the second reached the item's
+            // app after the drag had ended: a release with no press behind it,
+            // on the item where it now sits. Apps that act on the release, such
+            // as Mullvad VPN's, took it for a click and opened their window as
+            // the item was hidden again (jordanbaird/Ice#766, #586).
             try await scrombleEvent(
                 mouseUp,
                 item: item,
-                timeout: timeout,
-                repeating: 2 // Double mouse up prevents invalid item state.
-            )
-            itemOrigin = try await waitForMoveEventResponse(
-                from: item,
-                initialOrigin: itemOrigin,
                 timeout: timeout
             )
+            do {
+                itemOrigin = try await waitForMoveEventResponse(
+                    from: item,
+                    initialOrigin: itemOrigin,
+                    timeout: timeout
+                )
+            } catch EventError.itemResponseTimeout {
+                logger.debug("Item did not respond to mouse up, posting it again")
+                try await scrombleEvent(
+                    mouseUp,
+                    item: item,
+                    timeout: timeout
+                )
+                itemOrigin = try await waitForMoveEventResponse(
+                    from: item,
+                    initialOrigin: itemOrigin,
+                    timeout: timeout
+                )
+            }
             timeout -= timeout / 4
         } catch {
             do {
@@ -1422,6 +1462,14 @@ extension MenuBarItemManager {
         }
 
         let clickPoint = try await getCurrentBounds(for: item).center
+
+        // A click posted off every display can't reach the item. Posted anyway,
+        // it can land on whatever is at that edge of the screen, such as the
+        // Apple menu at the left end of the menu bar (jordanbaird/Ice#642).
+        guard Self.isOnDisplay(clickPoint) else {
+            throw EventError.itemNotOnScreen(item)
+        }
+
         let mouseLocation = try getMouseLocation()
         let source = try getEventSource()
 
@@ -1483,6 +1531,29 @@ extension MenuBarItemManager {
         }
     }
 
+    /// Returns a Boolean value that indicates whether the given point is
+    /// on one of the displays.
+    private static func isOnDisplay(_ point: CGPoint) -> Bool {
+        NSScreen.screens.contains { CGDisplayBounds($0.displayID).contains(point) }
+    }
+
+    /// Returns a Boolean value that indicates whether the given item can be
+    /// clicked where it is, without showing it first.
+    ///
+    /// An item counts as on screen when any part of it is on a display, but
+    /// it is clicked at its center. An item only partly on a display was
+    /// clicked off the display, and the click landed elsewhere, such as on
+    /// the Apple menu (jordanbaird/Ice#642). Such an item is shown first.
+    func canClickInPlace(_ item: MenuBarItem) -> Bool {
+        guard
+            Bridging.isWindowOnScreen(item.windowID),
+            let bounds = Bridging.getWindowBounds(for: item.windowID)
+        else {
+            return false
+        }
+        return Self.isOnDisplay(bounds.center)
+    }
+
     /// Clicks a menu bar item with the given mouse button.
     ///
     /// - Parameters:
@@ -1518,6 +1589,10 @@ extension MenuBarItemManager {
                 return
             } catch {
                 logger.debug("Attempt \(n, privacy: .public) failed: \(error, privacy: .public)")
+                if case EventError.itemNotOnScreen = error {
+                    // Trying again would post the click in the same place.
+                    throw error
+                }
                 if n < maxAttempts {
                     await eventSleep()
                     continue
@@ -1768,8 +1843,16 @@ extension MenuBarItemManager {
         await eventSleep(for: .milliseconds(250))
         let windowsAfterClick = WindowInfo.createWindows(option: .onScreen)
 
+        // Menu bar windows are not the item's interface. They stand at the
+        // status window level and stay on screen, so one that appeared after
+        // the click, such as an item the app added or recreated, counted as an
+        // open interface for as long as it was there, and the shown item was
+        // never hidden again (jordanbaird/Ice#799).
+        let menuBarWindowIDs = Set(Bridging.getMenuBarWindowList())
         context.shownInterfaceWindow = windowsAfterClick.first { window in
-            window.ownerPID == item.sourcePID && !idsBeforeClick.contains(window.windowID)
+            window.ownerPID == item.sourcePID &&
+            !idsBeforeClick.contains(window.windowID) &&
+            !menuBarWindowIDs.contains(window.windowID)
         }
     }
 

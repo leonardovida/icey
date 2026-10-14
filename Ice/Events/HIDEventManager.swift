@@ -956,20 +956,31 @@ extension HIDEventManager {
         // The bottom edge of the menu bar.
         var menuBarMinY = screen.visibleFrame.maxY
 
-        // Whether the Ice icon is in this screen's menu bar.
-        var isIceIconOnScreen = false
+        // Whether the control item below is in this screen's menu bar.
+        var isControlItemOnScreen = false
 
-        // Ice icon must be vertically visible. Otherwise, we can infer
+        // The Ice icon must be vertically visible. Otherwise, we can infer
         // that the menu bar is hidden and the mouse is not inside.
+        //
+        // With "Show Icey icon" turned off, the icon is not in the menu bar, and
+        // its window keeps the frame it had when it was removed. The hidden
+        // section's control item, which is always in the menu bar, is used
+        // instead. Going by the removed icon, the top of a fullscreen app counted
+        // as the menu bar while the menu bar was out of sight, and clicking there
+        // showed the hidden items, on a single display too (jordanbaird/Ice#899).
         //
         // On macOS 27 the icon's window is only a placeholder, and its frame says
         // nothing about the menu bar (measured past a display's left edge, below its
         // bottom, and with no height). The visible frame check below remains.
         if #unavailable(macOS 27.0) {
+            let controlItem: ControlItem? = if let iceIcon = appState.menuBarManager.controlItem(withName: .visible), iceIcon.isAddedToMenuBar {
+                iceIcon
+            } else {
+                appState.menuBarManager.controlItem(withName: .hidden)
+            }
             guard
-                let iceIcon = appState.menuBarManager.controlItem(withName: .visible),
-                let iceIconFrame = iceIcon.frame,
-                iceIconFrame.maxY <= screen.frame.maxY
+                let controlItemFrame = controlItem?.frame,
+                controlItemFrame.maxY <= screen.frame.maxY
             else {
                 return false
             }
@@ -977,13 +988,14 @@ extension HIDEventManager {
             // space from the visible frame, so only the top row of the screen
             // counted as the menu bar. Show on hover and click needed the pointer
             // against the edge, and shown items collapsed as soon as it moved
-            // down onto the revealed menu bar (jordanbaird/Ice#708). The Ice icon
-            // is as tall as the menu bar it sits in, so while it is on this
-            // screen, its bottom edge is the menu bar's. The whole midpoint is
-            // checked, because stacked displays can share a horizontal range.
-            if screen.frame.contains(CGPoint(x: iceIconFrame.midX, y: iceIconFrame.midY)) {
-                menuBarMinY = min(menuBarMinY, iceIconFrame.minY)
-                isIceIconOnScreen = true
+            // down onto the revealed menu bar (jordanbaird/Ice#708). The control
+            // item is as tall as the menu bar it sits in, so while it is on this
+            // screen, its bottom edge is the menu bar's. A point at its right edge
+            // is checked, both ways, because stacked displays can share a horizontal
+            // range, and a collapsed section's divider reaches far off the left edge.
+            if screen.frame.contains(CGPoint(x: controlItemFrame.maxX - 1, y: controlItemFrame.midY)) {
+                menuBarMinY = min(menuBarMinY, controlItemFrame.minY)
+                isControlItemOnScreen = true
             }
         }
 
@@ -993,11 +1005,11 @@ extension HIDEventManager {
             mouseLocation.y <= screen.frame.maxY &&
             mouseLocation.y >= menuBarMinY
 
-        // An icon in another display's menu bar says nothing about whether
+        // A control item in another display's menu bar says nothing about whether
         // this one is revealed. Asked only when the pointer is at the top of
         // the screen, and only before macOS 27 (see above).
         if #unavailable(macOS 27.0) {
-            if isInsideFrame && !isIceIconOnScreen {
+            if isInsideFrame && !isControlItemOnScreen {
                 return !isMenuBarConcealedByFullscreen(on: screen)
             }
         }

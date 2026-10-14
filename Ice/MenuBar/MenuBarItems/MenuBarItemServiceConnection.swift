@@ -24,6 +24,22 @@ extension MenuBarItemService {
         /// The connection's logger.
         private let logger: Logger
 
+        /// The queue that requests are sent from.
+        ///
+        /// A request blocks its thread until the service replies, which can
+        /// take seconds while the service asks slow apps for their items over
+        /// Accessibility, and requests wait in turn for the session. Sent
+        /// straight from an async function, each one held a thread of the
+        /// Swift concurrency pool, and requests piling up behind a slow one
+        /// could take all of them, leaving the app unable to run any other
+        /// async work, as with the image captures (see
+        /// `MenuBarItemImageCache.captureQueue`). The queue is serial, so a
+        /// slow request costs one thread rather than one per request.
+        private let requestQueue = DispatchQueue(
+            label: "MenuBarItemService.Connection.requests",
+            qos: .userInitiated
+        )
+
         /// Creates a new connection.
         private init() {
             let queue = DispatchQueue.targetingGlobal(
@@ -42,16 +58,18 @@ extension MenuBarItemService {
             logger.debug("Starting MenuBarItemService connection")
 
             await withCheckedContinuation { continuation in
-                guard let response = session.send(request: .start) else {
-                    logger.error("Start request returned nil")
-                    continuation.resume()
-                    return
-                }
-                if case .start = response {
-                    continuation.resume()
-                } else {
-                    logger.error("Start request returned invalid response \(String(describing: response))")
-                    continuation.resume()
+                requestQueue.async { [self] in
+                    guard let response = session.send(request: .start) else {
+                        logger.error("Start request returned nil")
+                        continuation.resume()
+                        return
+                    }
+                    if case .start = response {
+                        continuation.resume()
+                    } else {
+                        logger.error("Start request returned invalid response \(String(describing: response))")
+                        continuation.resume()
+                    }
                 }
             }
         }
@@ -59,16 +77,18 @@ extension MenuBarItemService {
         /// Returns the source process identifier for the given window.
         func sourcePID(for window: WindowInfo) async -> pid_t? {
             await withCheckedContinuation { continuation in
-                guard let response = session.send(request: .sourcePID(window)) else {
-                    logger.error("Source PID request returned nil")
-                    continuation.resume(returning: nil)
-                    return
-                }
-                if case .sourcePID(let pid) = response {
-                    continuation.resume(returning: pid)
-                } else {
-                    logger.error("Source PID request returned invalid response \(String(describing: response))")
-                    continuation.resume(returning: nil)
+                requestQueue.async { [self] in
+                    guard let response = session.send(request: .sourcePID(window)) else {
+                        logger.error("Source PID request returned nil")
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    if case .sourcePID(let pid) = response {
+                        continuation.resume(returning: pid)
+                    } else {
+                        logger.error("Source PID request returned invalid response \(String(describing: response))")
+                        continuation.resume(returning: nil)
+                    }
                 }
             }
         }

@@ -123,11 +123,28 @@ extension WindowInfo {
         // Wallpaper window belongs to the Dock process, or to WindowManager on
         // macOS 27 (measured on macOS 27.0 in jordanbaird/Ice#1001).
         let owner = if #available(macOS 27.0, *) { "com.apple.WindowManager" } else { "com.apple.dock" }
-        return windows.first { window in
+        let candidates = windows.filter { window in
             window.owningApplication?.bundleIdentifier == owner &&
             window.title?.hasPrefix("Wallpaper") == true &&
             displayBounds.contains(window.bounds)
         }
+        // Each space has a wallpaper window of its own (measured on macOS 26.5:
+        // one per space, each on that space only). While spaces change, more
+        // than one can be on screen, and the first in the list could be the
+        // previous space's, so the menu bar shape kept drawing the wallpaper of
+        // the space the user had left (jordanbaird/Ice#336, #337). Prefer the
+        // one on the space the display shows now.
+        guard candidates.count > 1 else {
+            return candidates.first
+        }
+        if
+            let spaceID = Bridging.getCurrentSpaceID(for: display),
+            spaceID != 0,
+            let window = candidates.first(where: { Bridging.isWindowOnSpace($0.windowID, spaceID) })
+        {
+            return window
+        }
+        return candidates.first
     }
 
     /// Creates and returns the wallpaper window for the given display.
@@ -172,6 +189,43 @@ extension WindowInfo {
     /// Creates and returns the menu bar window for the given display.
     static func menuBarWindow(for display: CGDirectDisplayID) -> WindowInfo? {
         menuBarWindow(from: createMenuBarWindows(option: .onScreen), for: display)
+    }
+
+    // MARK: Mission Control
+
+    /// Returns a Boolean value that indicates whether Mission Control is open,
+    /// judging by the given list of on screen windows.
+    ///
+    /// There is no public way to tell. While Mission Control is open, the Dock
+    /// has an untitled window at the Dock's level covering the display, besides
+    /// the Dock's own window, which also covers the display and is on screen
+    /// whenever the Dock is (Mission Control always shows the Dock). Measured
+    /// on macOS 26.5: there is no second such window with the Dock shown or
+    /// hidden, in App Exposé or in Show Desktop, which put their window two
+    /// levels lower. Titles are not compared, as reading them needs the Screen
+    /// Recording permission. The windows are counted per display, so a Dock
+    /// window on each of several displays is not taken for Mission Control.
+    ///
+    /// Call it only when an event calls for it, never per event or on a timer.
+    static func isMissionControlActive(in windows: [WindowInfo]) -> Bool {
+        let dockLevel = Int(CGWindowLevelForKey(.dockWindow))
+        let dockLevelWindows = windows.filter { window in
+            window.layer == dockLevel &&
+            window.isOnScreen &&
+            window.owningApplication?.bundleIdentifier == "com.apple.dock"
+        }
+        guard dockLevelWindows.count >= 2 else {
+            return false
+        }
+        var displays = [CGDirectDisplayID](repeating: 0, count: 32)
+        var displayCount: UInt32 = 0
+        guard CGGetActiveDisplayList(UInt32(displays.count), &displays, &displayCount) == .success else {
+            return false
+        }
+        return displays.prefix(Int(displayCount)).contains { display in
+            let displayBounds = CGDisplayBounds(display)
+            return dockLevelWindows.filter { $0.bounds.contains(displayBounds) }.count >= 2
+        }
     }
 }
 

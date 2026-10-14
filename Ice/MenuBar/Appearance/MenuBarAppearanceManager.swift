@@ -31,6 +31,9 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// The currently managed menu bar overlay panels.
     private(set) var overlayPanels = Set<MenuBarOverlayPanel>()
 
+    /// The displays the current overlay panels were built for.
+    private var overlayPanelDisplays = [OverlayPanelDisplay]()
+
     /// The amount to inset the menu bar if called for by the configuration,
     /// on a menu bar tall enough to take it.
     private let preferredMenuBarInsetAmount: CGFloat = if #available(macOS 26.0, *) { 3.5 } else { 5 }
@@ -78,12 +81,39 @@ final class MenuBarAppearanceManager: ObservableObject {
                 guard let self else {
                     return
                 }
+                // The notification is also posted when only the area the Dock
+                // leaves free changes, as when the Dock is shown or hidden with
+                // Option-Command-D. Rebuilding then made the appearance vanish and
+                // fade back in, with the shapes drawn without the wallpaper around
+                // them until it was captured again (jordanbaird/Ice#435). The
+                // panels only depend on each display and its frame.
+                let displays = Self.overlayPanelDisplays()
+                guard displays != overlayPanelDisplays || overlayPanels.isEmpty else {
+                    return
+                }
                 // Rebuild the panels for the new set of displays. This used to
                 // order the old panels out without closing them, which left them
                 // alive with their timers and observers running, and compared
                 // the displays against the set it had just emptied, so it rebuilt
                 // whenever any display was attached. `configureOverlayPanels(with:)`
                 // closes the old panels.
+                configureOverlayPanels(with: configuration)
+            }
+            .store(in: &c)
+
+        // The overlay panels can't find the menu bar without the Screen
+        // Recording permission (see `MenuBarOverlayPanel.show()`), and stop
+        // trying after a while. Build them again once it is granted, so the
+        // appearance applies without waiting for a space change.
+        appState?.permissions.screenRecording.$hasPermission
+            .removeDuplicates()
+            .dropFirst()
+            .filter { $0 }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else {
+                    return
+                }
                 configureOverlayPanels(with: configuration)
             }
             .store(in: &c)
@@ -186,5 +216,23 @@ final class MenuBarAppearanceManager: ObservableObject {
         }
 
         self.overlayPanels = overlayPanels
+        overlayPanelDisplays = Self.overlayPanelDisplays()
     }
+
+    /// Returns each display's identifier, frame and scale, which is what the
+    /// overlay panels are built from.
+    private static func overlayPanelDisplays() -> [OverlayPanelDisplay] {
+        NSScreen.screens.map { screen in
+            OverlayPanelDisplay(displayID: screen.displayID, frame: screen.frame, scale: screen.backingScaleFactor)
+        }
+    }
+}
+
+// MARK: - OverlayPanelDisplay
+
+/// A display as the overlay panels see it.
+private struct OverlayPanelDisplay: Equatable {
+    let displayID: CGDirectDisplayID
+    let frame: CGRect
+    let scale: CGFloat
 }

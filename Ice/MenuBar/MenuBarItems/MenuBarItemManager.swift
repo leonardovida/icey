@@ -581,8 +581,23 @@ extension MenuBarItemManager {
         }
 
         var recoverySuggestion: String? {
-            if case .itemNotMovable = self { return nil }
-            return "Please try again. If the error persists, please file a bug report."
+            switch self {
+            case .itemNotMovable:
+                return nil
+            case .itemResponseTimeout:
+                // The item ignored the drag on every attempt. Items macOS shows
+                // for an iPhone's Live Activities did so in every report
+                // (jordanbaird/Ice#656, #704), so say that some items can't be
+                // moved, rather than only asking for a bug report.
+                return """
+                    The item did not move when Icey dragged it. Some items, such as \
+                    the ones macOS shows for iPhone Live Activities, may not allow \
+                    being moved. Please try again. If the error persists, please \
+                    file a bug report.
+                    """
+            default:
+                return "Please try again. If the error persists, please file a bug report."
+            }
         }
     }
 

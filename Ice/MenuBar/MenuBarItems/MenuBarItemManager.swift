@@ -1686,17 +1686,28 @@ extension MenuBarItemManager {
             return
         }
 
-        // The section the item returns to if its neighbor is gone by then.
-        // Items left of the always-hidden control item are always-hidden.
+        // The section the item returns to if its neighbor is gone by then, and
+        // that it must be back in once it is moved back. Items left of the
+        // always-hidden control item are always-hidden. Items right of the
+        // hidden control item are visible: the search panel also shows visible
+        // items that macOS has pushed off the menu bar.
         let returnSection: MenuBarSection.Name = {
-            guard
-                let alwaysHiddenIndex = items.firstIndex(matching: .alwaysHiddenControlItem),
-                let itemIndex = items.firstIndex(where: { $0.windowID == item.windowID }),
-                itemIndex < alwaysHiddenIndex
-            else {
+            guard let itemIndex = items.firstIndex(where: { $0.windowID == item.windowID }) else {
                 return .hidden
             }
-            return .alwaysHidden
+            if
+                let alwaysHiddenIndex = items.firstIndex(matching: .alwaysHiddenControlItem),
+                itemIndex < alwaysHiddenIndex
+            {
+                return .alwaysHidden
+            }
+            if
+                let hiddenIndex = items.firstIndex(matching: .hiddenControlItem),
+                itemIndex > hiddenIndex
+            {
+                return .visible
+            }
+            return .hidden
         }()
 
         // Remove all items up to and including the hidden control item.
@@ -1768,8 +1779,17 @@ extension MenuBarItemManager {
         await eventSleep(for: .milliseconds(250))
         let windowsAfterClick = WindowInfo.createWindows(option: .onScreen)
 
+        // A menu bar item is never the interface an item opens. Before macOS 26
+        // an app owns its item windows, so an item the app added or recreated
+        // when clicked was taken for the interface. It stays on screen in the
+        // menu bar, so the rehide waited for it to close for as long as Icey
+        // ran, and the shown item stayed in view (jordanbaird/Ice#513).
+        let itemWindowIDs = Set(Bridging.getMenuBarWindowList(option: .itemsOnly))
+
         context.shownInterfaceWindow = windowsAfterClick.first { window in
-            window.ownerPID == item.sourcePID && !idsBeforeClick.contains(window.windowID)
+            window.ownerPID == item.sourcePID &&
+            !idsBeforeClick.contains(window.windowID) &&
+            !itemWindowIDs.contains(window.windowID)
         }
     }
 
@@ -1844,6 +1864,7 @@ extension MenuBarItemManager {
             }
             do {
                 try await move(item: item, to: currentReturnDestination(for: context, item: item, in: items))
+                try await confirmReturn(of: item, to: context.returnSection, in: items)
             } catch {
                 context.rehideAttempts += 1
                 logger.warning(
@@ -1926,18 +1947,79 @@ extension MenuBarItemManager {
             let currentTarget = others.first(where: { $0.windowID == target.windowID }) ??
                 others.first(matching: target.tag)
         else {
-            // Return the item to the right end of the section it came from, so a
-            // temporary show never moves an always-hidden item to the hidden section.
+            // Return the item to the end of the section it came from, next to that
+            // section's control item, so a temporary show never moves an item to
+            // another section.
             let controlItemTag: MenuBarItemTag = context.returnSection == .alwaysHidden ? .alwaysHiddenControlItem : .hiddenControlItem
             guard let controlItem = others.first(matching: controlItemTag) else {
                 return destination
             }
             logger.debug("Return destination for \(item.logString, privacy: .public) is gone, using the \(context.returnSection.logString, privacy: .public) section")
-            return .leftOfItem(controlItem)
+            return context.returnSection == .visible ? .rightOfItem(controlItem) : .leftOfItem(controlItem)
         }
         return switch destination {
         case .leftOfItem: .leftOfItem(currentTarget)
         case .rightOfItem: .rightOfItem(currentTarget)
+        }
+    }
+
+    /// Makes sure that a temporarily shown item that was just moved back is
+    /// in the section it came from, and moves it to the end of that section
+    /// if it is not.
+    ///
+    /// A move counts as done as soon as the item's position changes after
+    /// the drag events are posted. An item next to it that changes width,
+    /// appears or goes away moves it as well, as a Live Activity from an
+    /// iPhone does while it updates, so a move back that never happened
+    /// could pass for one. The item's context was then dropped, and the item
+    /// stayed in the visible section until it was moved by hand
+    /// (jordanbaird/Ice#729, #513).
+    ///
+    /// - Parameters:
+    ///   - item: The item that was moved back.
+    ///   - section: The section the item came from.
+    ///   - items: The menu bar items, as listed before the move.
+    private func confirmReturn(
+        of item: MenuBarItem,
+        to section: MenuBarSection.Name,
+        in items: [MenuBarItem]
+    ) async throws {
+        var others = items.filter { $0.windowID != item.windowID }
+        guard let controlItems = ControlItemPair(items: &others) else {
+            return
+        }
+
+        // Without the always-hidden section, its items return to the hidden one.
+        let section: MenuBarSection.Name = section == .alwaysHidden && controlItems.alwaysHidden == nil ? .hidden : section
+
+        // The live bounds of the item and the control items are read on every check.
+        func isInSection() -> Bool {
+            var context = CacheContext(controlItems: controlItems, displayID: nil)
+            return context.findSection(for: item) == section
+        }
+
+        await waitForItemToSettle(item)
+        if isInSection() {
+            return
+        }
+
+        let destination: MoveDestination = switch section {
+        case .visible: .rightOfItem(controlItems.hidden)
+        case .hidden: .leftOfItem(controlItems.hidden)
+        case .alwaysHidden: .leftOfItem(controlItems.alwaysHidden ?? controlItems.hidden)
+        }
+        logger.warning(
+            """
+            \(item.logString, privacy: .public) is not back in the \
+            \(section.logString, privacy: .public), moving it \
+            \(destination.logString, privacy: .public)
+            """
+        )
+        try await move(item: item, to: destination)
+
+        await waitForItemToSettle(item)
+        guard isInSection() else {
+            throw EventError.cannotComplete
         }
     }
 

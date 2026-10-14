@@ -52,6 +52,45 @@ extension Task {
     }
 }
 
+extension Task where Failure == Never {
+    /// Waits for the task to finish, for no longer than the given duration,
+    /// and returns a Boolean value that indicates whether it finished in time.
+    ///
+    /// A task that does not finish in time keeps running.
+    ///
+    /// `Task(timeout:)` runs its operation in a task group, and a task group
+    /// waits for every child task to finish, even a cancelled one. Work that
+    /// does not stop when cancelled, such as a blocking window server or XPC
+    /// call, so held it up for as long as the work took, however short the
+    /// timeout. This waits for the task without becoming its parent, so it
+    /// returns on time.
+    ///
+    /// - Parameter timeout: The longest time to wait.
+    func finished(within timeout: Duration) async -> Bool {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            let isResumed = OSAllocatedUnfairLock(initialState: false)
+            let resume: @Sendable (Bool) -> Void = { finished in
+                let isFirst = isResumed.withLock { isResumed in
+                    defer { isResumed = true }
+                    return !isResumed
+                }
+                if isFirst {
+                    continuation.resume(returning: finished)
+                }
+            }
+            let timer = _Concurrency.Task {
+                try? await _Concurrency.Task.sleep(for: timeout)
+                resume(false)
+            }
+            _Concurrency.Task {
+                _ = await value
+                resume(true)
+                timer.cancel()
+            }
+        }
+    }
+}
+
 extension Task where Failure == any Error {
     /// Runs the given throwing operation asynchronously as part of a
     /// new _unstructured_ top-level task.

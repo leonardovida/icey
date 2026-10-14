@@ -200,15 +200,20 @@ final class IceBarPanel: NSPanel {
                 await appState.imageCache.updateCache()
             }
         } else {
-            let cacheTask = Task(timeout: .seconds(1)) {
+            // Wait up to a second for the caches, then show the bar either way;
+            // it fills in when they finish. Neither update stops when cancelled:
+            // the image capture is a blocking window server call, and listing the
+            // items asks the menu bar item service on macOS 26. `Task(timeout:)`
+            // waited for them regardless of its timeout, so one capture or request
+            // that never returned kept every later Ice Bar from appearing, and the
+            // Icey icon seemed to do nothing (jordanbaird/Ice#888, #790).
+            let cacheTask = Task {
                 await appState.itemManager.cacheItemsIfNeeded()
                 await appState.imageCache.updateCache()
             }
 
-            do {
-                try await cacheTask.value
-            } catch {
-                Logger.default.error("Cache update failed when showing IceBarPanel - \(error)")
+            if await !cacheTask.finished(within: .seconds(1)) {
+                Logger.default.error("Cache update did not finish within a second when showing IceBarPanel")
             }
         }
 

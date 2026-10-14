@@ -1293,17 +1293,36 @@ extension MenuBarItemManager {
                 initialOrigin: itemOrigin,
                 timeout: timeout
             )
+            // Release once, and again only if the item did not respond. Two
+            // releases were always posted, and the second reached the item's
+            // app after the drag had ended: a release with no press behind it,
+            // on the item where it now sits. Apps that act on the release, such
+            // as Mullvad VPN's, took it for a click and opened their window as
+            // the item was hidden again (jordanbaird/Ice#766, #586).
             try await scrombleEvent(
                 mouseUp,
                 item: item,
-                timeout: timeout,
-                repeating: 2 // Double mouse up prevents invalid item state.
-            )
-            itemOrigin = try await waitForMoveEventResponse(
-                from: item,
-                initialOrigin: itemOrigin,
                 timeout: timeout
             )
+            do {
+                itemOrigin = try await waitForMoveEventResponse(
+                    from: item,
+                    initialOrigin: itemOrigin,
+                    timeout: timeout
+                )
+            } catch EventError.itemResponseTimeout {
+                logger.debug("Item did not respond to mouse up, posting it again")
+                try await scrombleEvent(
+                    mouseUp,
+                    item: item,
+                    timeout: timeout
+                )
+                itemOrigin = try await waitForMoveEventResponse(
+                    from: item,
+                    initialOrigin: itemOrigin,
+                    timeout: timeout
+                )
+            }
             timeout -= timeout / 4
         } catch {
             do {

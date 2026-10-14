@@ -54,6 +54,13 @@ struct MenuBarAppearanceEditor: View {
     @ViewBuilder
     private var mainForm: some View {
         IceForm {
+            MissingScreenRecordingCallout(permission: appState.permissions.screenRecording) {
+                if case .panel = location {
+                    dismissWindow()
+                }
+                appState.navigationState.settingsNavigationIdentifier = .advanced
+                appState.activateAndOpenSettings()
+            }
             if
                 case .settings = location,
                 appState.settings.advanced.enableSecondaryContextMenu
@@ -133,6 +140,35 @@ struct MenuBarAppearanceEditor: View {
                 "Use inset shape on screens with notch",
                 isOn: $appearanceManager.configuration.isInset
             )
+        }
+    }
+}
+
+/// A notice shown in the appearance editor while Icey lacks the Screen
+/// Recording permission.
+///
+/// The overlay that draws the menu bar's appearance finds each display's
+/// menu bar window by its title, and macOS only gives other processes'
+/// window titles to apps with Screen Recording permission. Without it, the
+/// overlay never appears, so every tint, border, shadow and shape has no
+/// effect, and the editor gave no hint as to why. That is one way to get
+/// the reports of appearance settings doing nothing (jordanbaird/Ice#627,
+/// jordanbaird/Ice#525). The permission is optional, so it can be missing
+/// while the rest of the app works.
+private struct MissingScreenRecordingCallout: View {
+    @ObservedObject var permission: Permission
+
+    let openSettings: () -> Void
+
+    var body: some View {
+        if !permission.hasPermission {
+            CalloutBox(systemImage: "exclamationmark.triangle") {
+                VStack(spacing: 5) {
+                    Text("Icey needs the Screen Recording permission to change the menu bar's appearance.")
+                    Button("Go to Advanced Settings", action: openSettings)
+                        .buttonStyle(.link)
+                }
+            }
         }
     }
 }

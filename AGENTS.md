@@ -144,7 +144,7 @@ Installed copies update themselves from `https://github.com/leonardovida/icey/re
 
 When you fix, triage or close out an upstream Ice issue, add it to [docs/issues.json](docs/issues.json):
 
-- `status`: `fixed`, `partial`, `open`, `not-a-bug` or `feature`.
+- `status`: `fixed`, `partial`, `open`, `closed` (no cause found and not reproduced), `not-a-bug` or `feature`.
 - `headline`: the problem in plain words, as a user would search for it.
 - `symptom` and `fix`: one or two sentences each, for users.
 - `fixed_in`: `null` until the fix ships, then the release tag. `pr`: the Icey pull request.

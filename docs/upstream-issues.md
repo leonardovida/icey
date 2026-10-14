@@ -247,7 +247,20 @@ These have a fix that couldn't be confirmed yet, or that covers part of the repo
 
 ## Open in Icey too
 
-These need a reproduction or more information. If you can reproduce one in Icey, please [open an issue](https://github.com/leonardovida/icey/issues/new/choose) with your macOS version and steps.
+These have a known or likely cause, but no fix yet. The notes on the fixes page say what was found.
+
+| Upstream issue | Problem |
+|---|---|
+| [#658](https://github.com/jordanbaird/Ice/issues/658) | Games lose focus while Ice runs |
+| [#649](https://github.com/jordanbaird/Ice/issues/649) | Split menu bar moves when showing the desktop |
+| [#514](https://github.com/jordanbaird/Ice/issues/514) | Menu bar shadow moves with App Exposé |
+| [#486](https://github.com/jordanbaird/Ice/issues/486) | Display Zoom jumps around while Ice runs |
+| [#241](https://github.com/jordanbaird/Ice/issues/241) | Gap in menu bar items on the inactive display |
+| [#94](https://github.com/jordanbaird/Ice/issues/94) | Icons aren't hidden on an ultrawide screen |
+
+## Closed without a cause
+
+Nothing in Icey's code explains these, and they couldn't be reproduced. If one still happens in Icey, please [open an issue](https://github.com/leonardovida/icey/issues/new/choose) with your macOS version and steps, and it will be reopened.
 
 | Upstream issue | Problem |
 |---|---|
@@ -261,25 +274,19 @@ These need a reproduction or more information. If you can reproduce one in Icey,
 | [#707](https://github.com/jordanbaird/Ice/issues/707) | Cloudflare WARP misbehaves until Ice restarts |
 | [#697](https://github.com/jordanbaird/Ice/issues/697) | Lungo and Dato don't work with Ice |
 | [#659](https://github.com/jordanbaird/Ice/issues/659) | Slight shadow at the top of the screen on macOS 26 |
-| [#658](https://github.com/jordanbaird/Ice/issues/658) | Games lose focus while Ice runs |
 | [#656](https://github.com/jordanbaird/Ice/issues/656) | Live Activities can't be moved between sections |
-| [#649](https://github.com/jordanbaird/Ice/issues/649) | Split menu bar moves when showing the desktop |
 | [#640](https://github.com/jordanbaird/Ice/issues/640) | Pointer behaves strangely after clicking a hidden icon |
 | [#625](https://github.com/jordanbaird/Ice/issues/625) | Hidden bar is oversized |
 | [#623](https://github.com/jordanbaird/Ice/issues/623) | Layout icons disappear after using the Ice Bar in fullscreen |
 | [#606](https://github.com/jordanbaird/Ice/issues/606) | Ice Bar leaves an artifact when auto-hiding in fullscreen |
-| [#514](https://github.com/jordanbaird/Ice/issues/514) | Menu bar shadow moves with App Exposé |
 | [#512](https://github.com/jordanbaird/Ice/issues/512) | Ice freezes and windows get out of sync |
-| [#486](https://github.com/jordanbaird/Ice/issues/486) | Display Zoom jumps around while Ice runs |
 | [#485](https://github.com/jordanbaird/Ice/issues/485) | Hidden items show no images |
 | [#480](https://github.com/jordanbaird/Ice/issues/480) | Ice conflicts with Alcove |
 | [#472](https://github.com/jordanbaird/Ice/issues/472) | Item spacing doesn't apply |
 | [#462](https://github.com/jordanbaird/Ice/issues/462) | Keyboard Maestro can't be moved to visible |
 | [#330](https://github.com/jordanbaird/Ice/issues/330) | Doesn't work with Focus's menu bar item |
 | [#272](https://github.com/jordanbaird/Ice/issues/272) | Extra spaces on an iPad Sidecar display |
-| [#241](https://github.com/jordanbaird/Ice/issues/241) | Gap in menu bar items on the inactive display |
 | [#194](https://github.com/jordanbaird/Ice/issues/194) | Moved items look dimmed |
-| [#94](https://github.com/jordanbaird/Ice/issues/94) | Icons aren't hidden on an ultrawide screen |
 
 ## Not a bug in Ice or Icey
 

@@ -33,7 +33,7 @@ DOCS = ROOT / "docs" / "upstream-issues.md"
 # PNG renders of Ice/Resources/AppIcon.icon (exported with Icon Composer's ictool).
 ICONS = ROOT / "Resources" / "AppIcon"
 
-STATUS_ORDER = ["fixed", "partial", "open", "not-a-bug", "feature"]
+STATUS_ORDER = ["fixed", "partial", "open", "closed", "not-a-bug", "feature"]
 
 
 def load():
@@ -122,7 +122,8 @@ def build_docs(data):
         out.append(f"| {md_issue(i['number'])} | {md_cell(i['headline'])} | {md_release(i['fixed_in'])}{md_cell(note)} |")
     sections = [
         ("partial", "Partly addressed", "These have a fix that couldn't be confirmed yet, or that covers part of the report."),
-        ("open", "Open in Icey too", f"These need a reproduction or more information. If you can reproduce one in Icey, please [open an issue]({GH}/issues/new/choose) with your macOS version and steps."),
+        ("open", "Open in Icey too", "These have a known or likely cause, but no fix yet. The notes on the fixes page say what was found."),
+        ("closed", "Closed without a cause", f"Nothing in Icey's code explains these, and they couldn't be reproduced. If one still happens in Icey, please [open an issue]({GH}/issues/new/choose) with your macOS version and steps, and it will be reopened."),
         ("not-a-bug", "Not a bug in Ice or Icey", None),
         ("feature", "Feature requests", None),
     ]
@@ -138,7 +139,7 @@ def build_docs(data):
             for i in rows:
                 status_text = i["fix"] + (f" {i['note']}" if i.get("note") else "")
                 out.append(f"| {md_issue(i['number'])} | {md_cell(i['headline'])} | {md_cell(status_text)} |")
-        elif status == "open":
+        elif status in ("open", "closed"):
             out += ["| Upstream issue | Problem |", "|---|---|"]
             for i in rows:
                 out.append(f"| {md_issue(i['number'])} | {md_cell(i['headline'])} |")
@@ -429,6 +430,7 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             "fixed": '<span class="tag fixed">Fixed</span>',
             "partial": '<span class="tag partial">Partly fixed</span>',
             "open": '<span class="tag">Open</span>',
+            "closed": '<span class="tag">Closed</span>',
             "not-a-bug": '<span class="tag">Not a bug</span>',
             "feature": '<span class="tag">Feature request</span>',
         }[i["status"]]
@@ -437,7 +439,7 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             fix_label = "Fix:"
         else:
             where = ""
-            fix_label = {"open": "Status:", "not-a-bug": "What to do:", "feature": "Status:"}[i["status"]]
+            fix_label = {"open": "Status:", "closed": "Status:", "not-a-bug": "What to do:", "feature": "Status:"}[i["status"]]
         note = f'<p class="small">{e(i["note"])}</p>' if i.get("note") else ""
         return f"""<article class="issue" id="issue-{n}">
 {title}
@@ -452,6 +454,7 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
             ("fixed", "Fixed in Icey"),
             ("partial", "Partly fixed"),
             ("open", "Still open"),
+            ("closed", "Closed without a cause"),
             ("not-a-bug", "Not a bug in Ice or Icey"),
             ("feature", "Feature requests"),
         ]

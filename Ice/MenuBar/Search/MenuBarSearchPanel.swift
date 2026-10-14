@@ -430,7 +430,7 @@ private struct MenuBarSearchContentView: View {
                 await ItemClicker27.click(item: item, mouseButton: .left, iceBarDisplayID: displayID, appState: appState)
                 return
             }
-            if Bridging.isWindowOnScreen(item.windowID) {
+            if itemManager.canClickInPlace(item) {
                 try await itemManager.click(item: item, with: .left)
             } else {
                 await itemManager.temporarilyShow(item: item, clickingWith: .left)

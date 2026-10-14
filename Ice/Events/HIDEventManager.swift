@@ -271,7 +271,10 @@ extension HIDEventManager {
             // A click while a menu is open is the click that closes it, not
             // one on the menu bar. Navigating an app's menus showed the hidden
             // items whenever the menus could not be measured (jordanbaird/Ice#567).
-            !isMenuOpen(on: screen)
+            !isMenuOpen(on: screen),
+            // A click at the top of the screen in Mission Control is a click on
+            // its spaces (jordanbaird/Ice#714).
+            !isMissionControlActive()
         else {
             return
         }
@@ -790,6 +793,14 @@ extension HIDEventManager {
                 // not be measured (jordanbaird/Ice#567). Wait before allowing
                 // another check, as each one asks the window server.
                 guard !isMenuOpen(on: screen) else {
+                    try await Task.sleep(for: .milliseconds(250))
+                    return
+                }
+                // In Mission Control, the top of the screen holds the spaces,
+                // and the menu bar items stay where they were underneath, so
+                // reaching for a space showed the hidden items
+                // (jordanbaird/Ice#714).
+                guard !isMissionControlActive() else {
                     try await Task.sleep(for: .milliseconds(250))
                     return
                 }
@@ -1316,6 +1327,14 @@ extension HIDEventManager {
     func isMenuOpen(on screen: NSScreen) -> Bool {
         let menuLevel = Int(CGWindowLevelForKey(.popUpMenuWindow))
         return menuBarInterfaceWindows(on: screen).contains { $0.layer == menuLevel }
+    }
+
+    /// A Boolean value that indicates whether Mission Control is open.
+    ///
+    /// This asks the window server for one window list, so it is only called
+    /// when the items are about to be shown, never per event.
+    func isMissionControlActive() -> Bool {
+        WindowInfo.isMissionControlActive(in: WindowInfo.createWindows(option: .onScreen))
     }
 
     /// A Boolean value that indicates whether the given screen's menu bar is

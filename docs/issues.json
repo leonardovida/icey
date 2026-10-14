@@ -503,11 +503,12 @@
       "number": 946,
       "title": "MacOS Tahoe 26.5 update broke hidden elements in ice layout",
       "headline": "Hidden items are shown as always-hidden after macOS Tahoe 26.5",
-      "status": "open",
-      "fixed_in": null,
-      "symptom": "After updating to macOS 26.5, items in the hidden section showed up in the wrong section of the layout.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "symptom": "After updating to macOS 26.5, every hidden item showed up in the always-hidden section, and items dragged back to Hidden fell back into Always-Hidden.",
+      "fix": "When the always-hidden divider ends up on the wrong side, Icey now moves it left of the items that were hidden, and it saves where its dividers are when it quits.",
+      "pr": 20,
+      "note": "Same cause as #702. Not reproduced on 26.5."
     },
     {
       "number": 918,
@@ -674,10 +675,10 @@
       "number": 920,
       "title": "I have searched existing issues for similar reports",
       "headline": "Empty report",
-      "status": "open",
+      "status": "not-a-bug",
       "fixed_in": null,
-      "symptom": "The report has no description.",
-      "fix": "Needs a reproduction in Icey.",
+      "symptom": "The report is empty: its title is a line from the issue template, with no description.",
+      "fix": "Nothing to fix. Please open a new report with the steps, the Icey version and the macOS version.",
       "pr": null
     },
     {
@@ -685,11 +686,11 @@
       "title": "[Bug]: Ice triggering while clicking just under the menu bar in fullscreen",
       "headline": "Clicking just under the menu bar in fullscreen triggers Ice",
       "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
-      "symptom": "In fullscreen on a large display, clicking just below the hidden menu bar showed hidden items.",
-      "fix": "With the Ice icon on another display, the top of a fullscreen display now counts as the menu bar only while its menu bar is showing.",
-      "note": "Doesn't cover a single display.",
-      "pr": 17
+      "fixed_in": null,
+      "symptom": "In fullscreen, clicking just below the hidden menu bar showed the hidden items.",
+      "fix": "The top of a fullscreen display counts as the menu bar only while its menu bar is showing: with the Icey icon on another display, and now also with the Icey icon turned off.",
+      "note": "With the Icey icon on the same display, no cause found.",
+      "pr": 24
     },
     {
       "number": 892,
@@ -727,11 +728,11 @@
       "title": "[Bug]: Cannot use ice bar when which between windows",
       "headline": "Ice Bar can't be used after switching windows or spaces",
       "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.1",
-      "symptom": "After switching spaces, the Ice Bar opened empty, and Ice could freeze until force quit.",
-      "fix": "A space change while the Ice Bar opens now keeps it closed, and stuck moves and clicks time out.",
-      "note": "Probably fixed. Please retest in Icey.",
-      "pr": 5
+      "fixed_in": null,
+      "symptom": "After switching between fullscreen windows or spaces, the Ice Bar opened empty or not at all, and Ice could freeze until force quit.",
+      "fix": "A space change while the Ice Bar opens keeps it closed, stuck moves and clicks time out, and the Ice Bar now opens within a second even when updating its images stalls, instead of never opening again.",
+      "note": "Not reproduced.",
+      "pr": 24
     },
     {
       "number": 887,
@@ -849,11 +850,12 @@
       "number": 865,
       "title": "[Bug]: macOS 26.3 beta 3 prevents Ice from expanding",
       "headline": "Ice can't expand on a macOS 26.3 beta",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "Nothing expanded and Ice hung on 26.2 and 26.3 betas.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "symptom": "On macOS 26.2 and the 26.3 betas, clicking the Ice icon expanded nothing, and Ice could stop responding.",
+      "fix": "The Ice Bar now opens within a second even if reading the items or their images stalls, and requests to Icey's item helper no longer tie up the threads the rest of the app needs.",
+      "pr": 24,
+      "note": "The exact cause in the report isn't known. Please retest."
     },
     {
       "number": 863,
@@ -1027,9 +1029,9 @@
       "headline": "Ice doesn't work on an external display with an auto-hiding menu bar",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Ice did nothing on the external display's auto-hiding menu bar.",
+      "symptom": "Ice did nothing on an external display's auto-hiding menu bar.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "Partly addressed by the auto-hide fix for #708. Needs a retest.",
+      "note": "The reporter says it only happens after the Mac has been in use for a while. Please retest.",
       "pr": null
     },
     {
@@ -1077,11 +1079,12 @@
       "number": 830,
       "title": "[Bug]: So many bugs",
       "headline": "Many bugs and heat",
-      "status": "open",
-      "fixed_in": null,
-      "symptom": "A general report of bugs and the Mac running warm.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "On macOS 15.7.3 the Mac ran warmer with Ice running.",
+      "fix": "Icey listens to mouse events only when a setting needs them, polls less and takes fewer screen captures, so it stays near zero energy impact while idle.",
+      "pr": 1,
+      "note": "The report names no other specific bug."
     },
     {
       "number": 829,
@@ -1100,10 +1103,10 @@
       "headline": "Battery item doesn't open from the hidden section",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Clicking a hidden system item didn't open its menu.",
+      "symptom": "Clicking the battery item from the hidden section did nothing on macOS 26.1.",
       "fix": "Needs a reproduction in Icey.",
       "pr": null,
-      "note": "The Caps Lock fix for #845 may help. Needs a reproduction."
+      "note": "The Caps Lock fix and the off-display click guard may help. No battery-specific cause found."
     },
     {
       "number": 825,
@@ -1162,9 +1165,10 @@
       "headline": "User (login) item can't be customized",
       "status": "open",
       "fixed_in": null,
-      "symptom": "The fast user switching item isn't listed on macOS 26.1.",
+      "symptom": "The user (fast user switching) item didn't appear in Icey on macOS 26.1.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Nothing in the code filters this item out. Needs Icey's log."
     },
     {
       "number": 816,
@@ -1272,12 +1276,12 @@
       "number": 799,
       "title": "[Bug]: Menu bar items not disappearing",
       "headline": "Menu bar items don't hide again",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "Items shown temporarily didn't hide again on 0.11.13-dev.1.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Icey retries with backoff. Please retest.",
-      "pr": null
+      "symptom": "Items shown from the Ice Bar didn't hide again after clicking away.",
+      "fix": "Icey no longer mistakes a menu bar item that appears after the click for the item's open menu, which kept it waiting to hide the item forever.",
+      "note": "Another menu bar app showed the same problem, so macOS may be involved too.",
+      "pr": 24
     },
     {
       "number": 798,
@@ -1324,11 +1328,11 @@
       "title": "[Bug]: Multiple monitors freeze",
       "headline": "Ice freezes with multiple monitors",
       "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.1",
-      "symptom": "With several monitors connected, Ice froze while showing hidden items.",
-      "fix": "Item captures no longer take the slow path caused by the scale mismatch, and Accessibility calls time out.",
-      "note": "Shares a cause with #987. Not yet confirmed on two displays.",
-      "pr": 5
+      "fixed_in": null,
+      "symptom": "With an external monitor connected, Ice stopped responding to hover and clicks.",
+      "fix": "Item captures no longer take the slow path, the Ice Bar no longer waits indefinitely for them, and requests to Icey's item helper on macOS 26 can no longer use up the threads the app needs to respond.",
+      "note": "Not yet confirmed on two displays.",
+      "pr": 24
     },
     {
       "number": 787,
@@ -1498,12 +1502,12 @@
       "number": 766,
       "title": "[Bug]: App with dropdown from menu bar (Mullvad VPN) appears as it auto-hides",
       "headline": "Mullvad VPN's menu appears as items hide",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "Mullvad VPN's window opened when Ice hid items again.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null,
-      "note": "Moving an item uses simulated clicks, which some apps treat as a real click. No safe fix yet."
+      "symptom": "Mullvad VPN's window opened by itself when Icey hid its item again after it was shown from the Ice Bar.",
+      "fix": "When moving an item, Icey no longer sends an extra mouse release after the item has moved, which apps like Mullvad took for a click.",
+      "pr": 24,
+      "note": "Cause inferred from the code, not reproduced."
     },
     {
       "number": 763,
@@ -1572,9 +1576,10 @@
       "headline": "Menu bar clicks are dropped",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Some clicks in the menu bar did nothing.",
+      "symptom": "Some clicks on menu bar items did nothing while Ice was running.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The reporter says other menu bar managers have it too. Icey's monitors only listen and don't block events."
     },
     {
       "number": 754,
@@ -1644,9 +1649,9 @@
       "headline": "\"Event operation timed out\" errors",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Moving items failed with a timeout on 0.11.13-dev.1.",
+      "symptom": "Every move failed with \"Event operation timed out\" on a macOS 26.1 beta.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "The move code has been rewritten with retries. Please retest.",
+      "note": "Icey's move code retries up to 8 times with growing timeouts. Please retest.",
       "pr": null
     },
     {
@@ -1726,9 +1731,10 @@
       "headline": "Strange rendering issue",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Intermittent rendering problem on macOS 14.4.",
+      "symptom": "Showing hidden items on hover sometimes left a partly drawn, pixelated menu bar.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "No code cause found."
     },
     {
       "number": 732,
@@ -1766,11 +1772,11 @@
       "title": "[Bug]: Menu Bar Item Stuck After Ice Bar Click When Live Activities are Active",
       "headline": "An item opened from the Ice Bar stays in the menu bar for good",
       "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.2",
+      "fixed_in": null,
       "symptom": "While iPhone Live Activities were in the menu bar, an item clicked in the Ice Bar stayed in the visible section and never hid again until Ice was restarted.",
-      "fix": "If the item next to its old spot was recreated in the meantime, Icey now finds it again, or puts the item back in the hidden section, instead of failing to move it back.",
-      "note": "The link to Live Activities is inferred from the code, not reproduced.",
-      "pr": 11
+      "fix": "After moving a shown item back, Icey now checks that it really is back in its section and moves it there if not.",
+      "note": "The link to Live Activities is inferred from the code.",
+      "pr": 24
     },
     {
       "number": 728,
@@ -1858,9 +1864,10 @@
       "headline": "Game Mode item can't be hidden",
       "status": "open",
       "fixed_in": null,
-      "symptom": "The Game Mode item stayed visible.",
+      "symptom": "The Game Mode item couldn't be hidden, and clicking Icey's icon didn't show hidden items while a game ran.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The Game Mode item is a system item."
     },
     {
       "number": 717,
@@ -1896,12 +1903,12 @@
       "number": 714,
       "title": "[Bug]: Show Ice bar on hover should not trigger in Mission Control view",
       "headline": "Show on hover triggers in Mission Control",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
-      "symptom": "Hovering the top of the screen in Mission Control opened the Ice Bar.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "There is no public way to detect Mission Control.",
-      "pr": null
+      "symptom": "Moving the pointer to the top of the screen in Mission Control opened the Ice Bar or showed the hidden items.",
+      "fix": "Icey recognizes when Mission Control is open and doesn't show hidden items on hover or click while it is.",
+      "note": "There is no public way to detect Mission Control. Icey looks for the extra full-display window the Dock shows, measured on macOS 26.5.",
+      "pr": 24
     },
     {
       "number": 713,
@@ -1961,9 +1968,10 @@
       "headline": "Cloudflare WARP misbehaves until Ice restarts",
       "status": "open",
       "fixed_in": null,
-      "symptom": "WARP's window didn't work properly while Ice ran.",
+      "symptom": "After a reboot, Cloudflare WARP's window didn't work from Ice until Ice was restarted.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "No cause found. Icey reloads items when apps launch or their item windows change."
     },
     {
       "number": 705,
@@ -1979,12 +1987,12 @@
       "number": 704,
       "title": "[Bug]: menu bar items (iphone notifications) cannot be moved",
       "headline": "iPhone notification items can't be moved",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "Live Activity items from an iPhone couldn't be moved (\"took too long to respond\").",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Needs the item's name from Icey's log to mark it as immovable.",
-      "pr": null
+      "symptom": "Moving an iPhone Live Activity item failed with \"took too long to respond\".",
+      "fix": "When an item never responds to being moved, the alert now says the item didn't move and that some items, such as iPhone Live Activities, may not allow being moved.",
+      "note": "Icey still can't move these items. Whether macOS allows moving them is unconfirmed.",
+      "pr": 24
     },
     {
       "number": 703,
@@ -2044,9 +2052,10 @@
       "headline": "Lungo and Dato don't work with Ice",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Lungo and Dato items misbehave.",
+      "symptom": "Lungo and Dato didn't open while Ice was running.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The report has no details."
     },
     {
       "number": 696,
@@ -2286,10 +2295,10 @@
       "headline": "Slight shadow at the top of the screen on macOS 26",
       "status": "open",
       "fixed_in": null,
-      "symptom": "A faint shadow appeared at the top with the appearance settings on.",
+      "symptom": "A faint shadow appeared at the top of the screen with the appearance settings on.",
       "fix": "Needs a reproduction in Icey.",
       "pr": null,
-      "note": "The report predates Icey's matching change to the dimming. Needs a check on macOS 26."
+      "note": "No cause found beyond the earlier fix to the darkening behind the menu bar."
     },
     {
       "number": 658,
@@ -2297,9 +2306,10 @@
       "headline": "Games lose focus while Ice runs",
       "status": "open",
       "fixed_in": null,
-      "symptom": "A game lost focus while Ice was running.",
+      "symptom": "A fullscreen game lost keyboard focus while Ice was running.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "One candidate, not confirmed: showing hidden items with \"Hide application menus\" on makes Icey the active app."
     },
     {
       "number": 657,
@@ -2318,9 +2328,10 @@
       "headline": "Live Activities can't be moved between sections",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Live Activity items couldn't be moved on macOS 26.",
+      "symptom": "Live Activity items couldn't be moved between sections on macOS 26.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Same as #704. The alert now explains that the item didn't move. Needs the item's details from Icey's log to tell whether macOS blocks moving it."
     },
     {
       "number": 655,
@@ -2351,7 +2362,7 @@
       "fixed_in": null,
       "symptom": "Clicking the wallpaper to show the desktop slid the split shape away with the windows.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "Same as #514.",
+      "note": "On macOS 26.5 the overlay stays in place in Show Desktop. Same trade-off as #514.",
       "pr": null
     },
     {
@@ -2410,11 +2421,12 @@
       "number": 642,
       "title": "[Bug]: Clicking on BusyCal Menu in hidden section opened Apple Menu instead",
       "headline": "Clicking BusyCal in the hidden section opened the Apple menu",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "A click on a hidden item reached the Apple menu instead.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "symptom": "Clicking BusyCal in the Ice Bar opened the Apple menu instead, and the Apple menu sometimes opened by itself.",
+      "fix": "Icey only clicks an item where it is when the item is on a display. Otherwise it shows the item first, and it never clicks at a point that is off every display.",
+      "pr": 24,
+      "note": "Fixes the most likely cause. The random Apple menu openings aren't confirmed fixed."
     },
     {
       "number": 641,
@@ -2432,9 +2444,10 @@
       "headline": "Pointer behaves strangely after clicking a hidden icon",
       "status": "open",
       "fixed_in": null,
-      "symptom": "The pointer got stuck after clicking a hidden item.",
+      "symptom": "After clicking a hidden item on a macOS 26 beta, the pointer stayed an arrow everywhere until restart.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Quitting Ice didn't fix it and Bartender showed the same thing, which points to a macOS beta bug."
     },
     {
       "number": 639,
@@ -2512,11 +2525,12 @@
       "number": 627,
       "title": "[Bug]: Menu bar appearance not being displayed",
       "headline": "Menu bar appearance not displayed",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
       "symptom": "Menu bar appearance settings had no effect.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "fix": "The appearance editor now says when Icey lacks the Screen Recording permission it needs to draw the appearance, links to it, and applies the appearance as soon as it's granted.",
+      "pr": 24,
+      "note": "A missing permission is one confirmed way to get this. The report has no other details."
     },
     {
       "number": 625,
@@ -2524,9 +2538,10 @@
       "headline": "Hidden bar is oversized",
       "status": "open",
       "fixed_in": null,
-      "symptom": "The Ice Bar was much wider than its items.",
+      "symptom": "The Ice Bar was much wider than its few items.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The blank stretch suggests another app's expanded spacer item (for example Hidden Bar) in the hidden section."
     },
     {
       "number": 623,
@@ -2534,9 +2549,10 @@
       "headline": "Layout icons disappear after using the Ice Bar in fullscreen",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Icons in Menu Bar Layout vanished after using the Ice Bar in fullscreen.",
+      "symptom": "Icons in Menu Bar Layout went blank after using the Ice Bar in a fullscreen app.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Failed captures don't remove cached images, so the cause is elsewhere."
     },
     {
       "number": 621,
@@ -2619,10 +2635,10 @@
       "headline": "Ice Bar leaves an artifact when auto-hiding in fullscreen",
       "status": "open",
       "fixed_in": null,
-      "symptom": "A leftover image stayed after the Ice Bar closed in fullscreen.",
+      "symptom": "A leftover image stayed on screen after the Ice Bar closed in a fullscreen app.",
       "fix": "Needs a reproduction in Icey.",
       "pr": null,
-      "note": "Possibly the Ice Bar not noticing the menu bar hiding in fullscreen. Needs a reproduction."
+      "note": "The Ice Bar already closes when the menu bar slides away."
     },
     {
       "number": 604,
@@ -2699,12 +2715,12 @@
       "number": 586,
       "title": "[Bug]: protonvpn app icon presses itself when it hides itself after being opened from ice bar",
       "headline": "ProtonVPN item clicks itself after being hidden",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "ProtonVPN's item opened again after it was hidden from the Ice Bar.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null,
-      "note": "Same cause as #766."
+      "symptom": "ProtonVPN's item clicked itself when it was hidden again after being opened from the Ice Bar.",
+      "fix": "When moving an item, Icey no longer sends an extra mouse release after the item has moved, so hiding it again shouldn't click it.",
+      "pr": 24,
+      "note": "Same cause as #766. The other report, that clicking it in the Ice Bar didn't open it, isn't addressed."
     },
     {
       "number": 584,
@@ -2866,11 +2882,12 @@
       "number": 541,
       "title": "[Bug]: Split view broke with extended screens",
       "headline": "Split view breaks with extended screens",
-      "status": "open",
-      "fixed_in": null,
-      "symptom": "The split shape broke on extended displays.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With extended displays, the MacBook's split menu bar shape appeared in the middle of another display.",
+      "fix": "An appearance overlay that ends up on another display now hides itself.",
+      "pr": 6,
+      "note": "Same fix as #910. Not confirmed with this display arrangement."
     },
     {
       "number": 538,
@@ -2928,11 +2945,12 @@
       "number": 525,
       "title": "[Bug]: split menu bar and related effects seemingly disabled in macOS 15.3.2",
       "headline": "Split menu bar disabled on macOS 15.3.2",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "Shapes had no effect on one Intel Mac.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "symptom": "After a macOS update, the split shape, borders and other appearance effects stopped working.",
+      "fix": "The appearance editor now says when Icey lacks the Screen Recording permission it needs to draw the appearance, links to it, and applies the appearance as soon as it's granted.",
+      "pr": 24,
+      "note": "macOS updates can make Screen Recording need approving again. Unconfirmed that this was the cause."
     },
     {
       "number": 521,
@@ -3001,21 +3019,21 @@
       "headline": "Menu bar shadow moves with App Exposé",
       "status": "open",
       "fixed_in": null,
-      "symptom": "The shadow moved during the App Exposé animation.",
+      "symptom": "The menu bar shadow moved during the App Exposé animation.",
       "fix": "Needs a reproduction in Icey.",
       "pr": null,
-      "note": "Keeping the overlay out of Exposé would likely show it over Mission Control (#216). Needs testing."
+      "note": "Keeping the overlay in place also draws it on top of Mission Control and App Exposé (measured on macOS 26.5), so that isn't a fix."
     },
     {
       "number": 513,
       "title": "[Bug]: Hidden icons end up in the Visible section after some interactions",
       "headline": "Hidden icons end up in the visible section",
       "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
-      "symptom": "An item opened from the Ice Bar sometimes stayed visible.",
-      "fix": "If an item shown from the Ice Bar is missing when it's due to go back, because its app is quitting or relaunching, Icey now keeps trying for about a minute and a half instead of forgetting it.",
+      "fixed_in": null,
+      "symptom": "An item opened from the Ice Bar sometimes stayed in the visible section.",
+      "fix": "Icey now checks that a shown item is back in its section after hiding it again, no longer waits forever when the item's app adds or recreates a menu bar item on click, and keeps retrying if the item is briefly missing.",
       "note": "Quitting Icey while an item is shown still leaves it visible.",
-      "pr": 20
+      "pr": 24
     },
     {
       "number": 512,
@@ -3023,9 +3041,10 @@
       "headline": "Ice freezes and windows get out of sync",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Ice froze on 0.11.12.",
+      "symptom": "Icey froze and its show/hide state got out of sync after toggling it on several desktops.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The out-of-sync state looks like a result of the freeze. Icey's hang fixes may help. Please retest."
     },
     {
       "number": 510,
@@ -3093,9 +3112,9 @@
       "headline": "Display Zoom jumps around while Ice runs",
       "status": "open",
       "fixed_in": null,
-      "symptom": "With Zoom on, the zoomed area jumped when Ice moved items in the background.",
+      "symptom": "With Zoom on, the zoomed area jumped when Icey moved items in the background.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "Likely Icey's synthetic drags moving the pointer. Needs testing with Zoom.",
+      "note": "Moves post mouse events at the item's position, so the pointer jumps and Zoom follows it. A fix means pausing background moves while Zoom is on.",
       "pr": null
     },
     {
@@ -3104,9 +3123,10 @@
       "headline": "Hidden items show no images",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Hidden items had no images on macOS 15.2.",
+      "symptom": "The hidden section sometimes showed no item images.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Icey already throws away blank captures and shows \"Unable to display menu bar items\" instead."
     },
     {
       "number": 482,
@@ -3134,9 +3154,10 @@
       "headline": "Ice conflicts with Alcove",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Hovering conflicted with Alcove.",
+      "symptom": "Alcove's notch stopped reacting to hover while Ice was running.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Icey's overlay panels ignore mouse events and its hover monitor only listens, so no cause was found in the code."
     },
     {
       "number": 472,
@@ -3146,7 +3167,7 @@
       "fixed_in": null,
       "symptom": "Changing item spacing had no effect.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "Applying spacing now relaunches every app. Please retest.",
+      "note": "Icey writes the same settings as the reporter's working commands and relaunches apps. Please retest.",
       "pr": null
     },
     {
@@ -3186,9 +3207,10 @@
       "headline": "Keyboard Maestro can't be moved to visible",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Moving Keyboard Maestro's item failed on 0.11.12.",
+      "symptom": "Moving Keyboard Maestro's item to the visible section failed with an error on 0.11.12.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "The move code has been rewritten since 0.11.12. Please retest."
     },
     {
       "number": 456,
@@ -3258,11 +3280,11 @@
       "number": 435,
       "title": "[Bug]: Glitch when toggle dock",
       "headline": "Glitch when toggling the Dock",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
-      "symptom": "A visual glitch when showing or hiding the Dock.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "symptom": "Showing or hiding the Dock with Option-Command-D made the menu bar appearance flicker.",
+      "fix": "Icey no longer rebuilds the menu bar appearance when only the Dock changes, only when displays change.",
+      "pr": 24
     },
     {
       "number": 434,
@@ -3465,22 +3487,22 @@
       "number": 337,
       "title": "[Bug]: Menu bar appearance uses wallpaper from previous space when swiping through spaces in Mission Control",
       "headline": "Previous space's wallpaper shown after swiping in Mission Control",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
-      "symptom": "The split shape showed the previous space's wallpaper for a few seconds.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "symptom": "After swiping to another space in Mission Control, the split or rounded shape showed the previous space's wallpaper.",
+      "fix": "Icey uses the wallpaper of the space the display is showing now, captures it again a second after the switch, and waits for Mission Control to close before capturing.",
+      "pr": 24
     },
     {
       "number": 336,
       "title": "[Bug]: Split Type Ice Bar keeps the wallpaper from the previous space when switching spaces/screens",
       "headline": "Split shape keeps the previous space's wallpaper",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "With the split shape, switching spaces or screens kept the previous space's wallpaper behind the menu bar.",
-      "fix": "Needs a reproduction in Icey.",
-      "note": "Same as #337.",
-      "pr": null
+      "fix": "Icey uses the wallpaper of the space the display is showing now and captures it again a second after the switch.",
+      "note": "Same fix as #337.",
+      "pr": 24
     },
     {
       "number": 335,
@@ -3509,9 +3531,10 @@
       "headline": "Doesn't work with Focus's menu bar item",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Focus's popover closed when Ice hid items.",
+      "symptom": "Focus's popover closed, and the hidden items hid again, as soon as Focus's item was clicked.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Reported on 0.10.5. Later fixes keep items shown while a menu bar app's popover is open. Please retest."
     },
     {
       "number": 329,
@@ -3654,9 +3677,10 @@
       "headline": "Extra spaces on an iPad Sidecar display",
       "status": "open",
       "fixed_in": null,
-      "symptom": "Gaps appeared in the menu bar on a Sidecar display.",
+      "symptom": "Gaps appeared between menu bar items on an iPad Sidecar display.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "No code cause found. The spacing looks like macOS on Sidecar."
     },
     {
       "number": 260,
@@ -3745,9 +3769,10 @@
       "headline": "Gap in menu bar items on the inactive display",
       "status": "open",
       "fixed_in": null,
-      "symptom": "A gap showed where the hidden divider is, on the other display.",
+      "symptom": "With section dividers turned off, a gap showed where the divider is on the other display.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Icey shrinks only the divider's own window. The copy macOS draws on other displays probably keeps its old width."
     },
     {
       "number": 240,
@@ -3763,11 +3788,12 @@
       "number": 239,
       "title": "[Bug]: Some menu bar clip issue while using Menu bar split shape ",
       "headline": "Menu bar clipped with the split shape",
-      "status": "open",
+      "status": "partial",
       "fixed_in": null,
-      "symptom": "Some clipping with the split shape, around the notch and in Mission Control.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "symptom": "The split shape clipped menus near the notch, in fullscreen, and when entering Mission Control.",
+      "fix": "Icey no longer draws the appearance over fullscreen spaces, and waits for Mission Control to close before drawing it again.",
+      "pr": 24,
+      "note": "The notch case was reported on 0.10.2 and needs retesting."
     },
     {
       "number": 234,
@@ -3814,12 +3840,12 @@
       "number": 216,
       "title": "[Bug]: Menu bar appearance shows above Mission Control after deleting a space",
       "headline": "Menu bar appearance shows above Mission Control after deleting a space",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
-      "symptom": "The appearance overlay was drawn above Mission Control.",
-      "fix": "Needs a reproduction in Icey.",
-      "pr": null,
-      "note": "There is no public way to detect Mission Control."
+      "symptom": "After a space was deleted in Mission Control, the menu bar appearance was drawn on top of the space switcher.",
+      "fix": "Icey waits for Mission Control to close before it puts the menu bar appearance back on screen.",
+      "pr": 24,
+      "note": "Uses the same Mission Control detection as #714."
     },
     {
       "number": 214,
@@ -3899,7 +3925,8 @@
       "fixed_in": null,
       "symptom": "Items looked dimmed in the layout pane after moving them.",
       "fix": "Needs a reproduction in Icey.",
-      "pr": null
+      "pr": null,
+      "note": "Likely macOS leaves an off-screen dragged item dimmed until the next drag."
     },
     {
       "number": 188,
@@ -3979,9 +4006,9 @@
       "headline": "Icons aren't hidden on an ultrawide screen",
       "status": "open",
       "fixed_in": null,
-      "symptom": "On a 7680-pixel-wide display, hidden icons stayed visible, as Ice pushed them only part of the way off screen.",
+      "symptom": "On a very wide display, hidden icons stayed visible because Icey only pushed them part of the way off screen.",
       "fix": "Needs a reproduction in Icey.",
-      "note": "macOS limits how far a divider can push items to about 5,000 points (measured on macOS 26.5), so items on a wider display stay visible. A fix would need a second spacer item.",
+      "note": "macOS stops a divider at about 5,000 points. Hiding more needs a second spacer item.",
       "pr": null
     },
     {

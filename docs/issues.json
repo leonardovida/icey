@@ -3529,12 +3529,12 @@
       "number": 330,
       "title": "[Bug]: Can not work with Focus Menu Bar Item (https://heyfocus.com)",
       "headline": "Doesn't work with Focus's menu bar item",
-      "status": "closed",
-      "fixed_in": null,
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
       "symptom": "Focus's popover closed, and the hidden items hid again, as soon as Focus's item was clicked.",
-      "fix": "Closed: no cause found in Icey's code, and not reproduced. Open an issue in Icey if it still happens, and it will be reopened.",
-      "pr": null,
-      "note": "Reported on 0.10.5. Later fixes keep items shown while a menu bar app's popover is open. Please retest."
+      "fix": "Rehide waits while a menu bar app's popover is open, and clicks inside one don't count as clicks outside, so the popover stays open.",
+      "pr": 17,
+      "note": "Same fix as #403. Reported on Ice 0.10.5 and not retested with Focus."
     },
     {
       "number": 329,

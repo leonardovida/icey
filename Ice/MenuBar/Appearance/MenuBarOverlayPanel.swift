@@ -80,6 +80,11 @@ final class MenuBarOverlayPanel: NSPanel {
     /// The number of times in a row the panel has tried to show again.
     private var showRetryCount = 0
 
+    /// The number of times in a row the panel has waited for Mission Control
+    /// to close. After about a minute it shows regardless, so that a window
+    /// mistaken for Mission Control cannot keep it away.
+    private var missionControlWaitCount = 0
+
     /// The shared app state.
     private(set) weak var appState: AppState?
 
@@ -465,6 +470,23 @@ final class MenuBarOverlayPanel: NSPanel {
             return
         }
 
+        // Mission Control is drawn below the menu bar's level, and a panel
+        // ordered front while it is open is drawn above it. The space changes
+        // inside Mission Control, when a space is deleted or the user swipes to
+        // another one, so the panel was put over the space switcher
+        // (jordanbaird/Ice#216). Its wallpaper was also captured then, from
+        // windows still on their way in or out (jordanbaird/Ice#337). Wait for
+        // Mission Control to close.
+        if
+            missionControlWaitCount < 120,
+            WindowInfo.isMissionControlActive(in: WindowInfo.createWindows(option: .onScreen))
+        {
+            missionControlWaitCount += 1
+            scheduleShowAfterMissionControl()
+            return
+        }
+        missionControlWaitCount = 0
+
         guard let menuBarHeight = owningScreen.getMenuBarHeight() else {
             scheduleShowRetry()
             return
@@ -490,6 +512,17 @@ final class MenuBarOverlayPanel: NSPanel {
         }
 
         updateFlags = [.applicationMenuFrame, .desktopWallpaper]
+
+        // The panel is shown a moment after the space changes, while the
+        // switch can still be animating, and the wallpaper captured then was
+        // otherwise kept until the next periodic capture, five seconds later
+        // (jordanbaird/Ice#336, #337). Capture it once more when it has settled.
+        if needsDesktopWallpaper {
+            updateTaskContext.setTask(for: .desktopWallpaper, timeout: .seconds(5)) {
+                try await Task.sleep(for: .seconds(1))
+                self.insertUpdateFlag(.desktopWallpaper)
+            }
+        }
 
         if !appState.menuBarManager.isMenuBarHiddenBySystem {
             animator().alphaValue = 1
@@ -525,6 +558,23 @@ final class MenuBarOverlayPanel: NSPanel {
         showRetryTask?.cancel()
         showRetryTask = Task { [weak self] in
             try? await Task.sleep(for: delay)
+            guard !Task.isCancelled else {
+                return
+            }
+            self?.needsShow = true
+        }
+    }
+
+    /// Tries to show the panel again shortly, once Mission Control may have
+    /// closed.
+    ///
+    /// Each try asks the window server for one window list, so this costs
+    /// little, and only runs while Mission Control is open after a space
+    /// change, for a minute at most (see ``missionControlWaitCount``).
+    private func scheduleShowAfterMissionControl() {
+        showRetryTask?.cancel()
+        showRetryTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
             guard !Task.isCancelled else {
                 return
             }

@@ -89,6 +89,22 @@ final class MenuBarItemSpacingManager {
         try await runCommand("defaults", with: ["-currentHost", "write", "-globalDomain", key.rawValue, "-int", String(key.defaultValue + offset)])
     }
 
+    /// Returns a Boolean value that indicates whether the given app is one of
+    /// macOS's own menu bar agents.
+    ///
+    /// A bundle identifier alone proves nothing, as any app can declare one,
+    /// so the app must also live on the read-only system volume.
+    private func isSystemAgent(_ app: NSRunningApplication) -> Bool {
+        guard
+            let bundleIdentifier = app.bundleIdentifier,
+            systemAgentBundleIdentifiers.contains(bundleIdentifier),
+            let path = app.bundleURL?.resolvingSymlinksInPath().path
+        else {
+            return false
+        }
+        return path.hasPrefix("/System/")
+    }
+
     /// Asynchronously signals the given app to quit.
     private func signalAppToQuit(_ app: NSRunningApplication) async throws {
         if app.isTerminated {
@@ -120,7 +136,7 @@ final class MenuBarItemSpacingManager {
             let timeoutTask = Task {
                 try await Task.sleep(for: .seconds(quitTimeout))
                 if !app.isTerminated {
-                    if let bundleIdentifier = app.bundleIdentifier, systemAgentBundleIdentifiers.contains(bundleIdentifier) {
+                    if isSystemAgent(app) {
                         logger.debug(
                             """
                             System agent \"\(app.logString, privacy: .public)\" did not quit within \

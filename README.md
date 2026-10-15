@@ -205,6 +205,12 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 
 Want one of the unchecked features? [Open a feature request](https://github.com/leonardovida/icey/issues/new/choose) or a pull request.
 
+### Languages
+
+Icey is available in English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese and Traditional Chinese. It uses the language you choose in System Settings > General > Language & Region. To run Icey in a different language from the rest of your Mac, add it to the Applications list in that pane and pick a language for it.
+
+The translations were made with the help of machine translation, starting from community translations for Ice. If you spot a mistake, open a pull request that edits [Ice/Localizable.xcstrings](Ice/Localizable.xcstrings).
+
 ## Why does Icey only support macOS 14 and later?
 
 Icey, like Ice, uses a number of system APIs that are available starting in macOS 14. As such, there are no plans to support earlier versions of macOS.

@@ -160,7 +160,8 @@ final class MenuBarSection {
         // section in the menu bar instead. Hiding follows this decision.
         let screen = screenForIceBar
         if let appState {
-            menuBarManager.shownDisplayUsesIceBar = appState.settings.general.iceBarDisplays.includes(screen)
+            let general = appState.settings.general
+            menuBarManager.shownDisplayUsesIceBar = general.iceBarDisplays.includes(screen, widthThreshold: general.iceBarWidthThreshold)
         }
 
         if useIceBar {

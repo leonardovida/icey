@@ -184,6 +184,9 @@ struct GeneralSettingsPane: View {
         useIceBar
         if settings.useIceBar {
             iceBarDisplaysPicker
+            if case .narrowerThan = settings.iceBarDisplays {
+                iceBarWidthThreshold
+            }
             iceBarLocationPicker
             animateIceBar
         }
@@ -210,8 +213,41 @@ struct GeneralSettingsPane: View {
                 Text("Displays without a notch show hidden menu bar items in the menu bar.")
             case .builtIn:
                 Text("Other displays show hidden menu bar items in the menu bar.")
+            case .narrowerThan:
+                Text("Wider displays show hidden menu bar items in the menu bar.")
             }
         }
+    }
+
+    @ViewBuilder
+    private var iceBarWidthThreshold: some View {
+        let range = IceBarDisplays.widthThresholdRange
+        // Typed values outside the range are clamped, as a display
+        // narrower than 800 points or wider than 8000 points doesn't exist.
+        let threshold = Binding {
+            settings.iceBarWidthThreshold
+        } set: { newValue in
+            settings.iceBarWidthThreshold = newValue.isFinite ? newValue.clamped(to: range) : IceBarDisplays.defaultWidthThreshold
+        }
+
+        LabeledContent {
+            HStack(spacing: 6) {
+                TextField(
+                    "Width threshold",
+                    value: threshold,
+                    format: .number.precision(.fractionLength(0)).grouping(.never)
+                )
+                .labelsHidden()
+                .multilineTextAlignment(.trailing)
+                .frame(width: 60)
+                Stepper("Width threshold", value: threshold, in: range, step: 100)
+                    .labelsHidden()
+                Text("points")
+            }
+        } label: {
+            Text("Width threshold")
+        }
+        .annotation("The Ice Bar is used on displays narrower than this.")
     }
 
     @ViewBuilder

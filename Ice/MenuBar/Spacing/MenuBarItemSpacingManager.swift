@@ -83,8 +83,25 @@ final class MenuBarItemSpacingManager {
 
         app.terminate()
 
+        // The continuation must resume exactly once. It resumed only when
+        // the app was seen to terminate, so an app that survived being
+        // force terminated left Apply waiting forever. It now also resumes
+        // a second after the force termination, and the caller sees that
+        // the app is still running.
+        let didResume = OSAllocatedUnfairLock(initialState: false)
         var cancellable: AnyCancellable?
-        return try await withCheckedThrowingContinuation { continuation in
+        return await withCheckedContinuation { continuation in
+            let resume = {
+                let isFirst = didResume.withLock { didResume in
+                    defer { didResume = true }
+                    return !didResume
+                }
+                if isFirst {
+                    cancellable?.cancel()
+                    continuation.resume()
+                }
+            }
+
             let timeoutTask = Task {
                 try await Task.sleep(for: .seconds(forceTerminateDelay))
                 if !app.isTerminated {
@@ -95,27 +112,38 @@ final class MenuBarItemSpacingManager {
                         """
                     )
                     app.forceTerminate()
+                    try await Task.sleep(for: .seconds(1))
                 }
+                resume()
             }
 
             cancellable = app.publisher(for: \.isTerminated).sink { [weak self] isTerminated in
-                guard
-                    let self,
-                    isTerminated
-                else {
+                guard isTerminated else {
                     return
                 }
                 timeoutTask.cancel()
+                self?.logger.debug("Application \"\(app.logString, privacy: .public)\" terminated successfully")
+                resume()
+            }
+            // The publisher sends the current value as soon as it is
+            // subscribed to, before `cancellable` is set.
+            if didResume.withLock({ $0 }) {
                 cancellable?.cancel()
-                logger.debug("Application \"\(app.logString, privacy: .public)\" terminated successfully")
-                continuation.resume()
             }
         }
     }
 
-    /// Asynchronously launches the app at the given URL.
-    private nonisolated func launchApp(at applicationURL: URL, bundleIdentifier: String) async throws {
-        if let app = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bundleIdentifier }) {
+    /// Asynchronously launches the app at the given URL, unless it is
+    /// already running.
+    ///
+    /// - Parameter replacedPID: The process identifier of the instance that
+    ///   was just quit. The list of running apps can still contain it, and
+    ///   counting it as running skipped the relaunch. A new instance, such
+    ///   as one started again by launchd, still counts.
+    private nonisolated func launchApp(at applicationURL: URL, bundleIdentifier: String, replacedPID: pid_t) async throws {
+        if let app = NSWorkspace.shared.runningApplications.first(where: {
+            $0.bundleIdentifier == bundleIdentifier && $0.processIdentifier != replacedPID
+        }) {
             logger.debug("Application \"\(app.logString, privacy: .public)\" is already open, so skipping launch")
             return
         }
@@ -136,9 +164,10 @@ final class MenuBarItemSpacingManager {
         else {
             throw RelaunchError()
         }
+        let pid = app.processIdentifier
         try await signalAppToQuit(app)
         if app.isTerminated {
-            try await launchApp(at: url, bundleIdentifier: bundleIdentifier)
+            try await launchApp(at: url, bundleIdentifier: bundleIdentifier, replacedPID: pid)
         } else {
             throw RelaunchError()
         }

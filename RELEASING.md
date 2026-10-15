@@ -7,7 +7,7 @@ For the maintainer. Building needs the Developer ID certificate, the `icey-notar
 From an up-to-date `main` with everything merged:
 
 ```sh
-TAG=v0.11.13-dev.2-icey.2                     # the new version
+TAG=v0.12.1                                    # the new version
 
 Scripts/bump-version.sh $TAG                  # 1. version and build number
 cp release-notes/TEMPLATE.md release-notes/$TAG.md

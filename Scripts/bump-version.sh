@@ -2,7 +2,7 @@
 #
 # Sets the version for the next Icey release (maintainers only).
 #
-# Usage: Scripts/bump-version.sh <tag>        e.g. v0.11.13-dev.2-icey.2
+# Usage: Scripts/bump-version.sh <tag>        e.g. v0.12.1
 #
 # Sets the app's MARKETING_VERSION to the tag without the "v", and raises
 # CURRENT_PROJECT_VERSION (the build number) by one. Sparkle only offers an

@@ -2,6 +2,10 @@
 
 Full notes for every version are in [GitHub Releases](https://github.com/leonardovida/icey/releases), the main place for Icey updates. A copy of each release's notes is kept in [release-notes/](release-notes/). Changes that need you to do something are listed in [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 
+## [0.12.0](https://github.com/leonardovida/icey/releases/tag/v0.12.0)
+
+The first version with Icey's own number. It brings together every Icey release so far, with a full guide to the features and fixes since Ice. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.12.0.md).
+
 ## [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6)
 
 Translates Icey into nine languages, adds a Displays pane with settings for each display and an Ice Bar option by display width, updates Sparkle to 2.10, and stops item spacing from force quitting apps. Installed copies of earlier Icey 0.11.13 versions update automatically. See the [release notes](release-notes/v0.11.13-dev.2-icey.6.md).

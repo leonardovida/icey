@@ -2,7 +2,7 @@
 #
 # Publishes an Icey release built by Scripts/package-release.sh (maintainers only).
 #
-# Usage: Scripts/publish-release.sh <tag> [target]   e.g. v0.11.13-dev.2-icey.1
+# Usage: Scripts/publish-release.sh <tag> [target]   e.g. v0.12.1
 #
 # The tag is created on the commit package-release.sh built (build/release/<tag>.commit),
 # so it matches the binaries even if main has moved on. Pass a branch or commit

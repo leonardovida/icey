@@ -128,6 +128,14 @@ final class AutoShowManager {
         let showsAutomatically = displays.configuration(for: screen)?.showsHiddenItemsAutomatically ?? false
 
         if showsAutomatically, let screen, let displayID, displayID != dismissedDisplayID {
+            // A section already shown, for example in the Ice Bar or with the
+            // application menus hidden, was shown for the old settings. Hide it
+            // first, so showing it again puts it in the menu bar and undoes
+            // the rest. This runs before the display is recorded, so it doesn't
+            // count as hiding it by hand.
+            if keptShownDisplayID == nil, !hiddenSection.isHidden {
+                hiddenSection.hide()
+            }
             // Set first, so showing the section doesn't start rehide checks.
             keptShownDisplayID = displayID
             if hiddenSection.isHidden {

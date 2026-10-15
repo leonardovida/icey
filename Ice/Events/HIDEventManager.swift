@@ -1252,8 +1252,10 @@ extension HIDEventManager {
     func isMouseInsideIceBar(appState: AppState) -> Bool {
         let panel = appState.menuBarManager.iceBarPanel
         // A closed panel keeps the frame it had when it was last shown.
+        // A panel fading out is already closed.
         guard
             panel.isVisible,
+            !panel.isFadingOut,
             let mouseLocation = MouseHelpers.locationAppKit
         else {
             return false

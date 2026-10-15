@@ -45,9 +45,29 @@ final class Hotkey: ObservableObject {
         enable()
     }
 
+    /// A Boolean value that indicates whether the hotkey's action can
+    /// currently do anything.
+    ///
+    /// The always-hidden section's hotkey does nothing while that section
+    /// is turned off, and the Hotkeys pane hides its recorder then. If it
+    /// were registered, it would swallow its key combination in every app,
+    /// with no way to clear it (upstream Ice issue #498). The control item
+    /// enables and disables the hotkey as the section is turned on and off.
+    private var isActionAvailable: Bool {
+        switch action {
+        case .toggleAlwaysHiddenSection:
+            appState?.settings.advanced.enableAlwaysHiddenSection ?? true
+        default:
+            true
+        }
+    }
+
     /// Enables the hotkey.
     func enable() {
         disable()
+        guard isActionAvailable else {
+            return
+        }
         listener = Listener(hotkey: self, eventKind: .keyDown)
     }
 

@@ -117,12 +117,13 @@ extension MenuBarItemService {
                 if let session {
                     return session
                 }
-                let session = try XPCSession(xpcService: name, options: .inactive) { [weak self] error in
-                    guard let self else {
-                        return
-                    }
+                // The cancellation handler runs on the target queue, outside
+                // the lock that protects this storage, so it must not clear
+                // `session`: that raced with a request in flight. A request
+                // on a cancelled session fails, and `send(request:)` drops
+                // the session then, so the next request creates a new one.
+                let session = try XPCSession(xpcService: name, options: .inactive) { [logger] error in
                     logger.warning("Session was cancelled with error \(error.localizedDescription)")
-                    self.session = nil
                 }
                 // The service's signing identifier is its bundle identifier,
                 // which is also its service name.
@@ -147,6 +148,7 @@ extension MenuBarItemService {
                     return try reply.decode(as: Response.self)
                 } catch {
                     logger.error("Session failed with error \(error)")
+                    cancel(reason: "Request failed")
                     return nil
                 }
             }

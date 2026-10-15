@@ -71,7 +71,15 @@ extension KeyCombination: Codable {
             let description = "Expected 2 encoded values, found \(container.count ?? 0)"
             throw DecodingError.dataCorruptedError(in: container, debugDescription: description)
         }
-        self.key = try KeyCode(rawValue: container.decode(Int.self))
+        let key = try KeyCode(rawValue: container.decode(Int.self))
+        // Key codes are 16-bit (`CGKeyCode`). A stored or imported value
+        // outside that range reached `UInt32(_:)` when the hotkey was
+        // registered, which traps, so Icey crashed on every launch until
+        // its settings were cleared.
+        guard UInt16(exactly: key.rawValue) != nil else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid key code \(key.rawValue)")
+        }
+        self.key = key
         self.modifiers = try Modifiers(rawValue: container.decode(Int.self))
     }
 

@@ -68,7 +68,19 @@ final class MenuBarManager: ObservableObject {
 
     /// The display the sections were last shown on, as decided by
     /// ``MenuBarSection/show(on:)``, or `nil` if none has been shown yet.
-    var shownDisplayID: CGDirectDisplayID?
+    var shownDisplayID: CGDirectDisplayID? {
+        didSet {
+            updateShownDisplayUsesIceBar()
+        }
+    }
+
+    /// Whether the display in ``shownDisplayID`` uses the Ice Bar.
+    ///
+    /// Stored rather than computed, as ``isUsingIceBar`` is read for every
+    /// mouse movement while show on hover is on, and resolving the display
+    /// enumerates the screens. Updated when the display changes, when the
+    /// settings that decide it change, and when displays are reconfigured.
+    private var shownDisplayUsesIceBar: Bool?
 
     /// A Boolean value that indicates whether shown sections appear in the
     /// Ice Bar rather than in the menu bar.
@@ -80,11 +92,17 @@ final class MenuBarManager: ObservableObject {
         guard let appState else {
             return false
         }
-        guard let shownDisplayID else {
-            return appState.settings.general.useIceBar
+        return shownDisplayUsesIceBar ?? appState.settings.general.useIceBar
+    }
+
+    /// Decides again whether the display in ``shownDisplayID`` uses the Ice Bar.
+    private func updateShownDisplayUsesIceBar() {
+        guard let appState, let shownDisplayID else {
+            shownDisplayUsesIceBar = nil
+            return
         }
         let screen = NSScreen.screens.first { $0.displayID == shownDisplayID }
-        return appState.settings.usesIceBar(on: screen)
+        shownDisplayUsesIceBar = appState.settings.usesIceBar(on: screen)
     }
 
     /// Performs the initial setup of the menu bar manager.
@@ -102,6 +120,20 @@ final class MenuBarManager: ObservableObject {
     /// Configures the internal observers for the manager.
     private func configureCancellables() {
         var c = Set<AnyCancellable>()
+
+        if let appState {
+            let general = appState.settings.general
+            general.$useIceBar
+                .discardMerge(general.$iceBarDisplays)
+                .discardMerge(general.$iceBarWidthThreshold)
+                .discardMerge(appState.settings.displays.$configurations)
+                .discardMerge(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification))
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] in
+                    self?.updateShownDisplayUsesIceBar()
+                }
+                .store(in: &c)
+        }
 
         NSApp.publisher(for: \.currentSystemPresentationOptions)
             .receive(on: DispatchQueue.main)

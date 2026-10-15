@@ -30,6 +30,16 @@ extension IceColor: Codable {
                 debugDescription: "Invalid ICC profile data"
             )
         }
+        // CGColor reads one value per color space component, plus alpha,
+        // without checking the array's length. A stored or imported color
+        // with fewer values made it read past the end of the array.
+        guard components.count >= colorSpace.numberOfComponents + 1 else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .components,
+                in: container,
+                debugDescription: "Expected at least \(colorSpace.numberOfComponents + 1) color components, found \(components.count)"
+            )
+        }
         guard let cgColor = CGColor(colorSpace: colorSpace, components: &components) else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(

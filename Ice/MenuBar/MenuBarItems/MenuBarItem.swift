@@ -4,6 +4,7 @@
 //
 
 import Cocoa
+import os.lock
 
 /// A structural representation of a menu bar item.
 struct MenuBarItem: CustomStringConvertible {
@@ -345,7 +346,15 @@ private extension MenuBarItemTag {
 // MARK: - MenuBarItemTag.Namespace Helper
 
 private extension MenuBarItemTag.Namespace {
-    private static var uuidCache = [CGWindowID: UUID]()
+    /// Identifiers for the items whose source process is unknown, by window.
+    ///
+    /// Lists of menu bar items are read from more than one task at once, so
+    /// the cache is protected by a lock. Mutating a plain dictionary from two
+    /// threads can corrupt it and crash.
+    private static let uuidCache = OSAllocatedUnfairLock(initialState: [CGWindowID: UUID]())
+
+    /// The window titles of Icey's control items.
+    private static let controlItemTitles = Set(ControlItem.Identifier.allCases.map(\.rawValue))
 
     /// Creates a namespace without checks.
     ///
@@ -378,11 +387,23 @@ private extension MenuBarItemTag.Namespace {
         // which are more likely not to have a bundle ID.
         if let sourcePID, let app = NSRunningApplication(processIdentifier: sourcePID) {
             self = .optional(app.bundleIdentifier ?? app.localizedName)
-        } else if let uuid = Self.uuidCache[itemWindow.windowID] {
-            self = .uuid(uuid)
+        } else if let title = itemWindow.title, Self.controlItemTitles.contains(title) {
+            // Control Center owns every item window on macOS 26, Icey's own
+            // control items included, and their source process is looked up
+            // like any other app's. When that failed, the control items got
+            // an identifier of their own, the hidden section's divider was
+            // not recognized, and the item cache was cleared on every update.
+            // Their window titles are still Icey's.
+            self = .ice
         } else {
-            let uuid = UUID()
-            Self.uuidCache[itemWindow.windowID] = uuid
+            let uuid = Self.uuidCache.withLock { cache in
+                if let uuid = cache[itemWindow.windowID] {
+                    return uuid
+                }
+                let uuid = UUID()
+                cache[itemWindow.windowID] = uuid
+                return uuid
+            }
             self = .uuid(uuid)
         }
     }

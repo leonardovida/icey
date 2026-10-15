@@ -373,22 +373,22 @@ extension SettingsFile {
         var errorDescription: String? {
             switch self {
             case .notSettingsFile:
-                "The file is not an Icey settings file."
+                String(localized: "The file is not an Icey settings file.")
             case .newerVersion:
-                "The file was exported by a newer version of Icey."
+                String(localized: "The file was exported by a newer version of Icey.")
             case .invalidValue(let key):
-                "The file has an invalid value for the setting “\(key)”."
+                String(localized: "The file has an invalid value for the setting “\(key)”.")
             case .noSettings:
-                "The file has no settings that this version of Icey uses."
+                String(localized: "The file has no settings that this version of Icey uses.")
             }
         }
 
         var recoverySuggestion: String? {
             switch self {
             case .notSettingsFile, .invalidValue, .noSettings:
-                "Choose a file made with Export Settings."
+                String(localized: "Choose a file made with Export Settings.")
             case .newerVersion:
-                "Update Icey, then import the file again."
+                String(localized: "Update Icey, then import the file again.")
             }
         }
     }
@@ -404,8 +404,8 @@ enum SettingsTransfer {
     /// Asks where to save the settings file, and saves it.
     static func exportSettings(from window: NSWindow?) async {
         let panel = NSSavePanel()
-        panel.title = "Export Settings"
-        panel.prompt = "Export"
+        panel.title = String(localized: "Export Settings")
+        panel.prompt = String(localized: "Export")
         panel.nameFieldStringValue = "Icey Settings.json"
         panel.allowedContentTypes = [.json]
         panel.canCreateDirectories = true
@@ -418,7 +418,7 @@ enum SettingsTransfer {
             logger.info("Exported settings")
         } catch {
             logger.error("Error exporting settings: \(error, privacy: .public)")
-            await showError(error, message: "Icey could not export its settings.", for: window)
+            await showError(error, message: String(localized: "Icey could not export its settings."), for: window)
         }
     }
 
@@ -426,8 +426,8 @@ enum SettingsTransfer {
     /// applies it and relaunches Icey.
     static func importSettings(from window: NSWindow?) async {
         let panel = NSOpenPanel()
-        panel.title = "Import Settings"
-        panel.prompt = "Import"
+        panel.title = String(localized: "Import Settings")
+        panel.prompt = String(localized: "Import")
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
@@ -441,19 +441,21 @@ enum SettingsTransfer {
             file = try SettingsFile(contentsOf: url)
         } catch {
             logger.error("Error reading settings file: \(error, privacy: .public)")
-            await showError(error, message: "Icey could not import “\(url.lastPathComponent)”.", for: window)
+            await showError(error, message: String(localized: "Icey could not import “\(url.lastPathComponent)”."), for: window)
             return
         }
 
         let alert = NSAlert()
-        alert.messageText = "Import settings from “\(url.lastPathComponent)”?"
-        alert.informativeText = """
-            Icey will replace its settings with the \(file.count) settings in this file, \
-            then quit and open again to apply them. Settings that are not in the file \
-            stay as they are.
-            """
-        alert.addButton(withTitle: "Import and Relaunch")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = String(localized: "Import settings from “\(url.lastPathComponent)”?")
+        alert.informativeText = String(
+            localized: """
+                Icey will replace its settings with the \(file.count) settings in this file, \
+                then quit and open again to apply them. Settings that are not in the file \
+                stay as they are.
+                """
+        )
+        alert.addButton(withTitle: String(localized: "Import and Relaunch"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
 
         guard await run(alert, for: window) == .alertFirstButtonReturn else {
             return
@@ -481,8 +483,8 @@ enum SettingsTransfer {
         } catch {
             logger.error("Error relaunching: \(error, privacy: .public)")
             let alert = NSAlert()
-            alert.messageText = "Icey imported the settings but could not open itself again."
-            alert.informativeText = "Open Icey again to apply them."
+            alert.messageText = String(localized: "Icey imported the settings but could not open itself again.")
+            alert.informativeText = String(localized: "Open Icey again to apply them.")
             alert.runModal()
         }
         NSApp.terminate(nil)

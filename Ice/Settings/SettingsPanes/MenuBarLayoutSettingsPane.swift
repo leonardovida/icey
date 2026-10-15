@@ -126,7 +126,7 @@ struct MenuBarLayoutSettingsPane: View {
             section.isEnabled
         {
             VStack(alignment: .leading) {
-                Text(name.localized)
+                Text(name.displayString)
                     .font(.headline)
                     .padding(.leading, 8)
 

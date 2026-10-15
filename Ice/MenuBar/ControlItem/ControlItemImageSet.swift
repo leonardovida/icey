@@ -3,6 +3,8 @@
 //  Ice
 //
 
+import Foundation
+
 /// A named set of images that are used by control items.
 ///
 /// An image set contains images for a control item in both the hidden and visible states.
@@ -16,6 +18,22 @@ struct ControlItemImageSet: Codable, Hashable, Identifiable {
         case iceCube = "Ice Cube"
         case sunglasses = "Sunglasses"
         case custom = "Custom"
+
+        /// The localized name to show in the interface.
+        ///
+        /// The raw value is stored in the settings, so it stays in English.
+        var localized: LocalizedStringResource {
+            switch self {
+            case .arrow: "Arrow"
+            case .chevron: "Chevron"
+            case .door: "Door"
+            case .dot: "Dot"
+            case .ellipsis: "Ellipsis"
+            case .iceCube: "Ice Cube"
+            case .sunglasses: "Sunglasses"
+            case .custom: "Custom"
+            }
+        }
     }
 
     let name: Name

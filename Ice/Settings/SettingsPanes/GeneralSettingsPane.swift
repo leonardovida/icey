@@ -185,6 +185,7 @@ struct GeneralSettingsPane: View {
         if settings.useIceBar {
             iceBarDisplaysPicker
             iceBarLocationPicker
+            animateIceBar
         }
     }
 
@@ -230,6 +231,12 @@ struct GeneralSettingsPane: View {
                 Text("The Ice Bar is centered below the Icey icon.")
             }
         }
+    }
+
+    @ViewBuilder
+    private var animateIceBar: some View {
+        Toggle("Fade in and out", isOn: $settings.animateIceBar)
+            .annotation("Fade the Ice Bar in when it opens and out when it closes.")
     }
 
     // MARK: Show Options

@@ -329,6 +329,7 @@ extension SettingsFile {
         (.useIceBar, .bool),
         (.iceBarLocation, .rawValue(of: IceBarLocation.self)),
         (.iceBarDisplays, .rawValue(of: IceBarDisplays.self)),
+        (.animateIceBar, .bool),
         (.newItemPlacement, .rawValue(of: NewItemPlacement.self)),
         (.showOnClick, .bool),
         (.showOnHover, .bool),

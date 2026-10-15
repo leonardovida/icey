@@ -29,11 +29,11 @@ final class MenuBarItemSpacingManager {
         let failedApps: [String]
 
         var errorDescription: String? {
-            "The following applications didn't quit, so they were not restarted:\n" + failedApps.joined(separator: "\n")
+            String(localized: "The following applications didn't quit, so they were not restarted:") + "\n" + failedApps.joined(separator: "\n")
         }
 
         var recoverySuggestion: String? {
-            "Quit and reopen them yourself, or log out, for the new spacing to take effect."
+            String(localized: "Quit and reopen them yourself, or log out, for the new spacing to take effect.")
         }
     }
 

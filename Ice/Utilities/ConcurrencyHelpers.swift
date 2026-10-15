@@ -11,7 +11,7 @@ import os.lock
 /// An error that indicates that a task timed out.
 struct TaskTimeoutError: CustomStringConvertible, LocalizedError {
     let description = "Task timed out before completion"
-    var errorDescription: String? { description }
+    var errorDescription: String? { String(localized: "Task timed out before completion") }
 }
 
 extension Task {

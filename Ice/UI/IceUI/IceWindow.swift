@@ -100,7 +100,10 @@ enum IceWindowIdentifier: String, Sendable, CustomStringConvertible {
     ///
     /// - Note: Use ``titleString`` to get the non-localized title.
     var titleKey: LocalizedStringKey {
-        LocalizedStringKey(titleString)
+        switch self {
+        case .settings: "Icey"
+        case .permissions: "Permissions"
+        }
     }
 
     /// A textual representation of the identifier.

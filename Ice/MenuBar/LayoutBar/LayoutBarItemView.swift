@@ -94,10 +94,10 @@ final class LayoutBarItemView: NSView {
             // the system items, so anything else cannot change section.
             if !item.canBeHidden {
                 self.isEnabled = false
-                self.toolTip = "\(item.displayName) — macOS always shows this item"
+                self.toolTip = String(localized: "\(item.displayName) — macOS always shows this item")
             } else if item.sourceApplication?.bundleIdentifier == nil {
                 self.isEnabled = false
-                self.toolTip = "\(item.displayName) — cannot be hidden on this version of macOS"
+                self.toolTip = String(localized: "\(item.displayName) — cannot be hidden on this version of macOS")
             }
         }
 
@@ -129,15 +129,15 @@ final class LayoutBarItemView: NSView {
     /// Provides an alert to display when the item view is disabled.
     func provideAlertForDisabledItem() -> NSAlert {
         let alert = NSAlert()
-        alert.messageText = "Menu bar item is not movable."
-        alert.informativeText = "macOS prohibits \"\(item.displayName)\" from being moved."
+        alert.messageText = String(localized: "Menu bar item is not movable.")
+        alert.informativeText = String(localized: "macOS prohibits \"\(item.displayName)\" from being moved.")
         return alert
     }
 
     /// Provides an alert to display when a menu bar item is unresponsive.
     func provideAlertForUnresponsiveItem() -> NSAlert {
         let alert = provideAlertForDisabledItem()
-        alert.informativeText = "\(item.displayName) is unresponsive. Until it is restarted, it cannot be moved. Movement of other menu bar items may also be affected until this is resolved."
+        alert.informativeText = String(localized: "\(item.displayName) is unresponsive. Until it is restarted, it cannot be moved. Movement of other menu bar items may also be affected until this is resolved.")
         return alert
     }
 

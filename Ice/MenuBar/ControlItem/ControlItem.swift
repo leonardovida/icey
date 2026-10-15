@@ -524,7 +524,7 @@ final class ControlItem {
         let menu = NSMenu(title: "Icey")
 
         let settingsItem = NSMenuItem(
-            title: "Icey Settings…",
+            title: String(localized: "Icey Settings…"),
             action: #selector(AppDelegate.openSettingsWindow),
             keyEquivalent: ","
         )
@@ -535,7 +535,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let searchItem = NSMenuItem(
-            title: "Search Menu Bar Items",
+            title: String(localized: "Search Menu Bar Items"),
             action: #selector(showSearchPanel),
             keyEquivalent: ""
         )
@@ -561,7 +561,9 @@ final class ControlItem {
                 continue
             }
             let item = NSMenuItem(
-                title: "\(section.isHidden ? "Show" : "Hide") \(name.displayString) Section",
+                title: section.isHidden
+                    ? String(localized: "Show \(name.displayString) Section")
+                    : String(localized: "Hide \(name.displayString) Section"),
                 action: #selector(toggleMenuBarSection),
                 keyEquivalent: ""
             )
@@ -581,7 +583,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let checkForUpdatesItem = NSMenuItem(
-            title: "Check for Updates…",
+            title: String(localized: "Check for Updates…"),
             action: #selector(checkForUpdates),
             keyEquivalent: ""
         )
@@ -592,7 +594,7 @@ final class ControlItem {
         menu.addItem(.separator())
 
         let quitItem = NSMenuItem(
-            title: "Quit Icey",
+            title: String(localized: "Quit Icey"),
             action: #selector(NSApp.terminate),
             keyEquivalent: "q"
         )

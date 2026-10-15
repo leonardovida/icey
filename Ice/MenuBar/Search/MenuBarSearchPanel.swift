@@ -468,7 +468,7 @@ private struct ShowItemButton: View {
     var body: some View {
         Button(action: action) {
             HStack {
-                Text("\(Bridging.isWindowOnScreen(item.windowID) ? "Click" : "Show") Item")
+                Text(Bridging.isWindowOnScreen(item.windowID) ? "Click Item" : "Show Item")
                     .padding(.leading, 5)
 
                 Image(systemName: "return")

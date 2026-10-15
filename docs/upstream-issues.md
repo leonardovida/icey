@@ -6,7 +6,7 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (218)
+## Fixed in Icey (219)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
@@ -213,6 +213,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#709](https://github.com/jordanbaird/Ice/issues/709) | Ice stops working on macOS 26 Tahoe when you expand the menu bar | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#474](https://github.com/jordanbaird/Ice/issues/474) | Translate the app into other languages | Next release (Same as #230.) |
 | [#470](https://github.com/jordanbaird/Ice/issues/470) | Menu bar layout isn't remembered after a restart | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Upstream closed it as #344. The whole layout changing at once is #769 and #702.) |
+| [#465](https://github.com/jordanbaird/Ice/issues/465) | Turn the Ice Bar or hiding off on a large external display | Next release (Covers #223, #299 and #303.) |
 | [#433](https://github.com/jordanbaird/Ice/issues/433) | Applying item spacing opens apps twice or crashes them | Next release (#27 also stopped a quit app's old process from counting as running.) |
 | [#375](https://github.com/jordanbaird/Ice/issues/375) | Settings window doesn't open | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #371, fixed in Ice 0.11.4, which Icey is built on.) |
 | [#345](https://github.com/jordanbaird/Ice/issues/345) | Quit apps stay in Menu Bar Layout | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #332, fixed in Ice before Icey.) |
@@ -620,7 +621,6 @@ Nothing in Icey's code explains these, and they couldn't be reproduced. If one s
 | [#490](https://github.com/jordanbaird/Ice/issues/490) | [Feature Request]: Group Menu Icon with notification count (sum of the app in the group) | Not started. Pull requests welcome. |
 | [#488](https://github.com/jordanbaird/Ice/issues/488) | [Feature Request]: Hide App Menu | Partly available: Settings > Hotkeys > Toggle application menus, and Settings > Advanced > Hide app menus when showing menu bar items. Hiding single menus isn't possible because each app controls its own menus. |
 | [#483](https://github.com/jordanbaird/Ice/issues/483) | [Feature Request]: Multiple ice bars (folders/menus) | Not started. Pull requests welcome. |
-| [#465](https://github.com/jordanbaird/Ice/issues/465) | [Feature Request]: pause functionality when connected to big screen | Available: Settings > Displays has, for each display, Use Ice Bar (Follow, On or Off) and Show hidden items automatically. Settings > General > Use Ice Bar > Use on can also limit the Ice Bar to displays narrower than a width you set. |
 | [#455](https://github.com/jordanbaird/Ice/issues/455) | [Feature Request]: Random play wallpaper support enhance | Not started. macOS no longer announces wallpaper changes, so Icey checks the wallpaper every few seconds and swaps it without a transition. Pull requests welcome. |
 | [#439](https://github.com/jordanbaird/Ice/issues/439) | [Feature Request]: Spacers! | Not started. Pull requests welcome. |
 | [#438](https://github.com/jordanbaird/Ice/issues/438) | [Feature Request]: Hide mouse cursor behind the notch without triggering the menu bar | Not planned. macOS shows the menu bar when the pointer reaches the top of a full screen app, and other apps can't change that. |

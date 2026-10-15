@@ -4922,10 +4922,10 @@
       "number": 465,
       "title": "[Feature Request]: pause functionality when connected to big screen",
       "headline": "Turn the Ice Bar or hiding off on a large external display",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to use Ice only on the notched built-in display, and to show every item on a large external display.",
-      "fix": "Available: Settings > Displays has, for each display, Use Ice Bar (Follow, On or Off) and Show hidden items automatically. Settings > General > Use Ice Bar > Use on can also limit the Ice Bar to displays narrower than a width you set.",
+      "fix": "Settings > Displays has, for each display, Use Ice Bar (Follow, On or Off) and Show hidden items automatically. Settings > General > Use Ice Bar > Use on can also limit the Ice Bar to displays narrower than a width you set.",
       "pr": 33,
       "note": "Covers #223, #299 and #303."
     },

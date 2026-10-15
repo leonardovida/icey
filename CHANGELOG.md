@@ -2,6 +2,10 @@
 
 Full notes for every version are in [GitHub Releases](https://github.com/leonardovida/icey/releases), the main place for Icey updates. A copy of each release's notes is kept in [release-notes/](release-notes/). Changes that need you to do something are listed in [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 
+## [0.11.13-dev.2-icey.5](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.5)
+
+Fixes fullscreen detection on every macOS version, a launch crash from bad settings values and a Spacing hang, and adds an optional Ice Bar fade, with fixes ported from open Ice pull requests. Installed copies of earlier Icey 0.11.13 versions update automatically. See the [release notes](release-notes/v0.11.13-dev.2-icey.5.md).
+
 ## [0.11.13-dev.2-icey.4](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.4)
 
 Stops Mission Control from triggering Icey, keeps items opened from the Ice Bar from staying visible, ends Ice Bar hangs on macOS 26, and fixes or improves more Ice bugs. Installed copies of earlier Icey 0.11.13 versions update automatically. See the [release notes](release-notes/v0.11.13-dev.2-icey.4.md).

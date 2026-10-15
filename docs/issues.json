@@ -4729,7 +4729,7 @@
       "title": "[Bug]: App blocking option+a",
       "headline": "Option-A stops working while Ice runs",
       "status": "fixed",
-      "fixed_in": null,
+      "fixed_in": "v0.11.13-dev.2-icey.5",
       "symptom": "Option-A no longer typed å while Ice was running, because it was saved as the always-hidden section's hotkey while that section was turned off.",
       "fix": "Icey no longer registers the always-hidden section's hotkey while that section is turned off, so its keys type normally again.",
       "pr": 27,

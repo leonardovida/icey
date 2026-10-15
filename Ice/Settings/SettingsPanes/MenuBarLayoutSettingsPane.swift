@@ -16,6 +16,8 @@ struct MenuBarLayoutSettingsPane: View {
     var body: some View {
         if !ScreenCapture.cachedCheckPermissions() {
             missingScreenRecordingPermissions
+        } else if appState.menuBarManager.isMenuBarHiddenBySystemUserDefaults {
+            cannotArrange
         } else {
             IceForm(spacing: 20) {
                 header
@@ -93,6 +95,13 @@ struct MenuBarLayoutSettingsPane: View {
             .multilineTextAlignment(.center)
         }
         .padding()
+    }
+
+    @ViewBuilder
+    private var cannotArrange: some View {
+        Text("Icey cannot arrange menu bar items in automatically hidden menu bars.")
+            .font(.title3)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 
     @ViewBuilder

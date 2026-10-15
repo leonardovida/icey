@@ -34,12 +34,21 @@ struct MenuBarAppearanceEditor: View {
 
     @ViewBuilder
     private var bodyContent: some View {
-        if #available(macOS 26.0, *) {
+        if appState.menuBarManager.isMenuBarHiddenBySystemUserDefaults {
+            cannotEdit
+        } else if #available(macOS 26.0, *) {
             mainForm
                 .scrollEdgeEffectStyle(.hard, for: .vertical)
         } else {
             mainForm
         }
+    }
+
+    @ViewBuilder
+    private var cannotEdit: some View {
+        Text("Icey cannot edit the appearance of automatically hidden menu bars.")
+            .font(.title3)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 
     @ViewBuilder
@@ -88,7 +97,10 @@ struct MenuBarAppearanceEditor: View {
 
             Spacer()
 
-            if appearanceManager.configuration != .defaultConfiguration {
+            if
+                !appState.menuBarManager.isMenuBarHiddenBySystemUserDefaults,
+                appearanceManager.configuration != .defaultConfiguration
+            {
                 Button("Reset") {
                     isResetPromptPresented = true
                 }

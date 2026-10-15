@@ -498,6 +498,9 @@ private struct IceBarContentView: View {
                 .foregroundStyle(.link)
             }
             .padding(.horizontal, 10)
+        } else if menuBarManager.isMenuBarHiddenBySystemUserDefaults {
+            Text("Icey cannot display menu bar items for automatically hidden menu bars")
+                .padding(.horizontal, 10)
         } else if itemManager.itemCache.managedItems.isEmpty {
             HStack {
                 Text("Loading menu bar items…")

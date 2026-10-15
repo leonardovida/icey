@@ -363,6 +363,10 @@ final class MenuBarOverlayPanel: NSPanel {
             MenuBarOverlayPanel.logger.debug("No app state. \(actionMessage, privacy: .public)")
             return false
         }
+        guard !appState.menuBarManager.isMenuBarHiddenBySystemUserDefaults else {
+            MenuBarOverlayPanel.logger.debug("Menu bar is hidden by system. \(actionMessage, privacy: .public)")
+            return false
+        }
         guard !isOwningDisplayFullscreen else {
             MenuBarOverlayPanel.logger.debug("Space on owning display is fullscreen. \(actionMessage, privacy: .public)")
             return false

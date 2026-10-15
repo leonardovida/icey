@@ -33,9 +33,26 @@ final class IceBarPanel: NSPanel {
     /// ``show(section:on:)`` waits up to a second for the caches before it puts
     /// the panel on screen. During that wait the panel's frame is the one from
     /// its previous presentation, so it cannot tell whether the pointer is over
-    /// the bar that is about to appear.
+    /// the bar that is about to appear. A panel still fading out from its
+    /// previous presentation counts as not on screen yet.
     var isAwaitingDisplay: Bool {
-        currentSection != nil && !isVisible
+        currentSection != nil && (!isVisible || isFadingOut)
+    }
+
+    /// A Boolean value that indicates whether the panel is fading out
+    /// after ``close()``. It is still on screen, but no longer open.
+    private(set) var isFadingOut = false
+
+    /// How long the Ice Bar takes to fade in or out.
+    private static let fadeDuration: TimeInterval = 0.18
+
+    /// A Boolean value that indicates whether ``hide(fading:)`` is closing
+    /// the panel without a fade.
+    private var isFadeSuppressed = false
+
+    /// A Boolean value that indicates whether the panel fades in and out.
+    private var fades: Bool {
+        !isFadeSuppressed && appState?.settings.general.animateIceBar == true
     }
 
     /// Creates a new Ice Bar panel.
@@ -70,12 +87,14 @@ final class IceBarPanel: NSPanel {
         var c = Set<AnyCancellable>()
 
         // Hide the panel when the active space or screen parameters change.
+        // It closes at once, without fading: a fade would leave it on screen
+        // after the space or display it belongs to has gone.
         Publishers.Merge(
             NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.activeSpaceDidChangeNotification),
             NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification)
         )
         .sink { [weak self] _ in
-            self?.hide()
+            self?.hide(fading: false)
         }
         .store(in: &c)
 
@@ -255,7 +274,24 @@ final class IceBarPanel: NSPanel {
             colorManager.setColor27()
         }
 
+        // A panel that is still fading out fades back in from where it is.
+        let isFadingIn = fades && (!isVisible || isFadingOut)
+        isFadingOut = false
+        ignoresMouseEvents = false
+        if !isVisible {
+            alphaValue = isFadingIn ? 0 : 1
+        }
+
         orderFrontRegardless()
+        if isFadingIn {
+            // Not awaited: the caller should not wait for the fade.
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = Self.fadeDuration
+                animator().alphaValue = 1
+            }, completionHandler: nil)
+        } else {
+            alphaValue = 1
+        }
         if #available(macOS 27.0, *) {
             let elapsed = (ContinuousClock.now - requestedAt).components
             let milliseconds = Double(elapsed.seconds) * 1000 + Double(elapsed.attoseconds) / 1e15
@@ -264,7 +300,14 @@ final class IceBarPanel: NSPanel {
     }
 
     /// Hides the panel.
-    func hide() {
+    ///
+    /// - Parameter fading: Whether the panel may fade out, if the user
+    ///   turned fading on. Pass `false` to take it off screen at once.
+    func hide(fading: Bool = true) {
+        isFadeSuppressed = !fading
+        defer {
+            isFadeSuppressed = false
+        }
         if
             let name = currentSection,
             let section = appState?.menuBarManager.section(withName: name)
@@ -276,10 +319,43 @@ final class IceBarPanel: NSPanel {
 
     override func close() {
         presentationID &+= 1
-        super.close()
-        contentView = nil
+
+        guard fades, isVisible else {
+            finishClosing()
+            currentSection = nil
+            appState?.navigationState.isIceBarPresented = false
+            return
+        }
+
+        let presentationID = presentationID
         currentSection = nil
         appState?.navigationState.isIceBarPresented = false
+
+        // The panel is closed as far as the rest of Icey is concerned. It
+        // stays on screen only to fade out, and lets clicks through. A show
+        // or another close during the fade makes this one stale.
+        isFadingOut = true
+        ignoresMouseEvents = true
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = Self.fadeDuration
+            animator().alphaValue = 0
+        } completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.presentationID == presentationID else {
+                    return
+                }
+                self.finishClosing()
+            }
+        }
+    }
+
+    /// Takes the panel off screen and releases its content.
+    private func finishClosing() {
+        isFadingOut = false
+        super.close()
+        contentView = nil
+        alphaValue = 1
+        ignoresMouseEvents = false
     }
 }
 

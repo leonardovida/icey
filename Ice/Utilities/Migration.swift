@@ -41,6 +41,7 @@ extension MigrationManager {
             migrate0_11_13(),
             migrate0_11_13_1(),
             migrateIcey3(),
+            migrateIcey5(),
         ]
 
         for result in results {
@@ -411,6 +412,30 @@ extension MigrationManager {
 
         Defaults.set(true, forKey: .hasMigratedIcey3)
         logger.info("Successfully migrated to Icey 3 settings")
+
+        return .success
+    }
+}
+
+// MARK: - Migrate Icey 5
+
+extension MigrationManager {
+    /// Performs all migrations for the fifth Icey release.
+    ///
+    /// The release adds the option to fade the Ice Bar in and out. It is
+    /// written turned off, as the Ice Bar opened and closed at once before
+    /// the option existed.
+    private func migrateIcey5() -> MigrationResult {
+        guard !Defaults.bool(forKey: .hasMigratedIcey5) else {
+            return .success
+        }
+
+        if Defaults.object(forKey: .animateIceBar) == nil {
+            Defaults.set(false, forKey: .animateIceBar)
+        }
+
+        Defaults.set(true, forKey: .hasMigratedIcey5)
+        logger.info("Successfully migrated to Icey 5 settings")
 
         return .success
     }

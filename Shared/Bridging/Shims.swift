@@ -93,11 +93,16 @@ func CGSManagedDisplayGetCurrentSpace(
     _ displayUUID: CFString
 ) -> CGSSpaceID
 
+/// Returns the raw type of a space. Compare it with a ``CGSSpaceType``'s
+/// `rawValue`. The C function returns an integer, and declaring the result
+/// as the Swift enum read it as the enum's case index instead: a system
+/// space (2) passed for fullscreen, and a fullscreen space (4) was not a
+/// valid case at all, so the answer depended on the optimizer.
 @_silgen_name("CGSSpaceGetType")
 func CGSSpaceGetType(
     _ cid: CGSConnectionID,
     _ sid: CGSSpaceID
-) -> CGSSpaceType
+) -> UInt32
 
 // MARK: - CGSWindow
 

@@ -206,7 +206,7 @@ extension Bridging {
     /// - Parameter spaceID: An identifier for a space.
     static func isSpaceFullscreen(_ spaceID: CGSSpaceID) -> Bool {
         let type = CGSSpaceGetType(getMainConnection(), spaceID)
-        return type == .fullscreen
+        return type == CGSSpaceType.fullscreen.rawValue
     }
 }
 

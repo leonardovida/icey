@@ -38,6 +38,10 @@ final class GeneralSettings: ObservableObject {
     /// is on. Other displays show hidden items in the menu bar.
     @Published var iceBarDisplays: IceBarDisplays = .all
 
+    /// A Boolean value that indicates whether the Ice Bar fades
+    /// in when it opens and out when it closes.
+    @Published var animateIceBar = false
+
     /// A Boolean value that indicates whether the hidden section
     /// should be shown when the mouse pointer clicks in an empty
     /// area of the menu bar.
@@ -95,6 +99,7 @@ final class GeneralSettings: ObservableObject {
         Defaults.ifPresent(key: .showIceIcon, assign: &showIceIcon)
         Defaults.ifPresent(key: .customIceIconIsTemplate, assign: &customIceIconIsTemplate)
         Defaults.ifPresent(key: .useIceBar, assign: &useIceBar)
+        Defaults.ifPresent(key: .animateIceBar, assign: &animateIceBar)
         Defaults.ifPresent(key: .showOnClick, assign: &showOnClick)
         Defaults.ifPresent(key: .showOnHover, assign: &showOnHover)
         Defaults.ifPresent(key: .showOnScroll, assign: &showOnScroll)
@@ -195,6 +200,13 @@ final class GeneralSettings: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { displays in
                 Defaults.set(displays.rawValue, forKey: .iceBarDisplays)
+            }
+            .store(in: &c)
+
+        $animateIceBar
+            .receive(on: DispatchQueue.main)
+            .sink { animate in
+                Defaults.set(animate, forKey: .animateIceBar)
             }
             .store(in: &c)
 

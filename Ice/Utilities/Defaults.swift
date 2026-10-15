@@ -144,6 +144,7 @@ extension Defaults {
         case useIceBar = "UseIceBar"
         case iceBarLocation = "IceBarLocation"
         case iceBarDisplays = "IceBarDisplays"
+        case animateIceBar = "AnimateIceBar"
         case showOnClick = "ShowOnClick"
         case showOnHover = "ShowOnHover"
         case showOnScroll = "ShowOnScroll"
@@ -189,6 +190,7 @@ extension Defaults {
         case hasMigrated0_11_13 = "hasMigrated0_11_13"
         case hasMigrated0_11_13_1 = "hasMigrated0_11_13_1"
         case hasMigratedIcey3 = "hasMigratedIcey3"
+        case hasMigratedIcey5 = "hasMigratedIcey5"
 
         // MARK: Deprecated (Appearance Settings)
         case menuBarHasBorder = "MenuBarHasBorder"

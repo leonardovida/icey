@@ -80,17 +80,33 @@ final class AutoShowManager {
             }
             .store(in: &c)
 
-        // Changing the settings is a new choice, so it replaces the choice
-        // to hide the section on the active display.
+        // Turning the setting off for the display the section was hidden on
+        // ends that choice, so turning it on again shows the section. Other
+        // changes, such as to another display, leave the choice alone. The
+        // value is read on the next pass of the main queue, once it is set.
         appState.settings.displays.$configurations
             .removeDuplicates()
             .dropFirst()
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.dismissedDisplayID = nil
+                self?.endDismissalIfSettingTurnedOff()
             }
             .store(in: &c)
 
         cancellables = c
+    }
+
+    /// Forgets the choice to hide the section if the display it was made on
+    /// no longer shows hidden items automatically.
+    private func endDismissalIfSettingTurnedOff() {
+        guard let appState, let dismissedDisplayID else {
+            return
+        }
+        let screen = NSScreen.screens.first { $0.displayID == dismissedDisplayID }
+        let showsAutomatically = appState.settings.displays.configuration(for: screen)?.showsHiddenItemsAutomatically ?? false
+        if !showsAutomatically {
+            self.dismissedDisplayID = nil
+        }
     }
 
     /// Shows or hides the hidden section for the display with the active

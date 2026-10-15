@@ -18,10 +18,6 @@ final class MenuBarManager: ObservableObject {
     /// location of the mouse.
     @Published private(set) var isMenuBarHiddenBySystem = false
 
-    /// A Boolean value that indicates whether the menu bar is hidden by the system
-    /// according to a value stored in UserDefaults.
-    @Published private(set) var isMenuBarHiddenBySystemUserDefaults = false
-
     /// A Boolean value that indicates whether the "ShowOnHover" feature is allowed.
     @Published var showOnHoverAllowed = true
 
@@ -109,26 +105,6 @@ final class MenuBarManager: ObservableObject {
                 isMenuBarHiddenBySystem = hidden
             }
             .store(in: &c)
-
-        if
-            let hiddenSection = section(withName: .alwaysHidden),
-            let window = hiddenSection.controlItem.window
-        {
-            window.publisher(for: \.frame)
-                .map { $0.origin.y }
-                .removeDuplicates()
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    guard
-                        let self,
-                        let isMenuBarHidden = Defaults.globalDomain["_HIHideMenuBar"] as? Bool
-                    else {
-                        return
-                    }
-                    isMenuBarHiddenBySystemUserDefaults = isMenuBarHidden
-                }
-                .store(in: &c)
-        }
 
         // Handle the `focusedApp` rehide strategy.
         NSWorkspace.shared.publisher(for: \.frontmostApplication)

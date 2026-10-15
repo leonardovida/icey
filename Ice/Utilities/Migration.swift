@@ -42,6 +42,7 @@ extension MigrationManager {
             migrate0_11_13_1(),
             migrateIcey3(),
             migrateIcey5(),
+            migrateIcey6(),
         ]
 
         for result in results {
@@ -438,6 +439,34 @@ extension MigrationManager {
 
         Defaults.set(true, forKey: .hasMigratedIcey5)
         logger.info("Successfully migrated to Icey 5 settings")
+
+        return .success
+    }
+}
+
+// MARK: - Migrate Icey 6
+
+extension MigrationManager {
+    /// Performs all migrations for the sixth Icey release.
+    ///
+    /// The release adds the option to use the Ice Bar only on displays
+    /// narrower than a width threshold. The threshold is written with its
+    /// default value. It changes nothing until the user picks the option,
+    /// as the displays the Ice Bar is used on are left as they were.
+    ///
+    /// The release also adds settings for each display. They need nothing
+    /// written: a display without settings follows the General settings.
+    private func migrateIcey6() -> MigrationResult {
+        guard !Defaults.bool(forKey: .hasMigratedIcey6) else {
+            return .success
+        }
+
+        if Defaults.object(forKey: .iceBarWidthThreshold) == nil {
+            Defaults.set(IceBarDisplays.defaultWidthThreshold, forKey: .iceBarWidthThreshold)
+        }
+
+        Defaults.set(true, forKey: .hasMigratedIcey6)
+        logger.info("Successfully migrated to Icey 6 settings")
 
         return .success
     }

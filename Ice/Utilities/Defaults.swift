@@ -144,6 +144,7 @@ extension Defaults {
         case useIceBar = "UseIceBar"
         case iceBarLocation = "IceBarLocation"
         case iceBarDisplays = "IceBarDisplays"
+        case iceBarWidthThreshold = "IceBarWidthThreshold"
         case animateIceBar = "AnimateIceBar"
         case showOnClick = "ShowOnClick"
         case showOnHover = "ShowOnHover"
@@ -153,6 +154,9 @@ extension Defaults {
         case rehideInterval = "RehideInterval"
         case itemSpacingOffset = "ItemSpacingOffset"
         case newItemPlacement = "NewItemPlacement"
+
+        // MARK: Displays Settings
+        case displayConfigurations = "DisplayConfigurations"
 
         // MARK: Hotkeys Settings
         case hotkeys = "Hotkeys"
@@ -191,6 +195,7 @@ extension Defaults {
         case hasMigrated0_11_13_1 = "hasMigrated0_11_13_1"
         case hasMigratedIcey3 = "hasMigratedIcey3"
         case hasMigratedIcey5 = "hasMigratedIcey5"
+        case hasMigratedIcey6 = "hasMigratedIcey6"
 
         // MARK: Deprecated (Appearance Settings)
         case menuBarHasBorder = "MenuBarHasBorder"

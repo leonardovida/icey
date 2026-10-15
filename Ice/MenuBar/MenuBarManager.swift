@@ -62,21 +62,47 @@ final class MenuBarManager: ObservableObject {
         sections.contains { !$0.isHidden }
     }
 
-    /// A Boolean value that indicates whether the display the sections were
-    /// last shown on uses the Ice Bar, as decided by ``MenuBarSection/show()``.
-    var shownDisplayUsesIceBar = true
+    /// The manager that keeps the hidden section shown on displays set to
+    /// show hidden items automatically.
+    let autoShowManager = AutoShowManager()
+
+    /// The display the sections were last shown on, as decided by
+    /// ``MenuBarSection/show(on:)``, or `nil` if none has been shown yet.
+    var shownDisplayID: CGDirectDisplayID? {
+        didSet {
+            updateShownDisplayUsesIceBar()
+        }
+    }
+
+    /// Whether the display in ``shownDisplayID`` uses the Ice Bar.
+    ///
+    /// Stored rather than computed, as ``isUsingIceBar`` is read for every
+    /// mouse movement while show on hover is on, and resolving the display
+    /// enumerates the screens. Updated when the display changes, when the
+    /// settings that decide it change, and when displays are reconfigured.
+    private var shownDisplayUsesIceBar: Bool?
 
     /// A Boolean value that indicates whether shown sections appear in the
     /// Ice Bar rather than in the menu bar.
     ///
     /// The Ice Bar can be limited to some displays, so this follows the
-    /// display a section was last shown on. With the Ice Bar on every display,
+    /// display a section was last shown on. Before any section is shown,
     /// it is the "Use Ice Bar" setting.
     var isUsingIceBar: Bool {
         guard let appState else {
             return false
         }
-        return appState.settings.general.useIceBar && shownDisplayUsesIceBar
+        return shownDisplayUsesIceBar ?? appState.settings.general.useIceBar
+    }
+
+    /// Decides again whether the display in ``shownDisplayID`` uses the Ice Bar.
+    private func updateShownDisplayUsesIceBar() {
+        guard let appState, let shownDisplayID else {
+            shownDisplayUsesIceBar = nil
+            return
+        }
+        let screen = NSScreen.screens.first { $0.displayID == shownDisplayID }
+        shownDisplayUsesIceBar = appState.settings.usesIceBar(on: screen)
     }
 
     /// Performs the initial setup of the menu bar manager.
@@ -94,6 +120,20 @@ final class MenuBarManager: ObservableObject {
     /// Configures the internal observers for the manager.
     private func configureCancellables() {
         var c = Set<AnyCancellable>()
+
+        if let appState {
+            let general = appState.settings.general
+            general.$useIceBar
+                .discardMerge(general.$iceBarDisplays)
+                .discardMerge(general.$iceBarWidthThreshold)
+                .discardMerge(appState.settings.displays.$configurations)
+                .discardMerge(NotificationCenter.default.publisher(for: NSApplication.didChangeScreenParametersNotification))
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] in
+                    self?.updateShownDisplayUsesIceBar()
+                }
+                .store(in: &c)
+        }
 
         NSApp.publisher(for: \.currentSystemPresentationOptions)
             .receive(on: DispatchQueue.main)
@@ -120,7 +160,7 @@ final class MenuBarManager: ObservableObject {
                 {
                     Task {
                         try await Task.sleep(for: .seconds(0.1))
-                        hiddenSection.hide()
+                        hiddenSection.rehide()
                     }
                 }
             }
@@ -186,12 +226,16 @@ final class MenuBarManager: ObservableObject {
                 // Don't continue if:
                 //   * The "HideApplicationMenus" setting isn't enabled.
                 //   * Using the Ice Bar.
+                //   * The hidden section is kept shown for the active display.
+                //     Icey would stay active, with its icon in the Dock, for
+                //     as long as the display is used.
                 //   * The menu bar is hidden by the system.
                 //   * The active space is fullscreen.
                 //   * The settings window is visible.
                 guard
                     appState.settings.advanced.hideApplicationMenus,
                     !isUsingIceBar,
+                    !autoShowManager.keepsHiddenSectionShown,
                     !isMenuBarHiddenBySystem,
                     !appState.activeSpace.isFullscreen,
                     !appState.navigationState.isSettingsPresented

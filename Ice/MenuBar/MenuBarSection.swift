@@ -144,7 +144,10 @@ final class MenuBarSection {
     }
 
     /// Shows the section.
-    func show() {
+    ///
+    /// - Parameter screen: The screen to show the section for. Pass `nil`
+    ///   to use the screen with the mouse pointer.
+    func show(on screen: NSScreen? = nil) {
         guard let menuBarManager, isHidden else {
             return
         }
@@ -158,10 +161,8 @@ final class MenuBarSection {
         // The Ice Bar can be limited to some displays. Decide for the display
         // it would appear on, so a display that does not use it shows the
         // section in the menu bar instead. Hiding follows this decision.
-        let screen = screenForIceBar
-        if let appState {
-            menuBarManager.shownDisplayUsesIceBar = appState.settings.general.iceBarDisplays.includes(screen)
-        }
+        let screen = screen ?? screenForIceBar
+        menuBarManager.shownDisplayID = screen?.displayID
 
         if useIceBar {
             // Make sure hidden and always-hidden control items are collapsed.
@@ -225,12 +226,32 @@ final class MenuBarSection {
             for section in menuBarManager.sections {
                 section.controlItem.state = .hideSection
             }
+            menuBarManager.autoShowManager.hiddenSectionWasHidden()
         case .alwaysHidden:
             controlItem.state = .hideSection
         }
 
         stopRehideChecks()
         updateConcealment27()
+    }
+
+    /// Hides the section automatically, as auto-rehide and show on hover do.
+    ///
+    /// While the hidden section is kept shown for the active display (see
+    /// ``AutoShowManager``), only the always-hidden section is hidden.
+    /// Hiding by hand uses ``hide()``.
+    func rehide() {
+        guard let menuBarManager, menuBarManager.autoShowManager.keepsHiddenSectionShown else {
+            hide()
+            return
+        }
+        stopRehideChecks()
+        if
+            let alwaysHiddenSection = menuBarManager.section(withName: .alwaysHidden),
+            !alwaysHiddenSection.isHidden
+        {
+            alwaysHiddenSection.hide()
+        }
     }
 
     /// Toggles the visibility of the section.
@@ -259,6 +280,12 @@ final class MenuBarSection {
             appState.settings.general.autoRehide,
             case .timed = appState.settings.general.rehideStrategy
         else {
+            return
+        }
+
+        // The hidden section kept shown for the active display isn't
+        // rehidden (see `rehide()`), so there is nothing to watch for.
+        if name != .alwaysHidden, appState.menuBarManager.autoShowManager.keepsHiddenSectionShown {
             return
         }
 
@@ -313,7 +340,7 @@ final class MenuBarSection {
                         // pointer (jordanbaird/Ice#452), so wait for it to close.
                         if isMouseOutside(screen), !isMenuBarInterfaceOpen(screen) {
                             Task {
-                                await self.hide()
+                                await self.rehide()
                             }
                         } else {
                             Task {

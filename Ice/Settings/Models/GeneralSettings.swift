@@ -38,6 +38,10 @@ final class GeneralSettings: ObservableObject {
     /// is on. Other displays show hidden items in the menu bar.
     @Published var iceBarDisplays: IceBarDisplays = .all
 
+    /// The width, in points, below which a display uses the Ice Bar
+    /// when ``iceBarDisplays`` is ``IceBarDisplays/narrowerThan``.
+    @Published var iceBarWidthThreshold = IceBarDisplays.defaultWidthThreshold
+
     /// A Boolean value that indicates whether the Ice Bar fades
     /// in when it opens and out when it closes.
     @Published var animateIceBar = false
@@ -117,6 +121,12 @@ final class GeneralSettings: ObservableObject {
                 iceBarDisplays = displays
             }
         }
+        Defaults.ifPresent(key: .iceBarWidthThreshold) { (threshold: Double) in
+            // The value can come from an imported settings file.
+            if threshold.isFinite {
+                iceBarWidthThreshold = threshold.clamped(to: IceBarDisplays.widthThresholdRange)
+            }
+        }
         Defaults.ifPresent(key: .rehideStrategy) { rawValue in
             if let strategy = RehideStrategy(rawValue: rawValue) {
                 rehideStrategy = strategy
@@ -143,7 +153,7 @@ final class GeneralSettings: ObservableObject {
     /// Returns a Boolean value that indicates whether hidden items shown on
     /// the given screen go in the Ice Bar rather than in the menu bar.
     func usesIceBar(on screen: NSScreen?) -> Bool {
-        useIceBar && iceBarDisplays.includes(screen)
+        useIceBar && iceBarDisplays.includes(screen, widthThreshold: iceBarWidthThreshold)
     }
 
     /// Configures the internal observers for the model.
@@ -200,6 +210,13 @@ final class GeneralSettings: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { displays in
                 Defaults.set(displays.rawValue, forKey: .iceBarDisplays)
+            }
+            .store(in: &c)
+
+        $iceBarWidthThreshold
+            .receive(on: DispatchQueue.main)
+            .sink { threshold in
+                Defaults.set(threshold, forKey: .iceBarWidthThreshold)
             }
             .store(in: &c)
 

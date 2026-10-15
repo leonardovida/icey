@@ -139,6 +139,10 @@ final class AppState: ObservableObject {
         userNotificationManager.performSetup(with: self)
 
         configureCancellables()
+
+        // Last, as it may show the hidden section straight away, which is
+        // best done once the items have been read.
+        menuBarManager.autoShowManager.performSetup(with: self)
     }
 
     /// Performs app state setup.

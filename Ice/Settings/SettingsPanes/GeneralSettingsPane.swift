@@ -361,7 +361,7 @@ struct GeneralSettingsPane: View {
             }
         }
         .annotation(
-            "Applying this setting will relaunch all apps with menu bar items. Some apps may need to be manually relaunched.",
+            "Applying this setting asks all apps with menu bar items to quit and reopen. Apps that don't quit, such as ones asking to save your work, are left open and listed.",
             spacing: 2
         )
         .annotation(spacing: 10) {

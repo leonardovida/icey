@@ -453,6 +453,9 @@ extension MigrationManager {
     /// narrower than a width threshold. The threshold is written with its
     /// default value. It changes nothing until the user picks the option,
     /// as the displays the Ice Bar is used on are left as they were.
+    ///
+    /// The release also adds settings for each display. They need nothing
+    /// written: a display without settings follows the General settings.
     private func migrateIcey6() -> MigrationResult {
         guard !Defaults.bool(forKey: .hasMigratedIcey6) else {
             return .success

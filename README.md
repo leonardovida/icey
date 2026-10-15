@@ -166,7 +166,8 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 - [x] Hide application menus when they overlap with shown menu bar items
 - [x] Drag and drop interface to arrange individual menu bar items
 - [x] Display hidden menu bar items in a separate bar (e.g. for MacBooks with the notch)
-- [x] Use the Ice Bar only on some displays (e.g. only the built-in display, or only displays with a notch)
+- [x] Use the Ice Bar only on some displays (e.g. only the built-in display, only displays with a notch, or only displays narrower than a width you set)
+- [x] Settings for each display: turn the Ice Bar on or off, and show hidden items automatically (e.g. on a wide external display)
 - [x] Choose where new menu bar items appear
 - [x] Search menu bar items
 - [x] Menu bar item spacing (BETA)

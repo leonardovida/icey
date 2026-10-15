@@ -155,6 +155,9 @@ extension Defaults {
         case itemSpacingOffset = "ItemSpacingOffset"
         case newItemPlacement = "NewItemPlacement"
 
+        // MARK: Displays Settings
+        case displayConfigurations = "DisplayConfigurations"
+
         // MARK: Hotkeys Settings
         case hotkeys = "Hotkeys"
 

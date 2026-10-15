@@ -320,6 +320,16 @@ extension HIDEventManager {
             return
         }
 
+        // The hidden section kept shown for the active display isn't
+        // rehidden. Unless the always-hidden section is shown as well,
+        // there is nothing to check, so don't ask the window server.
+        if
+            appState.menuBarManager.autoShowManager.keepsHiddenSectionShown,
+            appState.menuBarManager.section(withName: .alwaysHidden)?.isHidden ?? true
+        {
+            return
+        }
+
         // Make sure clicking the Ice icon doesn't trigger rehide.
         if let iceIcon = appState.menuBarManager.controlItem(withName: .visible) {
             guard event.window !== iceIcon.window else {
@@ -348,7 +358,7 @@ extension HIDEventManager {
             // a space change.
             if Bridging.getActiveSpaceID() != initialSpaceID {
                 for section in appState.menuBarManager.sections {
-                    section.hide()
+                    section.rehide()
                 }
                 return
             }
@@ -403,7 +413,7 @@ extension HIDEventManager {
 
             // All checks have passed, hide the sections.
             for section in appState.menuBarManager.sections {
-                section.hide()
+                section.rehide()
             }
         }
     }
@@ -808,7 +818,10 @@ extension HIDEventManager {
                 hiddenSection.show()
             }
         } else {
+            // The hidden section kept shown for the active display isn't
+            // rehidden, so don't start a check on every mouse move.
             guard
+                !appState.menuBarManager.autoShowManager.keepsHiddenSectionShown,
                 !isMouseInsideMenuBar(appState: appState, screen: screen),
                 !isMouseInsideOrAwaitingIceBar(appState: appState)
             else {
@@ -834,7 +847,7 @@ extension HIDEventManager {
                     try await Task.sleep(for: .milliseconds(250))
                     return
                 }
-                hiddenSection.hide()
+                hiddenSection.rehide()
             }
         }
     }
@@ -874,7 +887,7 @@ extension HIDEventManager {
     private func handlePreventShowOnHover(with event: NSEvent, appState: AppState, screen: NSScreen) {
         guard
             appState.settings.general.showOnHover,
-            !appState.settings.general.usesIceBar(on: screen)
+            !appState.settings.usesIceBar(on: screen)
         else {
             return
         }

@@ -247,7 +247,7 @@ struct GeneralSettingsPane: View {
         } label: {
             Text("Width threshold")
         }
-        .annotation("The Ice Bar is used on displays narrower than this.")
+        .annotation("The Ice Bar is used on displays narrower than this. The Displays pane lists the width of each display.")
     }
 
     @ViewBuilder

@@ -208,11 +208,11 @@ struct AdvancedSettingsPane: View {
             Text(
                 """
                 Save your settings to a JSON file, then import it on another Mac or after \
-                a reinstall. The file holds the General, Hotkeys, Appearance and Advanced \
-                settings, and on macOS 27 the section of each app. It leaves out the order \
-                of the items in the menu bar, which macOS keeps rather than Icey, as well \
-                as menu bar item spacing, Launch at Login, permissions and update settings. \
-                Importing relaunches Icey.
+                a reinstall. The file holds the General, Displays, Hotkeys, Appearance and \
+                Advanced settings, and on macOS 27 the section of each app. It leaves out \
+                the order of the items in the menu bar, which macOS keeps rather than Icey, \
+                as well as menu bar item spacing, Launch at Login, permissions and update \
+                settings. Importing relaunches Icey.
                 """
             )
             .padding(.trailing, 75)

@@ -339,6 +339,13 @@ extension SettingsFile {
         (.rehideStrategy, .rawValue(of: RehideStrategy.self)),
         (.rehideInterval, .double),
 
+        // Displays
+        //
+        // Keyed by display UUID. Displays that are not connected, such as
+        // those of another Mac, stay listed as not connected, where they can
+        // be forgotten.
+        (.displayConfigurations, .json([String: DisplayConfiguration].self)),
+
         // Hotkeys
         (.hotkeys, .hotkeys),
 

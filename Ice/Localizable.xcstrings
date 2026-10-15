@@ -465,6 +465,64 @@
         }
       }
     },
+    "%lld × %lld points" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld Punkte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld puntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld points"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld punti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld ポイント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld 포인트"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld pontos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld 点"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld × %lld 點"
+          }
+        }
+      }
+    },
     "1" : {
       "localizations" : {
         "de" : {
@@ -3191,6 +3249,64 @@
         }
       }
     },
+    "Displays" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Displays"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantallas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écrans"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schermi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ディスプレイ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "디스플레이"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telas"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示器"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示器"
+          }
+        }
+      }
+    },
     "Displays narrower than…" : {
       "localizations" : {
         "de" : {
@@ -4467,6 +4583,122 @@
         }
       }
     },
+    "Follow General setting" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellung „Allgemein“ verwenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir el ajuste General"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivre le réglage Général"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segui l’impostazione Generali"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「一般」の設定に従う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 설정 따르기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir o ajuste Geral"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随“通用”设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依照「一般」設定"
+          }
+        }
+      }
+    },
+    "Forget" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergessen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olvidar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oublier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimentica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esquecer"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忘记"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "忘記"
+          }
+        }
+      }
+    },
     "Full" : {
       "localizations" : {
         "de" : {
@@ -5739,6 +5971,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Icey 已輸入設定，但無法重新打開。"
+          }
+        }
+      }
+    },
+    "Icey keeps the settings of these displays for when they are connected again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey behält die Einstellungen dieser Displays für den Fall, dass sie wieder verbunden werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey conserva los ajustes de estas pantallas para cuando se vuelvan a conectar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey conserve les réglages de ces écrans pour le moment où ils seront reconnectés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey conserva le impostazioni di questi schermi per quando verranno ricollegati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらのディスプレイの設定は、再接続したときのために Icey が保持します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey는 이 디스플레이들이 다시 연결될 때를 위해 설정을 보관합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Icey mantém os ajustes destas telas para quando elas forem conectadas novamente."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey 会保留这些显示器的设置，以便重新连接时使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey 會保留這些顯示器的設定，以便重新連接時使用。"
           }
         }
       }
@@ -8179,6 +8469,64 @@
         }
       }
     },
+    "Not Connected" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht verbunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No conectadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non connectés"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non collegati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未接続"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결되지 않음"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não conectadas"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未连接"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未連接"
+          }
+        }
+      }
+    },
     "Not enough room to show \"%@\"" : {
       "localizations" : {
         "de" : {
@@ -8233,6 +8581,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有足夠的空間顯示「%@」"
+          }
+        }
+      }
+    },
+    "Notch" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aussparung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muesca"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encoche"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notch"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ノッチ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노치"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刘海"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "瀏海"
           }
         }
       }
@@ -8349,6 +8755,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nein"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用しない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용 안 함"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不使用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不使用"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sim"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用"
           }
         }
       }
@@ -9513,60 +10035,60 @@
         }
       }
     },
-    "Save your settings to a JSON file, then import it on another Mac or after a reinstall. The file holds the General, Hotkeys, Appearance and Advanced settings, and on macOS 27 the section of each app. It leaves out the order of the items in the menu bar, which macOS keeps rather than Icey, as well as menu bar item spacing, Launch at Login, permissions and update settings. Importing relaunches Icey." : {
+    "Save your settings to a JSON file, then import it on another Mac or after a reinstall. The file holds the General, Displays, Hotkeys, Appearance and Advanced settings, and on macOS 27 the section of each app. It leaves out the order of the items in the menu bar, which macOS keeps rather than Icey, as well as menu bar item spacing, Launch at Login, permissions and update settings. Importing relaunches Icey." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sichere deine Einstellungen in einer JSON-Datei und importiere sie auf einem anderen Mac oder nach einer Neuinstallation. Die Datei enthält die Einstellungen „Allgemein“, „Kurzbefehle“, „Erscheinungsbild“ und „Erweitert“ sowie unter macOS 27 den Bereich jeder App. Nicht enthalten sind die Reihenfolge der Elemente in der Menüleiste, die macOS und nicht Icey verwaltet, sowie der Abstand der Menüleistenelemente, „Bei der Anmeldung starten“, Berechtigungen und Update-Einstellungen. Beim Importieren wird Icey neu gestartet."
+            "value" : "Sichere deine Einstellungen in einer JSON-Datei und importiere sie auf einem anderen Mac oder nach einer Neuinstallation. Die Datei enthält die Einstellungen „Allgemein“, „Displays“, „Kurzbefehle“, „Erscheinungsbild“ und „Erweitert“ sowie unter macOS 27 den Bereich jeder App. Nicht enthalten sind die Reihenfolge der Elemente in der Menüleiste, die macOS und nicht Icey verwaltet, sowie der Abstand der Menüleistenelemente, „Bei der Anmeldung starten“, Berechtigungen und Update-Einstellungen. Beim Importieren wird Icey neu gestartet."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda tus ajustes en un archivo JSON y luego impórtalo en otro Mac o tras reinstalar la app. El archivo contiene los ajustes Generales, de Atajos, de Apariencia y Avanzados y, en macOS 27, la sección de cada app. No incluye el orden de los elementos en la barra de menús, que gestiona macOS y no Icey, ni el espaciado de los elementos de la barra de menús, la apertura al iniciar sesión, los permisos ni los ajustes de actualización. Al importar, Icey se reinicia."
+            "value" : "Guarda tus ajustes en un archivo JSON y luego impórtalo en otro Mac o tras reinstalar la app. El archivo contiene los ajustes Generales, de Pantallas, de Atajos, de Apariencia y Avanzados y, en macOS 27, la sección de cada app. No incluye el orden de los elementos en la barra de menús, que gestiona macOS y no Icey, ni el espaciado de los elementos de la barra de menús, la apertura al iniciar sesión, los permisos ni los ajustes de actualización. Al importar, Icey se reinicia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enregistrez vos réglages dans un fichier JSON, puis importez-le sur un autre Mac ou après une réinstallation. Le fichier contient les réglages Général, Raccourcis, Apparence et Avancé, ainsi que, sous macOS 27, la section de chaque app. Il n’inclut pas l’ordre des éléments dans la barre des menus, que gère macOS et non Icey, ni l’espacement des éléments de la barre des menus, l’ouverture à la connexion, les autorisations et les réglages de mise à jour. L’importation relance Icey."
+            "value" : "Enregistrez vos réglages dans un fichier JSON, puis importez-le sur un autre Mac ou après une réinstallation. Le fichier contient les réglages Général, Écrans, Raccourcis, Apparence et Avancé, ainsi que, sous macOS 27, la section de chaque app. Il n’inclut pas l’ordre des éléments dans la barre des menus, que gère macOS et non Icey, ni l’espacement des éléments de la barre des menus, l’ouverture à la connexion, les autorisations et les réglages de mise à jour. L’importation relance Icey."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salva le impostazioni in un file JSON, quindi importalo su un altro Mac o dopo una reinstallazione. Il file contiene le impostazioni Generali, Abbreviazioni, Aspetto e Avanzate e, su macOS 27, la sezione di ogni app. Non include l’ordine degli elementi nella barra dei menu, gestito da macOS e non da Icey, né la spaziatura degli elementi della barra dei menu, l’apertura al login, i permessi e le impostazioni degli aggiornamenti. L’importazione riavvia Icey."
+            "value" : "Salva le impostazioni in un file JSON, quindi importalo su un altro Mac o dopo una reinstallazione. Il file contiene le impostazioni Generali, Schermi, Abbreviazioni, Aspetto e Avanzate e, su macOS 27, la sezione di ogni app. Non include l’ordine degli elementi nella barra dei menu, gestito da macOS e non da Icey, né la spaziatura degli elementi della barra dei menu, l’apertura al login, i permessi e le impostazioni degli aggiornamenti. L’importazione riavvia Icey."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "設定を JSON ファイルに保存し、別の Mac や再インストール後に読み込めます。ファイルには「一般」「ショートカット」「外観」「詳細設定」の設定と、macOS 27 では各アプリのセクションが含まれます。メニューバー内の項目の順序（Icey ではなく macOS が管理）、メニューバー項目の間隔、ログイン時に起動、権限、アップデートの設定は含まれません。読み込むと Icey が再起動します。"
+            "value" : "設定を JSON ファイルに保存し、別の Mac や再インストール後に読み込めます。ファイルには「一般」「ディスプレイ」「ショートカット」「外観」「詳細設定」の設定と、macOS 27 では各アプリのセクションが含まれます。メニューバー内の項目の順序（Icey ではなく macOS が管理）、メニューバー項目の間隔、ログイン時に起動、権限、アップデートの設定は含まれません。読み込むと Icey が再起動します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "설정을 JSON 파일로 저장한 다음 다른 Mac에서 또는 재설치 후에 가져올 수 있습니다. 파일에는 일반, 단축키, 모양, 고급 설정과 macOS 27에서는 각 앱의 영역이 포함됩니다. Icey가 아닌 macOS가 관리하는 메뉴 막대 항목의 순서, 메뉴 막대 항목 간격, 로그인 시 실행, 권한 및 업데이트 설정은 포함되지 않습니다. 가져오면 Icey가 다시 실행됩니다."
+            "value" : "설정을 JSON 파일로 저장한 다음 다른 Mac에서 또는 재설치 후에 가져올 수 있습니다. 파일에는 일반, 디스플레이, 단축키, 모양, 고급 설정과 macOS 27에서는 각 앱의 영역이 포함됩니다. Icey가 아닌 macOS가 관리하는 메뉴 막대 항목의 순서, 메뉴 막대 항목 간격, 로그인 시 실행, 권한 및 업데이트 설정은 포함되지 않습니다. 가져오면 Icey가 다시 실행됩니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salve seus ajustes em um arquivo JSON e importe-o em outro Mac ou após reinstalar o app. O arquivo contém os ajustes Gerais, de Atalhos, de Aparência e Avançados e, no macOS 27, a seção de cada app. Ele não inclui a ordem dos itens na barra de menus, que é controlada pelo macOS e não pelo Icey, nem o espaçamento dos itens da barra de menus, a abertura ao iniciar sessão, as permissões e os ajustes de atualização. A importação reabre o Icey."
+            "value" : "Salve seus ajustes em um arquivo JSON e importe-o em outro Mac ou após reinstalar o app. O arquivo contém os ajustes Gerais, de Telas, de Atalhos, de Aparência e Avançados e, no macOS 27, a seção de cada app. Ele não inclui a ordem dos itens na barra de menus, que é controlada pelo macOS e não pelo Icey, nem o espaçamento dos itens da barra de menus, a abertura ao iniciar sessão, as permissões e os ajustes de atualização. A importação reabre o Icey."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将设置存储到 JSON 文件中，然后在另一台 Mac 上或重新安装后导入。该文件包含“通用”“快捷键”“外观”和“高级”设置，在 macOS 27 上还包含每个 App 所在的区域。它不包含菜单栏中项目的顺序（由 macOS 而非 Icey 管理），也不包含菜单栏项目间距、登录时启动、权限和更新设置。导入后 Icey 会重新启动。"
+            "value" : "将设置存储到 JSON 文件中，然后在另一台 Mac 上或重新安装后导入。该文件包含“通用”“显示器”“快捷键”“外观”和“高级”设置，在 macOS 27 上还包含每个 App 所在的区域。它不包含菜单栏中项目的顺序（由 macOS 而非 Icey 管理），也不包含菜单栏项目间距、登录时启动、权限和更新设置。导入后 Icey 会重新启动。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將設定儲存到 JSON 檔案中，然後在另一台 Mac 上或重新安裝後輸入。該檔案包含「一般」「快速鍵」「外觀」和「進階」設定，在 macOS 27 上還包含每個 App 所在的區域。它不包含選單列中項目的順序（由 macOS 而非 Icey 管理），也不包含選單列項目間距、登入時啟動、權限和更新設定。輸入後 Icey 會重新啟動。"
+            "value" : "將設定儲存到 JSON 檔案中，然後在另一台 Mac 上或重新安裝後輸入。該檔案包含「一般」「顯示器」「快速鍵」「外觀」和「進階」設定，在 macOS 27 上還包含每個 App 所在的區域。它不包含選單列中項目的順序（由 macOS 而非 Icey 管理），也不包含選單列項目間距、登入時啟動、權限和更新設定。輸入後 Icey 會重新啟動。"
           }
         }
       }
@@ -10441,6 +10963,64 @@
         }
       }
     },
+    "Show hidden items automatically" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgeblendete Elemente automatisch anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar los elementos ocultos automáticamente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher automatiquement les éléments masqués"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra automaticamente gli elementi nascosti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隠れている項目を自動的に表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "숨겨진 항목 자동으로 표시"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar os itens ocultos automaticamente"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动显示隐藏的项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動顯示隱藏的項目"
+          }
+        }
+      }
+    },
     "Show hidden menu bar items in a separate bar below the menu bar." : {
       "localizations" : {
         "de" : {
@@ -10495,6 +11075,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在選單列下方的獨立列中顯示隱藏的選單列項目。"
+          }
+        }
+      }
+    },
+    "Show hidden menu bar items while this display has the active menu bar, and keep them shown until you hide them." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausgeblendete Menüleistenelemente anzeigen, solange dieses Display die aktive Menüleiste hat, und sie angezeigt lassen, bis du sie ausblendest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar los elementos ocultos mientras esta pantalla tenga la barra de menús activa, y mantenerlos visibles hasta que los ocultes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les éléments masqués tant que cet écran a la barre des menus active, et les garder affichés jusqu’à ce que vous les masquiez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra gli elementi nascosti mentre questo schermo ha la barra dei menu attiva e mantienili visibili finché non li nascondi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このディスプレイのメニューバーがアクティブな間、隠れているメニューバー項目を表示し、自分で隠すまで表示したままにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 디스플레이의 메뉴 막대가 활성 상태인 동안 숨겨진 메뉴 막대 항목을 표시하고, 직접 숨길 때까지 계속 표시합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar os itens ocultos enquanto esta tela tiver a barra de menus ativa e mantê-los visíveis até você ocultá-los."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当此显示器的菜单栏处于活跃状态时显示隐藏的菜单栏项目，并保持显示，直到你将其隐藏。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "當此顯示器的選單列處於使用中時顯示隱藏的選單列項目，並保持顯示，直到你將其隱藏。"
           }
         }
       }
@@ -11311,6 +11949,122 @@
         }
       }
     },
+    "The General setting shows hidden menu bar items in the menu bar on this display." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laut der Einstellung „Allgemein“ zeigt dieses Display ausgeblendete Menüleistenelemente in der Menüleiste an."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Según el ajuste General, esta pantalla muestra los elementos ocultos en la barra de menús."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selon le réglage Général, cet écran affiche les éléments masqués dans la barre des menus."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In base all’impostazione Generali, questo schermo mostra gli elementi nascosti nella barra dei menu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「一般」の設定により、このディスプレイでは隠れているメニューバー項目をメニューバーに表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 설정에 따라 이 디스플레이에서는 숨겨진 메뉴 막대 항목을 메뉴 막대에 표시합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De acordo com o ajuste Geral, esta tela mostra os itens ocultos na barra de menus."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根据“通用”设置，此显示器会在菜单栏中显示隐藏的菜单栏项目。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根據「一般」設定，此顯示器會在選單列中顯示隱藏的選單列項目。"
+          }
+        }
+      }
+    },
+    "The General setting uses the Ice Bar on this display." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laut der Einstellung „Allgemein“ wird auf diesem Display die Ice Bar verwendet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Según el ajuste General, esta pantalla usa la Ice Bar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selon le réglage Général, cet écran utilise l’Ice Bar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In base all’impostazione Generali, questo schermo usa la Ice Bar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「一般」の設定により、このディスプレイでは Ice Bar を使用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 설정에 따라 이 디스플레이에서 Ice Bar를 사용합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De acordo com o ajuste Geral, esta tela usa a Ice Bar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根据“通用”设置，此显示器会使用 Ice Bar。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "根據「一般」設定，此顯示器會使用 Ice Bar。"
+          }
+        }
+      }
+    },
     "The Ice Bar is centered below the Icey icon." : {
       "localizations" : {
         "de" : {
@@ -11427,60 +12181,60 @@
         }
       }
     },
-    "The Ice Bar is used on displays narrower than this." : {
+    "The Ice Bar is used on displays narrower than this. The Displays pane lists the width of each display." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Ice Bar wird auf Displays verwendet, die schmaler als dieser Wert sind."
+            "value" : "Die Ice Bar wird auf Displays verwendet, die schmaler als dieser Wert sind. Im Bereich „Displays“ steht die Breite jedes Displays."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La Ice Bar se usa en las pantallas más estrechas que este valor."
+            "value" : "La Ice Bar se usa en las pantallas más estrechas que este valor. El panel Pantallas muestra el ancho de cada pantalla."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’Ice Bar est utilisée sur les écrans plus étroits que cette valeur."
+            "value" : "L’Ice Bar est utilisée sur les écrans plus étroits que cette valeur. La sous-fenêtre Écrans indique la largeur de chaque écran."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La Ice Bar viene usata sugli schermi più stretti di questo valore."
+            "value" : "La Ice Bar viene usata sugli schermi più stretti di questo valore. Il pannello Schermi indica la larghezza di ogni schermo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この幅より狭いディスプレイで Ice Bar を使用します。"
+            "value" : "この幅より狭いディスプレイで Ice Bar を使用します。各ディスプレイの幅は「ディスプレイ」パネルで確認できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 너비보다 좁은 디스플레이에서 Ice Bar를 사용합니다."
+            "value" : "이 너비보다 좁은 디스플레이에서 Ice Bar를 사용합니다. 각 디스플레이의 너비는 디스플레이 패널에서 확인할 수 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A Ice Bar é usada nas telas mais estreitas que este valor."
+            "value" : "A Ice Bar é usada nas telas mais estreitas que este valor. O painel Telas mostra a largura de cada tela."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "比此宽度更窄的显示器会使用 Ice Bar。"
+            "value" : "比此宽度更窄的显示器会使用 Ice Bar。“显示器”面板列出了每台显示器的宽度。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "比此寬度更窄的顯示器會使用 Ice Bar。"
+            "value" : "比此寬度更窄的顯示器會使用 Ice Bar。「顯示器」面板列出了每台顯示器的寬度。"
           }
         }
       }
@@ -11539,6 +12293,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "所有顯示器都會使用 Ice Bar。"
+          }
+        }
+      }
+    },
+    "The Ice Bar is used on this display." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf diesem Display wird die Ice Bar verwendet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta pantalla usa la Ice Bar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet écran utilise l’Ice Bar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo schermo usa la Ice Bar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このディスプレイでは Ice Bar を使用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 디스플레이에서 Ice Bar를 사용합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tela usa a Ice Bar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此显示器会使用 Ice Bar。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此顯示器會使用 Ice Bar。"
           }
         }
       }
@@ -12355,6 +13167,122 @@
         }
       }
     },
+    "This display shows hidden items automatically, so it doesn't use the Ice Bar." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Display zeigt ausgeblendete Elemente automatisch an und verwendet daher nicht die Ice Bar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta pantalla muestra los elementos ocultos automáticamente, por lo que no usa la Ice Bar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet écran affiche automatiquement les éléments masqués, il n’utilise donc pas l’Ice Bar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo schermo mostra automaticamente gli elementi nascosti, quindi non usa la Ice Bar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このディスプレイでは隠れている項目を自動的に表示するため、Ice Bar を使用しません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 디스플레이는 숨겨진 항목을 자동으로 표시하므로 Ice Bar를 사용하지 않습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tela mostra os itens ocultos automaticamente, por isso não usa a Ice Bar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此显示器会自动显示隐藏的项目，因此不使用 Ice Bar。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此顯示器會自動顯示隱藏的項目，因此不使用 Ice Bar。"
+          }
+        }
+      }
+    },
+    "This display shows hidden menu bar items in the menu bar." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Display zeigt ausgeblendete Menüleistenelemente in der Menüleiste an."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta pantalla muestra los elementos ocultos en la barra de menús."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet écran affiche les éléments masqués dans la barre des menus."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo schermo mostra gli elementi nascosti nella barra dei menu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このディスプレイでは、隠れているメニューバー項目をメニューバーに表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 디스플레이에서는 숨겨진 메뉴 막대 항목을 메뉴 막대에 표시합니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tela mostra os itens ocultos na barra de menus."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此显示器会在菜单栏中显示隐藏的菜单栏项目。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此顯示器會在選單列中顯示隱藏的選單列項目。"
+          }
+        }
+      }
+    },
     "Timed" : {
       "localizations" : {
         "de" : {
@@ -12873,6 +13801,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法顯示選單列項目"
+          }
+        }
+      }
+    },
+    "Unknown display" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unbekanntes Display"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantalla desconocida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écran inconnu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schermo sconosciuto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明なディスプレイ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알 수 없는 디스플레이"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tela desconhecida"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知显示器"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知顯示器"
           }
         }
       }
@@ -13917,6 +14903,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "macOS 不允許移動「%@」。"
+          }
+        }
+      }
+    },
+    "macOS shows the same menu bar items on every display, so hidden items shown automatically appear in the menu bar of each display." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS zeigt auf jedem Display dieselben Menüleistenelemente an. Automatisch angezeigte Elemente erscheinen daher in der Menüleiste jedes Displays."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS muestra los mismos elementos en la barra de menús de todas las pantallas, así que los elementos ocultos que se muestran automáticamente aparecen en la barra de menús de cada pantalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS affiche les mêmes éléments de barre des menus sur tous les écrans : les éléments masqués affichés automatiquement apparaissent donc dans la barre des menus de chaque écran."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS mostra gli stessi elementi della barra dei menu su ogni schermo, quindi gli elementi nascosti mostrati automaticamente compaiono nella barra dei menu di ciascuno schermo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS はすべてのディスプレイに同じメニューバー項目を表示するため、自動的に表示された隠れている項目は各ディスプレイのメニューバーに表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS는 모든 디스플레이에 같은 메뉴 막대 항목을 표시하므로, 자동으로 표시된 숨겨진 항목은 각 디스플레이의 메뉴 막대에 나타납니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O macOS mostra os mesmos itens da barra de menus em todas as telas, então os itens ocultos mostrados automaticamente aparecem na barra de menus de cada tela."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 会在每台显示器上显示相同的菜单栏项目，因此自动显示的隐藏项目会出现在每台显示器的菜单栏中。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS 會在每台顯示器上顯示相同的選單列項目，因此自動顯示的隱藏項目會出現在每台顯示器的選單列中。"
           }
         }
       }

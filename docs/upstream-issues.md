@@ -6,7 +6,7 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (216)
+## Fixed in Icey (218)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
@@ -211,10 +211,12 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#498](https://github.com/jordanbaird/Ice/issues/498) | Option-A stops working while Ice runs | [0.11.13-dev.2-icey.5](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.5) (The hotkey recorder is hidden while the section is off. Turn the section on to change or clear the hotkey.) |
 | [#580](https://github.com/jordanbaird/Ice/issues/580) | Ice crashes on macOS 26 when you show hidden items | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same cause as #977.) |
 | [#709](https://github.com/jordanbaird/Ice/issues/709) | Ice stops working on macOS 26 Tahoe when you expand the menu bar | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#474](https://github.com/jordanbaird/Ice/issues/474) | Translate the app into other languages | Next release (Same as #230.) |
 | [#470](https://github.com/jordanbaird/Ice/issues/470) | Menu bar layout isn't remembered after a restart | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Upstream closed it as #344. The whole layout changing at once is #769 and #702.) |
 | [#433](https://github.com/jordanbaird/Ice/issues/433) | Applying item spacing opens apps twice or crashes them | Next release (#27 also stopped a quit app's old process from counting as running.) |
 | [#375](https://github.com/jordanbaird/Ice/issues/375) | Settings window doesn't open | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #371, fixed in Ice 0.11.4, which Icey is built on.) |
 | [#345](https://github.com/jordanbaird/Ice/issues/345) | Quit apps stay in Menu Bar Layout | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #332, fixed in Ice before Icey.) |
+| [#324](https://github.com/jordanbaird/Ice/issues/324) | Multi-language support | Next release |
 | [#238](https://github.com/jordanbaird/Ice/issues/238) | Hidden items don't show when the menu bar hides automatically | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Same as #331. Not yet tested with a menu bar that hides automatically.) |
 | [#191](https://github.com/jordanbaird/Ice/issues/191) | Menu bar appearance has the wrong size on one of two displays | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #97, fixed in Ice before Icey. The split shape on several displays is #359.) |
 | [#168](https://github.com/jordanbaird/Ice/issues/168) | Menu bar appearance has the wrong height on a second display | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #97, fixed in Ice before Icey.) |
@@ -618,7 +620,6 @@ Nothing in Icey's code explains these, and they couldn't be reproduced. If one s
 | [#490](https://github.com/jordanbaird/Ice/issues/490) | [Feature Request]: Group Menu Icon with notification count (sum of the app in the group) | Not started. Pull requests welcome. |
 | [#488](https://github.com/jordanbaird/Ice/issues/488) | [Feature Request]: Hide App Menu | Partly available: Settings > Hotkeys > Toggle application menus, and Settings > Advanced > Hide app menus when showing menu bar items. Hiding single menus isn't possible because each app controls its own menus. |
 | [#483](https://github.com/jordanbaird/Ice/issues/483) | [Feature Request]: Multiple ice bars (folders/menus) | Not started. Pull requests welcome. |
-| [#474](https://github.com/jordanbaird/Ice/issues/474) | [Feature Request]: Localization | Available: Icey is translated into German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese and Traditional Chinese, and follows the language set in macOS. |
 | [#465](https://github.com/jordanbaird/Ice/issues/465) | [Feature Request]: pause functionality when connected to big screen | Available: Settings > Displays has, for each display, Use Ice Bar (Follow, On or Off) and Show hidden items automatically. Settings > General > Use Ice Bar > Use on can also limit the Ice Bar to displays narrower than a width you set. |
 | [#455](https://github.com/jordanbaird/Ice/issues/455) | [Feature Request]: Random play wallpaper support enhance | Not started. macOS no longer announces wallpaper changes, so Icey checks the wallpaper every few seconds and swaps it without a transition. Pull requests welcome. |
 | [#439](https://github.com/jordanbaird/Ice/issues/439) | [Feature Request]: Spacers! | Not started. Pull requests welcome. |
@@ -635,7 +636,6 @@ Nothing in Icey's code explains these, and they couldn't be reproduced. If one s
 | [#366](https://github.com/jordanbaird/Ice/issues/366) | [Feature Request]: Add Spacers in Menu Bar | Not started. Pull requests welcome. |
 | [#365](https://github.com/jordanbaird/Ice/issues/365) | [Feature Request]: Arrange "Hidden" and "Always Hidden" Section Items w/ cmd+drag | Not started. Pull requests welcome. |
 | [#339](https://github.com/jordanbaird/Ice/issues/339) | [Feature Request]: When using ice bar with location"Mouse pointer", show menu items' contex window in that location | Not started. An item clicked in the Ice Bar is shown in the menu bar for a moment, and macOS opens its menu there. Pull requests welcome. |
-| [#324](https://github.com/jordanbaird/Ice/issues/324) | [Feature Request]: Multi-language support | Available: Icey is translated into German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese and Traditional Chinese, and follows the language set in macOS. |
 | [#317](https://github.com/jordanbaird/Ice/issues/317) | [Feature Request]: Temporary show hidden icon on update (Bartender Triggers) | Not started. Pull requests welcome. |
 | [#304](https://github.com/jordanbaird/Ice/issues/304) | [Feature Request]: Adjust spacing between menu bar items | Available: Settings > General > Menu bar item spacing. |
 | [#293](https://github.com/jordanbaird/Ice/issues/293) | [Feature Request]: be able to press buttons from "menu bar items" window in the settings | Not planned for Menu Bar Layout. Search Menu Bar Items, in the Icey menu, lists every item and clicks the one you pick, hidden ones included. |

@@ -4878,10 +4878,10 @@
       "number": 474,
       "title": "[Feature Request]: Localization",
       "headline": "Translate the app into other languages",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to translate the interface.",
-      "fix": "Available: Icey is translated into German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese and Traditional Chinese, and follows the language set in macOS.",
+      "fix": "Icey is available in German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, and Simplified and Traditional Chinese. macOS picks the language from System Settings > General > Language & Region.",
       "pr": 32,
       "note": "Same as #230."
     },
@@ -5615,10 +5615,10 @@
       "number": 324,
       "title": "[Feature Request]: Multi-language support",
       "headline": "Multi-language support",
-      "status": "feature",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "A request to translate the interface, starting with Simplified Chinese.",
-      "fix": "Available: Icey is translated into German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese and Traditional Chinese, and follows the language set in macOS.",
+      "fix": "Icey is available in German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, and Simplified and Traditional Chinese. macOS picks the language from System Settings > General > Language & Region.",
       "pr": 32
     },
     {

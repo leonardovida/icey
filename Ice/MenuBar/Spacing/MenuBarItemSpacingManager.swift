@@ -29,36 +29,19 @@ final class MenuBarItemSpacingManager {
         let failedApps: [String]
 
         var errorDescription: String? {
-            "The following applications didn't quit, so they were not restarted:\n" + failedApps.joined(separator: "\n")
+            "The following applications failed to quit and were not restarted:\n" + failedApps.joined(separator: "\n")
         }
 
         var recoverySuggestion: String? {
-            "Quit and reopen them yourself, or log out, for the new spacing to take effect."
+            "You may need to log out for the changes to take effect."
         }
     }
 
     /// Logger for the menu bar item spacing manager.
     private let logger = Logger(category: "MenuBarItemSpacingManager")
 
-    /// How long to wait for an app to quit when asked.
-    ///
-    /// Long enough for the app to finish quitting on its own, or for the user
-    /// to answer an app that asks to save its documents.
-    private let quitTimeout = 10
-
-    /// Bundle identifiers of macOS's own menu bar agents.
-    ///
-    /// They hold no documents and macOS starts them again right away, so they
-    /// may be force terminated if they ignore a request to quit. Other apps are
-    /// never force terminated: an app that keeps running, for example because
-    /// it is asking to save a document, is left alone and reported instead
-    /// (jordanbaird/Ice#963 noted that force terminating lost unsaved work).
-    private let systemAgentBundleIdentifiers: Set<String> = [
-        "com.apple.controlcenter",
-        "com.apple.Spotlight",
-        "com.apple.systemuiserver",
-        "com.apple.TextInputMenuAgent",
-    ]
+    /// Delay before force terminating an app.
+    private let forceTerminateDelay = 1
 
     /// The offset to apply to the default spacing and padding.
     /// Does not take effect until ``applyOffset()`` is called.
@@ -100,9 +83,11 @@ final class MenuBarItemSpacingManager {
 
         app.terminate()
 
-        // The continuation must resume exactly once: when the app is seen to
-        // terminate, or after the timeout, when the caller sees that the app
-        // is still running and doesn't restart it.
+        // The continuation must resume exactly once. It resumed only when
+        // the app was seen to terminate, so an app that survived being
+        // force terminated left Apply waiting forever. It now also resumes
+        // a second after the force termination, and the caller sees that
+        // the app is still running.
         let didResume = OSAllocatedUnfairLock(initialState: false)
         var cancellable: AnyCancellable?
         return await withCheckedContinuation { continuation in
@@ -118,25 +103,16 @@ final class MenuBarItemSpacingManager {
             }
 
             let timeoutTask = Task {
-                try await Task.sleep(for: .seconds(quitTimeout))
+                try await Task.sleep(for: .seconds(forceTerminateDelay))
                 if !app.isTerminated {
-                    if let bundleIdentifier = app.bundleIdentifier, systemAgentBundleIdentifiers.contains(bundleIdentifier) {
-                        logger.debug(
-                            """
-                            System agent \"\(app.logString, privacy: .public)\" did not quit within \
-                            \(self.quitTimeout, privacy: .public) seconds, force terminating it
-                            """
-                        )
-                        app.forceTerminate()
-                        try await Task.sleep(for: .seconds(1))
-                    } else {
-                        logger.debug(
-                            """
-                            Application \"\(app.logString, privacy: .public)\" did not quit within \
-                            \(self.quitTimeout, privacy: .public) seconds, leaving it running
-                            """
-                        )
-                    }
+                    logger.debug(
+                        """
+                        Application \"\(app.logString, privacy: .public)\" did not terminate within \
+                        \(self.forceTerminateDelay, privacy: .public) seconds, attempting to force terminate
+                        """
+                    )
+                    app.forceTerminate()
+                    try await Task.sleep(for: .seconds(1))
                 }
                 resume()
             }

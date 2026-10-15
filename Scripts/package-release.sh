@@ -2,7 +2,7 @@
 #
 # Builds, signs, notarizes and packages an Icey release (maintainers only).
 #
-# Usage: Scripts/package-release.sh <tag>        e.g. v0.11.13-dev.2-icey.1
+# Usage: Scripts/package-release.sh <tag>        e.g. v0.12.1
 #
 # Needs: the "Developer ID Application" certificate in the login keychain, the
 # notarytool keychain profile "icey-notary", and the Sparkle EdDSA key under

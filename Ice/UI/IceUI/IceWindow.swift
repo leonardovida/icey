@@ -166,12 +166,28 @@ private struct IceWindowContentModifier: ViewModifier {
                         return Just(true).eraseToAnyPublisher()
                     }
                     // SwiftUI orders a window out and back in while opening it,
-                    // so check again after a pause. A minimized window, or an
-                    // open window of a hidden app, is not visible, but keeps
-                    // its content.
+                    // so check again after a pause. A minimized window is not
+                    // visible, but keeps its content.
+                    let isOpen = { [weak window] in
+                        window.map { $0.isVisible || $0.isMiniaturized } ?? false
+                    }
                     return Just(())
                         .delay(for: 1, scheduler: DispatchQueue.main)
-                        .map { window.map { $0.isVisible || $0.isMiniaturized || NSApp.isHidden } ?? false }
+                        .flatMap { _ -> AnyPublisher<Bool, Never> in
+                            guard !isOpen(), NSApp.isHidden else {
+                                return Just(isOpen()).eraseToAnyPublisher()
+                            }
+                            // The windows of a hidden app aren't visible either.
+                            // Keep the content until the app is unhidden, then
+                            // check again.
+                            return NotificationCenter.default
+                                .publisher(for: NSApplication.didUnhideNotification)
+                                .first()
+                                .delay(for: 1, scheduler: DispatchQueue.main)
+                                .map { _ in isOpen() }
+                                .prepend(true)
+                                .eraseToAnyPublisher()
+                        }
                         .eraseToAnyPublisher()
                 }
                 .switchToLatest()

@@ -919,8 +919,11 @@ extension HIDEventManager {
         }
 
         // Mouse is inside the menu bar, outside an item or application
-        // menu, so it must be inside an empty menu bar space.
-        appState.menuBarManager.showOnHoverAllowed = false
+        // menu, so it must be inside an empty menu bar space. Set it only
+        // on a change, as this runs for every click there.
+        if appState.menuBarManager.showOnHoverAllowed {
+            appState.menuBarManager.showOnHoverAllowed = false
+        }
     }
 
     // MARK: Handle Show On Scroll

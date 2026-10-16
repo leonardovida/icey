@@ -163,7 +163,12 @@ final class MenuBarSearchPanel: NSPanel {
         contentView = nil
         mouseDownMonitor.stop()
         keyDownMonitor.stop()
-        appState?.navigationState.isSearchPresented = false
+        // The panel is also closed on every space change while it is hidden.
+        // Setting the same value would invalidate the views that observe the
+        // navigation state.
+        if appState?.navigationState.isSearchPresented == true {
+            appState?.navigationState.isSearchPresented = false
+        }
     }
 }
 

@@ -219,7 +219,11 @@ final class MenuBarSection {
         }
 
         menuBarManager.iceBarPanel.close() // Make sure Ice Bar is always closed.
-        menuBarManager.showOnHoverAllowed = true
+        // Usually already allowed. Setting the same value would invalidate
+        // every view that observes the app state.
+        if !menuBarManager.showOnHoverAllowed {
+            menuBarManager.showOnHoverAllowed = true
+        }
 
         switch name {
         case _ where useIceBar, .visible, .hidden:

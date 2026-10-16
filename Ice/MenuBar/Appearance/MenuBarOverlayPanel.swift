@@ -221,27 +221,9 @@ final class MenuBarOverlayPanel: NSPanel {
         }
         .store(in: &c)
 
-        // Continually update the desktop wallpaper. Ideally, we would set up an observer
-        // for a wallpaper change notification, but macOS doesn't post one anymore.
-        Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self, needsDesktopWallpaper else {
-                    return
-                }
-                insertUpdateFlag(.desktopWallpaper)
-            }
-            .store(in: &c)
-
-        Timer.publish(every: 10, tolerance: 2, on: .main, in: .default)
-            .autoconnect()
-            .sink { [weak self] _ in
-                guard let self, needsApplicationMenuFrame else {
-                    return
-                }
-                insertUpdateFlag(.applicationMenuFrame)
-            }
-            .store(in: &c)
+        // The desktop wallpaper and application menu frame are also updated
+        // periodically, by one timer for the panels on every display (see
+        // `MenuBarAppearanceManager.performPeriodicOverlayPanelUpdates()`).
 
         // The panel belongs to one display. If the window server moves it to
         // another one, take it off screen rather than draw that display's
@@ -437,6 +419,34 @@ final class MenuBarOverlayPanel: NSPanel {
         if desktopWallpaper?.dataProvider?.data != wallpaper?.dataProvider?.data {
             desktopWallpaper = wallpaper
         }
+    }
+
+    /// Returns the flags among the given ones that the panel needs updated
+    /// periodically with its current configuration.
+    func periodicUpdateFlags(from flags: Set<UpdateFlag>) -> Set<UpdateFlag> {
+        flags.filter { flag in
+            switch flag {
+            case .applicationMenuFrame: needsApplicationMenuFrame
+            case .desktopWallpaper: needsDesktopWallpaper
+            }
+        }
+    }
+
+    /// Performs a periodic update of the given flags, with a list of on
+    /// screen windows taken once for the panels on every display.
+    ///
+    /// Each panel used to run its own timers, one for the wallpaper and one
+    /// for the application menu frame, and each update took its own window
+    /// list. The appearance manager now drives them from one timer.
+    func performPeriodicUpdates(for flags: Set<UpdateFlag>, windows: [WindowInfo]) {
+        let flags = periodicUpdateFlags(from: flags)
+        guard
+            !flags.isEmpty,
+            validate(for: .updates, with: windows)
+        else {
+            return
+        }
+        performUpdates(for: flags, windows: windows, screen: owningScreen)
     }
 
     /// Updates the panel to prepare for display.

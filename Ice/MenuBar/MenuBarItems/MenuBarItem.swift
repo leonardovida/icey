@@ -164,8 +164,8 @@ struct MenuBarItem: CustomStringConvertible {
     ///
     /// This initializer does not perform validity checks on its parameters.
     /// Only call it if you are certain the window is a valid menu bar item.
-    private init(uncheckedItemWindow itemWindow: WindowInfo) {
-        self.tag = MenuBarItemTag(uncheckedItemWindow: itemWindow)
+    private init(uncheckedItemWindow itemWindow: WindowInfo, applications: inout RunningApplicationLookup) {
+        self.tag = MenuBarItemTag(uncheckedItemWindow: itemWindow, applications: &applications)
         self.windowID = itemWindow.windowID
         self.ownerPID = itemWindow.ownerPID
         self.sourcePID = itemWindow.ownerPID
@@ -180,8 +180,8 @@ struct MenuBarItem: CustomStringConvertible {
     /// Only call it if you are certain the window is a valid menu bar item
     /// and the source pid belongs to the application that created it.
     @available(macOS 26.0, *)
-    private init(uncheckedItemWindow itemWindow: WindowInfo, sourcePID: pid_t?) {
-        self.tag = MenuBarItemTag(uncheckedItemWindow: itemWindow, sourcePID: sourcePID)
+    private init(uncheckedItemWindow itemWindow: WindowInfo, sourcePID: pid_t?, applications: inout RunningApplicationLookup) {
+        self.tag = MenuBarItemTag(uncheckedItemWindow: itemWindow, sourcePID: sourcePID, applications: &applications)
         self.windowID = itemWindow.windowID
         self.ownerPID = itemWindow.ownerPID
         self.sourcePID = sourcePID
@@ -254,9 +254,10 @@ extension MenuBarItem {
     @available(macOS 26.0, *)
     private static func getMenuBarItemsExperimental(on display: CGDirectDisplayID?, option: ListOption) async -> [MenuBarItem] {
         var items = [MenuBarItem]()
+        var applications = RunningApplicationLookup()
         for window in getMenuBarItemWindows(on: display, option: option) {
             let sourcePID = await MenuBarItemService.Connection.shared.sourcePID(for: window)
-            let item = MenuBarItem(uncheckedItemWindow: window, sourcePID: sourcePID)
+            let item = MenuBarItem(uncheckedItemWindow: window, sourcePID: sourcePID, applications: &applications)
             items.append(item)
         }
         return items
@@ -265,8 +266,9 @@ extension MenuBarItem {
     /// Creates and returns a list of menu bar items, defaulting to the
     /// legacy source pid behavior, prior to macOS 26.
     private static func getMenuBarItemsLegacyMethod(on display: CGDirectDisplayID?, option: ListOption) -> [MenuBarItem] {
-        getMenuBarItemWindows(on: display, option: option).map { window in
-            MenuBarItem(uncheckedItemWindow: window)
+        var applications = RunningApplicationLookup()
+        return getMenuBarItemWindows(on: display, option: option).map { window in
+            MenuBarItem(uncheckedItemWindow: window, applications: &applications)
         }
     }
 
@@ -326,8 +328,8 @@ private extension MenuBarItemTag {
     ///
     /// This initializer does not perform validity checks on its parameters.
     /// Only call it if you are certain the window is a valid menu bar item.
-    init(uncheckedItemWindow itemWindow: WindowInfo) {
-        self.namespace = Namespace(uncheckedItemWindow: itemWindow)
+    init(uncheckedItemWindow itemWindow: WindowInfo, applications: inout RunningApplicationLookup) {
+        self.namespace = Namespace(uncheckedItemWindow: itemWindow, applications: &applications)
         self.title = itemWindow.title ?? ""
     }
 
@@ -337,8 +339,8 @@ private extension MenuBarItemTag {
     /// Only call it if you are certain the window is a valid menu bar item
     /// and the source pid belongs to the application that created it.
     @available(macOS 26.0, *)
-    init(uncheckedItemWindow itemWindow: WindowInfo, sourcePID: pid_t?) {
-        self.namespace = Namespace(uncheckedItemWindow: itemWindow, sourcePID: sourcePID)
+    init(uncheckedItemWindow itemWindow: WindowInfo, sourcePID: pid_t?, applications: inout RunningApplicationLookup) {
+        self.namespace = Namespace(uncheckedItemWindow: itemWindow, sourcePID: sourcePID, applications: &applications)
         self.title = itemWindow.title ?? ""
     }
 }
@@ -360,7 +362,7 @@ private extension MenuBarItemTag.Namespace {
     ///
     /// This initializer does not perform validity checks on its parameters.
     /// Only call it if you are certain the window is a valid menu bar item.
-    init(uncheckedItemWindow itemWindow: WindowInfo) {
+    init(uncheckedItemWindow itemWindow: WindowInfo, applications: inout RunningApplicationLookup) {
         // Most apps have a bundle ID, but we should be able to handle apps
         // that don't. We should also be able to handle daemons and helpers,
         // which are more likely not to have a bundle ID.
@@ -368,7 +370,7 @@ private extension MenuBarItemTag.Namespace {
         // Use the name of the owning process as a fallback. The non-localized
         // name seems less likely to change, so let's prefer it as a (somewhat)
         // stable identifier.
-        if let app = itemWindow.owningApplication {
+        if let app = applications.application(for: itemWindow.ownerPID) {
             self = .optional(app.bundleIdentifier ?? itemWindow.ownerName ?? app.localizedName)
         } else {
             self = .optional(itemWindow.ownerName)
@@ -381,11 +383,11 @@ private extension MenuBarItemTag.Namespace {
     /// Only call it if you are certain the window is a valid menu bar item
     /// and the source pid belongs to the application that created it.
     @available(macOS 26.0, *)
-    init(uncheckedItemWindow itemWindow: WindowInfo, sourcePID: pid_t?) {
+    init(uncheckedItemWindow itemWindow: WindowInfo, sourcePID: pid_t?, applications: inout RunningApplicationLookup) {
         // Most apps have a bundle ID, but we should be able to handle apps
         // that don't. We should also be able to handle daemons and helpers,
         // which are more likely not to have a bundle ID.
-        if let sourcePID, let app = NSRunningApplication(processIdentifier: sourcePID) {
+        if let sourcePID, let app = applications.application(for: sourcePID) {
             self = .optional(app.bundleIdentifier ?? app.localizedName)
         } else if let title = itemWindow.title, Self.controlItemTitles.contains(title) {
             // Control Center owns every item window on macOS 26, Icey's own
@@ -406,5 +408,27 @@ private extension MenuBarItemTag.Namespace {
             }
             self = .uuid(uuid)
         }
+    }
+}
+
+// MARK: - RunningApplicationLookup
+
+/// Looks up the running application of each process once while a list of
+/// menu bar items is created.
+///
+/// Several items often belong to the same process, and each lookup asks
+/// the system. A lookup lives only while one list is created, so a process
+/// identifier that is reused later is looked up again.
+private struct RunningApplicationLookup {
+    private var applications = [pid_t: NSRunningApplication?]()
+
+    /// Returns the running application for the given process identifier.
+    mutating func application(for pid: pid_t) -> NSRunningApplication? {
+        if let application = applications[pid] {
+            return application
+        }
+        let application = NSRunningApplication(processIdentifier: pid)
+        applications.updateValue(application, forKey: pid)
+        return application
     }
 }

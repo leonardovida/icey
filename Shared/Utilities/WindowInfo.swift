@@ -123,10 +123,12 @@ extension WindowInfo {
         // Wallpaper window belongs to the Dock process, or to WindowManager on
         // macOS 27 (measured on macOS 27.0 in jordanbaird/Ice#1001).
         let owner = if #available(macOS 27.0, *) { "com.apple.WindowManager" } else { "com.apple.dock" }
+        // Looking up the owning application costs far more than the other
+        // checks, so it comes last and runs only for the wallpaper windows.
         let candidates = windows.filter { window in
-            window.owningApplication?.bundleIdentifier == owner &&
             window.title?.hasPrefix("Wallpaper") == true &&
-            displayBounds.contains(window.bounds)
+            displayBounds.contains(window.bounds) &&
+            window.owningApplication?.bundleIdentifier == owner
         }
         // Each space has a wallpaper window of its own (measured on macOS 26.5:
         // one per space, each on that space only). While spaces change, more

@@ -428,12 +428,7 @@ extension Bridging {
             }
         }
 
-        if option.contains(.activeSpace) {
-            let activeSpaceID = getActiveSpaceID()
-            predicates.append { windowID in
-                isWindowOnSpace(windowID, activeSpaceID)
-            }
-        }
+        let activeSpaceID = option.contains(.activeSpace) ? getActiveSpaceID() : nil
 
         if option.contains(.itemsOnly) {
             predicates.append { windowID in
@@ -441,11 +436,98 @@ extension Bridging {
             }
         }
 
-        return getProcessMenuBarWindowList().filter { windowID in
+        let list = getProcessMenuBarWindowList().filter { windowID in
             predicates.allSatisfy { predicate in
                 predicate(windowID)
             }
         }
+
+        if let activeSpaceID {
+            return windows(in: list, onSpace: activeSpaceID)
+        }
+        return list
+    }
+
+    /// Returns the windows in the given list that are on the given space,
+    /// in the same order.
+    ///
+    /// The result is the same as checking each window with ``isWindowOnSpace(_:_:)``,
+    /// which asks the window server once per window. This asks for the
+    /// space's window list once instead, and checks the windows that are not
+    /// in it with one more call.
+    ///
+    /// The space's window list (`CGSCopyWindowsWithOptionsAndTags` with
+    /// options 0x7, as yabai, Hammerspoon and alt-tab-macos call it) never
+    /// held a window that `CGSCopySpacesForWindows` placed on another space,
+    /// but it can leave out a window that is on the space. Measured on macOS
+    /// 26.5.1, over 370 windows and 7 spaces: no window was listed that was
+    /// not on the space, and one window, assigned to every space, was not
+    /// listed. Options 0 and 2 leave out the menu bar items that are hidden.
+    /// So the windows the list leaves out are checked as well, all with one
+    /// `CGSCopySpacesForWindows` call, which returns the spaces of all the
+    /// windows it is given. Only if one of them is on the space are they
+    /// checked one by one. With separate spaces per display, these are the
+    /// item windows of the other displays.
+    ///
+    /// - Parameters:
+    ///   - list: A list of window identifiers.
+    ///   - spaceID: An identifier for a space.
+    private static func windows(in list: [CGWindowID], onSpace spaceID: CGSSpaceID) -> [CGWindowID] {
+        guard !list.isEmpty else {
+            return list
+        }
+
+        var setTags: UInt64 = 0
+        var clearTags: UInt64 = 0
+        guard
+            let spaceWindows = CGSCopyWindowsWithOptionsAndTags(
+                getMainConnection(),
+                0,
+                [spaceID] as CFArray,
+                0x7,
+                &setTags,
+                &clearTags
+            ),
+            let spaceList = spaceWindows.takeRetainedValue() as? [CGWindowID]
+        else {
+            logger.error("CGSCopyWindowsWithOptionsAndTags returned nil, checking each window")
+            return list.filter { windowID in
+                isWindowOnSpace(windowID, spaceID)
+            }
+        }
+
+        let listed = Set(spaceList)
+        let unlisted = list.filter { !listed.contains($0) }
+        var alsoOnSpace = Set<CGWindowID>()
+
+        if !unlisted.isEmpty {
+            let unlistedSpaces = CGSCopySpacesForWindows(getMainConnection(), .allSpacesMask, unlisted as CFArray)
+            let spaces = unlistedSpaces?.takeRetainedValue() as? [CGSSpaceID]
+            // If the call fails, check each window, as before.
+            if spaces?.contains(spaceID) ?? true {
+                alsoOnSpace = Set(unlisted.filter { windowID in
+                    isWindowOnSpace(windowID, spaceID)
+                })
+            }
+        }
+
+        let result = list.filter { windowID in
+            listed.contains(windowID) || alsoOnSpace.contains(windowID)
+        }
+
+        #if DEBUG
+        // The option bits are private. Compare with the per-window check, so
+        // a difference on another macOS version shows up in development. A
+        // space change between the calls can also make them differ.
+        let expected = list.filter { windowID in
+            isWindowOnSpace(windowID, spaceID)
+        }
+        if result != expected {
+            logger.fault("Batched space filter differs from per-window check on space \(spaceID, privacy: .public): \(result, privacy: .public) vs \(expected, privacy: .public)")
+        }
+        #endif
+
+        return result
     }
 
     // MARK: - CGWindowList Helpers

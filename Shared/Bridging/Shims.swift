@@ -87,6 +87,24 @@ func CGSCopySpacesForWindows(
     _ windowIDs: CFArray
 ) -> Unmanaged<CFArray>?
 
+/// Returns the identifiers of the windows on the given spaces, for the
+/// windows of the connection `owner`, or of every connection if it is 0.
+/// The tags are bit masks of window tags to require and to exclude.
+///
+/// The option bits are not documented. alt-tab-macos names bit 0 and bit 2
+/// "invisible" (they add windows that are ordered out or off screen) and
+/// bit 1 the windows of apps assigned to all spaces. yabai and Hammerspoon
+/// pass 0x7 to include minimized windows and 0x2 to leave them out.
+@_silgen_name("CGSCopyWindowsWithOptionsAndTags")
+func CGSCopyWindowsWithOptionsAndTags(
+    _ cid: CGSConnectionID,
+    _ owner: UInt32,
+    _ spaces: CFArray,
+    _ options: UInt32,
+    _ setTags: inout UInt64,
+    _ clearTags: inout UInt64
+) -> Unmanaged<CFArray>?
+
 @_silgen_name("CGSManagedDisplayGetCurrentSpace")
 func CGSManagedDisplayGetCurrentSpace(
     _ cid: CGSConnectionID,

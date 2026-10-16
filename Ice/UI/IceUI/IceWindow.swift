@@ -166,11 +166,12 @@ private struct IceWindowContentModifier: ViewModifier {
                         return Just(true).eraseToAnyPublisher()
                     }
                     // SwiftUI orders a window out and back in while opening it,
-                    // so check again after a pause. A minimized window is not
-                    // visible, but keeps its content.
+                    // so check again after a pause. A minimized window, or an
+                    // open window of a hidden app, is not visible, but keeps
+                    // its content.
                     return Just(())
                         .delay(for: 1, scheduler: DispatchQueue.main)
-                        .map { window.map { $0.isVisible || $0.isMiniaturized } ?? false }
+                        .map { window.map { $0.isVisible || $0.isMiniaturized || NSApp.isHidden } ?? false }
                         .eraseToAnyPublisher()
                 }
                 .switchToLatest()

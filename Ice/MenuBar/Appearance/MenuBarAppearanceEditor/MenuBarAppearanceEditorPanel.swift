@@ -72,13 +72,21 @@ final class MenuBarAppearanceEditorPanel: NSPanel {
             .sink { [weak self] isVisible in
                 if isVisible {
                     NSColorPanel.shared.hidesOnDeactivate = false
+                    // macOS shows the panel again without calling show(on:)
+                    // when the app is unhidden.
+                    if let self, !(self.contentView is MenuBarAppearanceEditorHostingView), let appState = self.appState {
+                        let topLeft = CGPoint(x: self.frame.minX, y: self.frame.maxY)
+                        self.configureContentView(with: appState)
+                        self.setFrameTopLeftPoint(topLeft)
+                    }
                 } else {
                     NSColorPanel.shared.hidesOnDeactivate = true
                     NSColorPanel.shared.close()
                     // Wait a turn, as the panel can close from one of the
-                    // editor's own actions.
+                    // editor's own actions. Keep the content while the app
+                    // is hidden, as the panel comes back when it's unhidden.
                     DispatchQueue.main.async {
-                        guard let self, !self.isVisible else {
+                        guard let self, !self.isVisible, !NSApp.isHidden else {
                             return
                         }
                         self.contentView = nil

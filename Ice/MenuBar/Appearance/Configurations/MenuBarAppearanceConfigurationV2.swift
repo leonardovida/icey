@@ -142,13 +142,40 @@ extension MenuBarAppearancePartialConfiguration: Codable {
     }
 
     func encode(to encoder: Encoder) throws {
+        let defaultConfiguration = Self.defaultConfiguration
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(hasShadow, forKey: .hasShadow)
         try container.encode(hasBorder, forKey: .hasBorder)
-        try container.encode(IceColor(cgColor: borderColor), forKey: .borderColor)
+        // Each color stores its ICC profile, 3-4.5 KB, so the twelve colors
+        // of a configuration that keeps the defaults took 62.9 KB. Leave out
+        // a color or gradient that matches the default: `init(from:)` reads a
+        // missing key as the default, as has every build since 0.11.10, which
+        // introduced this configuration, so an earlier build still reads the
+        // same appearance after a downgrade.
+        if !Self.isDefault(borderColor, defaultConfiguration.borderColor) {
+            try container.encode(IceColor(cgColor: borderColor), forKey: .borderColor)
+        }
         try container.encode(borderWidth, forKey: .borderWidth)
         try container.encode(tintKind, forKey: .tintKind)
-        try container.encode(IceColor(cgColor: tintColor), forKey: .tintColor)
-        try container.encode(tintGradient, forKey: .tintGradient)
+        if !Self.isDefault(tintColor, defaultConfiguration.tintColor) {
+            try container.encode(IceColor(cgColor: tintColor), forKey: .tintColor)
+        }
+        if !Self.isDefault(tintGradient, defaultConfiguration.tintGradient) {
+            try container.encode(tintGradient, forKey: .tintGradient)
+        }
+    }
+
+    /// Returns a Boolean value that indicates whether the given color is the
+    /// given default color, in the same named color space.
+    private static func isDefault(_ color: CGColor, _ defaultColor: CGColor) -> Bool {
+        color == defaultColor && color.colorSpace?.name == defaultColor.colorSpace?.name
+    }
+
+    /// Returns a Boolean value that indicates whether the given gradient has
+    /// the given default gradient's stops.
+    private static func isDefault(_ gradient: IceGradient, _ defaultGradient: IceGradient) -> Bool {
+        gradient.stops.count == defaultGradient.stops.count && zip(gradient.stops, defaultGradient.stops).allSatisfy { stop, defaultStop in
+            stop.location == defaultStop.location && isDefault(stop.color, defaultStop.color)
+        }
     }
 }

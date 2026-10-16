@@ -323,13 +323,13 @@ final class IceBarPanel: NSPanel {
         guard fades, isVisible else {
             finishClosing()
             currentSection = nil
-            appState?.navigationState.isIceBarPresented = false
+            clearIceBarPresented()
             return
         }
 
         let presentationID = presentationID
         currentSection = nil
-        appState?.navigationState.isIceBarPresented = false
+        clearIceBarPresented()
 
         // The panel is closed as far as the rest of Icey is concerned. It
         // stays on screen only to fade out, and lets clicks through. A show
@@ -346,6 +346,18 @@ final class IceBarPanel: NSPanel {
                 }
                 self.finishClosing()
             }
+        }
+    }
+
+    /// Records that the Ice Bar is no longer presented.
+    ///
+    /// The panel is also closed whenever a section is shown in the menu bar
+    /// or hidden, and on every space change, while it is not presented.
+    /// Setting the same value would invalidate the views that observe the
+    /// navigation state.
+    private func clearIceBarPresented() {
+        if appState?.navigationState.isIceBarPresented == true {
+            appState?.navigationState.isIceBarPresented = false
         }
     }
 

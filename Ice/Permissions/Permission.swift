@@ -78,14 +78,20 @@ class Permission: ObservableObject, Identifiable {
 
     /// Sets up the internal observers for the permission.
     private func configureCancellables() {
-        timerCancellable = Timer.publish(every: 1, on: .main, in: .default)
+        timerCancellable = Timer.publish(every: 1, tolerance: 0.1, on: .main, in: .default)
             .autoconnect()
             .merge(with: Just(.now))
             .sink { [weak self] _ in
                 guard let self else {
                     return
                 }
-                hasPermission = check()
+                // Assigning the same value every second would invalidate every
+                // view that observes the app state, for as long as a permission
+                // is missing.
+                let hasPermission = check()
+                if self.hasPermission != hasPermission {
+                    self.hasPermission = hasPermission
+                }
                 if hasPermission, stopsCheckWhenGranted {
                     timerCancellable = nil
                 }

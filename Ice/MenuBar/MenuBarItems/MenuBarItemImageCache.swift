@@ -109,9 +109,34 @@ final class MenuBarItemImageCache: ObservableObject {
         var c = Set<AnyCancellable>()
 
         if let appState {
+            let navigationState = appState.navigationState
+
             Publishers.Merge3(
-                // Update every 3 seconds at minimum.
-                Timer.publish(every: 3, tolerance: 0.5, on: .main, in: .default).autoconnect().replace(with: ()),
+                // Update every 3 seconds at minimum, while the images can be on
+                // screen. ``updateCache()`` does nothing otherwise. The pane shown
+                // in Settings is left out of the condition, so that switching to
+                // Menu Bar Layout finds the timer already running, as it did when
+                // the timer always ran.
+                Publishers.CombineLatest4(
+                    navigationState.$isIceBarPresented,
+                    navigationState.$isSearchPresented,
+                    navigationState.$isAppFrontmost,
+                    navigationState.$isSettingsPresented
+                )
+                .map { isIceBarPresented, isSearchPresented, isAppFrontmost, isSettingsPresented in
+                    isIceBarPresented || isSearchPresented || (isAppFrontmost && isSettingsPresented)
+                }
+                .removeDuplicates()
+                .map { isNeeded -> AnyPublisher<Void, Never> in
+                    guard isNeeded else {
+                        return Empty().eraseToAnyPublisher()
+                    }
+                    return Timer.publish(every: 3, tolerance: 0.5, on: .main, in: .default)
+                        .autoconnect()
+                        .replace(with: ())
+                        .eraseToAnyPublisher()
+                }
+                .switchToLatest(),
 
                 // Update when the active space or screen parameters change.
                 Publishers.Merge(

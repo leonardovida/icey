@@ -64,9 +64,13 @@ final class UpdatesManager: NSObject, ObservableObject {
 
     /// Configures the internal observers for the manager.
     private func configureCancellables() {
+        // Sparkle can report a value again without a change. Assigning it would
+        // invalidate every view that observes the app state.
         updater.publisher(for: \.canCheckForUpdates)
+            .removeDuplicates()
             .assign(to: &$canCheckForUpdates)
         updater.publisher(for: \.lastUpdateCheckDate)
+            .removeDuplicates()
             .assign(to: &$lastUpdateCheckDate)
     }
 

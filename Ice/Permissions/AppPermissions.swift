@@ -60,12 +60,15 @@ final class AppPermissions: ObservableObject {
 
     /// Updates the current permissions state.
     private func updatePermissionsState() {
-        if allPermissions.allSatisfy({ $0.hasPermission }) {
-            permissionsState = .hasAll
+        let permissionsState: PermissionsState = if allPermissions.allSatisfy({ $0.hasPermission }) {
+            .hasAll
         } else if requiredPermissions.allSatisfy({ $0.hasPermission }) {
-            permissionsState = .hasRequired
+            .hasRequired
         } else {
-            permissionsState = .missing
+            .missing
+        }
+        if self.permissionsState != permissionsState {
+            self.permissionsState = permissionsState
         }
     }
 

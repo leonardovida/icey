@@ -3,6 +3,7 @@
 //  Ice
 //
 
+import Carbon.HIToolbox
 import Cocoa
 import Combine
 import OSLog
@@ -14,7 +15,11 @@ import OSLog
 final class HIDEventManager: ObservableObject {
     /// A Boolean value that indicates whether the user is dragging
     /// a menu bar item.
-    @Published private(set) var isDraggingMenuBarItem = false
+    @Published private(set) var isDraggingMenuBarItem = false {
+        didSet {
+            updateDragMonitors()
+        }
+    }
 
     /// The shared app state.
     private weak var appState: AppState?
@@ -54,6 +59,18 @@ final class HIDEventManager: ObservableObject {
         }
     }
 
+    /// A Boolean value that indicates whether the manager is enabled and
+    /// the current settings need menu bar item drags to be detected.
+    private var tracksMenuBarItemDrags = false
+
+    /// A Boolean value that indicates whether the Command key is held, as
+    /// last seen in a modifier key change or a left mouse down.
+    private var isCommandKeyDown = false
+
+    /// A Boolean value that indicates whether changes to the modifier keys
+    /// may not be received (see `refreshModifierKeyState(with:)`).
+    private var mayMissModifierKeyChanges = false
+
     // MARK: Monitors
 
     /// Monitor for mouse down events.
@@ -69,6 +86,7 @@ final class HIDEventManager: ObservableObject {
         }
         switch event.type {
         case .leftMouseDown:
+            refreshModifierKeyState(with: event)
             handleShowOnClick(with: event, appState: appState, screen: screen)
             handleSmartRehide(with: event, appState: appState, screen: screen)
         case .rightMouseDown:
@@ -81,6 +99,9 @@ final class HIDEventManager: ObservableObject {
     }
 
     /// Monitor for mouse up events.
+    ///
+    /// Runs only while a menu bar item drag can start or is in progress
+    /// (see `updateDragMonitors()`).
     private(set) lazy var mouseUpMonitor = EventMonitor.universal(
         for: .leftMouseUp
     ) { [weak self] event in
@@ -92,11 +113,25 @@ final class HIDEventManager: ObservableObject {
     }
 
     /// Monitor for mouse dragged events.
+    ///
+    /// Runs only while a drag can start a menu bar item drag, which needs
+    /// the Command key (see `updateDragMonitors()`).
     private(set) lazy var mouseDraggedMonitor = EventMonitor.universal(
         for: .leftMouseDragged
     ) { [weak self] event in
         if let self, isEnabled, let appState, let screen = bestScreen(appState: appState) {
             handleMenuBarItemDragStart(with: event, appState: appState, screen: screen)
+        }
+        return event
+    }
+
+    /// Monitor for modifier key changes, which runs the drag monitors
+    /// while the Command key is held.
+    private(set) lazy var flagsChangedMonitor = EventMonitor.universal(
+        for: .flagsChanged
+    ) { [weak self] event in
+        if let self, isEnabled {
+            setCommandKeyDown(with: event)
         }
         return event
     }
@@ -216,8 +251,7 @@ final class HIDEventManager: ObservableObject {
 
         let monitors: [(any EventMonitorProtocol, Bool)] = [
             (mouseDownMonitor, true),
-            (mouseUpMonitor, needsDragMonitors),
-            (mouseDraggedMonitor, needsDragMonitors),
+            (flagsChangedMonitor, needsDragMonitors),
             (mouseMovedTap, general?.showOnHover == true),
             (scrollWheelMonitor, general?.showOnScroll == true),
         ]
@@ -236,6 +270,10 @@ final class HIDEventManager: ObservableObject {
             }
         }
 
+        // Key changes made while the monitors were stopped weren't received.
+        tracksMenuBarItemDrags = isEnabled && needsDragMonitors
+        refreshModifierKeyState(with: nil)
+
         if !needsDragMonitors {
             // The mouse up event that ends a drag can't be received while
             // the monitor is stopped, so don't leave the drag in progress.
@@ -244,6 +282,56 @@ final class HIDEventManager: ObservableObject {
         if general?.showOnHover != true {
             cancelShowOnHoverTask()
         }
+    }
+
+    /// Starts or stops the mouse dragged and mouse up monitors.
+    ///
+    /// A drag only starts a menu bar item drag while the Command key is held
+    /// (see `handleMenuBarItemDragStart(with:appState:screen:)`). Every other
+    /// drag in the system, such as selecting text or moving a window, woke the
+    /// app for each event, so drag events are received only while the key is
+    /// held. The mouse up monitor runs from then on until the drag ends, so
+    /// the release that ends it is never missed.
+    private func updateDragMonitors() {
+        let needsDragEvents = tracksMenuBarItemDrags && (isCommandKeyDown || mayMissModifierKeyChanges)
+        let needsMouseUpEvents = needsDragEvents || (tracksMenuBarItemDrags && isDraggingMenuBarItem)
+        for (monitor, isNeeded) in [(mouseDraggedMonitor, needsDragEvents), (mouseUpMonitor, needsMouseUpEvents)] {
+            if isNeeded {
+                monitor.start()
+            } else {
+                monitor.stop()
+            }
+        }
+    }
+
+    /// Records whether the Command key is held after a modifier key change.
+    private func setCommandKeyDown(with event: NSEvent) {
+        guard tracksMenuBarItemDrags else {
+            return
+        }
+        // The key state is asked as well, so that an event posted without
+        // the key never hides that the user holds it.
+        isCommandKeyDown = event.modifierFlags.contains(.command) || NSEvent.modifierFlags.contains(.command)
+        updateDragMonitors()
+    }
+
+    /// Records whether the Command key is held, and whether its changes can
+    /// be missed, when the monitors start and at each left mouse down.
+    private func refreshModifierKeyState(with event: NSEvent?) {
+        guard tracksMenuBarItemDrags else {
+            isCommandKeyDown = false
+            mayMissModifierKeyChanges = false
+            updateDragMonitors()
+            return
+        }
+        // Key events from other apps, modifier key changes included, are only
+        // received with Accessibility, and may not be while secure input is on.
+        // Drag events are then received throughout, as they were before, so a
+        // drag that only gains the Command key once it is underway still counts.
+        mayMissModifierKeyChanges = IsSecureEventInputEnabled() ||
+            appState?.permissions.accessibility.hasPermission != true
+        isCommandKeyDown = event?.modifierFlags.contains(.command) == true || NSEvent.modifierFlags.contains(.command)
+        updateDragMonitors()
     }
 
     /// Starts all monitors.

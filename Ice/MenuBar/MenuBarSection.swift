@@ -300,14 +300,16 @@ final class MenuBarSection {
         // automatically takes no space from the visible frame, so the event
         // manager's check is asked as well, which covers it (#708).
         let isMouseOutside = { [weak appState] (screen: NSScreen) -> Bool in
-            guard NSEvent.mouseLocation.y < screen.visibleFrame.maxY else {
+            // Read once, as it asks the window server.
+            let visibleFrameMaxY = screen.visibleFrame.maxY
+            guard NSEvent.mouseLocation.y < visibleFrameMaxY else {
                 return false
             }
             guard let appState else {
                 return true
             }
             let hidEventManager = appState.hidEventManager
-            return !hidEventManager.isMouseInsideMenuBar(appState: appState, screen: screen) &&
+            return !hidEventManager.isMouseInsideMenuBar(appState: appState, screen: screen, visibleFrameMaxY: visibleFrameMaxY) &&
                 !hidEventManager.isMouseInsideOrAwaitingIceBar(appState: appState)
         }
 

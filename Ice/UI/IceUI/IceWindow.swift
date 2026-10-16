@@ -3,6 +3,7 @@
 //  Ice
 //
 
+import Combine
 import SwiftUI
 
 // MARK: - IceWindow
@@ -109,6 +110,89 @@ enum IceWindowIdentifier: String, Sendable, CustomStringConvertible {
     /// A textual representation of the identifier.
     var description: String {
         rawValue
+    }
+}
+
+// MARK: - Window Content
+
+extension IceWindowIdentifier {
+    /// Requests to build the content of a closed window.
+    @MainActor
+    fileprivate static let contentRequests = PassthroughSubject<IceWindowIdentifier, Never>()
+
+    /// Builds the content of the corresponding window while the window
+    /// is still closed.
+    ///
+    /// A window's content is built when the window opens. Call this
+    /// before opening the window after a delay, so the work is done
+    /// during the delay and the window can show its content at once.
+    @MainActor
+    func prepareContent() {
+        Self.contentRequests.send(self)
+    }
+}
+
+/// A modifier that keeps a view in the view tree only while its window
+/// is open.
+///
+/// A closed SwiftUI window keeps its view tree, and the tree is updated,
+/// laid out and drawn on every change to the state it observes, though
+/// nobody sees it. While the window is closed, this modifier puts a clear
+/// view that takes any size in place of the content, so the window keeps
+/// its frame, and the content is built again when the window opens.
+private struct IceWindowContentModifier: ViewModifier {
+    @State private var isPresented = true
+    @State private var cancellable: AnyCancellable?
+
+    let id: IceWindowIdentifier
+
+    func body(content: Content) -> some View {
+        ZStack {
+            if isPresented {
+                content
+            } else {
+                Color.clear
+            }
+        }
+        .onWindowChange { window in
+            guard let window else {
+                cancellable = nil
+                return
+            }
+            cancellable = window.publisher(for: \.isVisible)
+                .merge(with: IceWindowIdentifier.contentRequests.filter { $0 == id }.map { _ in true })
+                .map { [weak window] isShown in
+                    if isShown {
+                        return Just(true).eraseToAnyPublisher()
+                    }
+                    // SwiftUI orders a window out and back in while opening it,
+                    // so check again after a pause. A minimized window is not
+                    // visible, but keeps its content.
+                    return Just(())
+                        .delay(for: 1, scheduler: DispatchQueue.main)
+                        .map { window.map { $0.isVisible || $0.isMiniaturized } ?? false }
+                        .eraseToAnyPublisher()
+                }
+                .switchToLatest()
+                .removeDuplicates()
+                .sink { isOpen in
+                    isPresented = isOpen
+                }
+        }
+    }
+}
+
+extension View {
+    /// Keeps the view in the view tree only while the window with the
+    /// given identifier is open.
+    ///
+    /// Apply this to the content of an ``IceWindow``, inside the modifiers
+    /// that configure the window or set its size limits, so that those
+    /// keep running once and keep applying while the window is closed.
+    ///
+    /// - Parameter id: The identifier of the view's window.
+    func presentedWhileWindowIsOpen(_ id: IceWindowIdentifier) -> some View {
+        modifier(IceWindowContentModifier(id: id))
     }
 }
 

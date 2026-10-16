@@ -6,11 +6,12 @@
 import SwiftUI
 
 struct PermissionsWindow: Scene {
-    @ObservedObject var appState: AppState
+    let appState: AppState
 
     var body: some Scene {
         IceWindow(id: .permissions) {
             PermissionsView()
+                .presentedWhileWindowIsOpen(.permissions)
                 .onWindowChange { window in
                     guard let window else {
                         return

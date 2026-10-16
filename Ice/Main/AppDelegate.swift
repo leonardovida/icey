@@ -89,6 +89,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Opens the settings window and activates the app.
     @objc func openSettingsWindow() {
+        // Build the window's content during the delay below.
+        IceWindowIdentifier.settings.prepareContent()
         // Delay makes this more reliable for some reason.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [appState] in
             appState.activateAndOpenSettings()

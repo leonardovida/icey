@@ -267,14 +267,22 @@ extension HIDEventManager {
     private func handleShowOnClick(with event: NSEvent, appState: AppState, screen: NSScreen) {
         guard
             appState.settings.general.showOnClick,
-            isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen),
+            isMouseInsideEmptyMenuBarSpace(appState: appState, screen: screen)
+        else {
+            return
+        }
+
+        // One window list serves both checks below.
+        let windows = WindowInfo.createWindows(option: .onScreen)
+
+        guard
             // A click while a menu is open is the click that closes it, not
             // one on the menu bar. Navigating an app's menus showed the hidden
             // items whenever the menus could not be measured (jordanbaird/Ice#567).
-            !isMenuOpen(on: screen),
+            !isMenuOpen(on: screen, in: windows),
             // A click at the top of the screen in Mission Control is a click on
             // its spaces (jordanbaird/Ice#714).
-            !isMissionControlActive()
+            !isMissionControlActive(in: windows)
         else {
             return
         }
@@ -367,17 +375,20 @@ extension HIDEventManager {
                 return
             }
 
+            // One window list, taken now, serves both checks below.
+            let windows = WindowInfo.createWindows(option: .onScreen)
+
             // A click inside a menu bar app's popover or a menu, such as on a
             // switch or a brightness slider, is not a click outside the menu
             // bar. The search below skips untitled windows, so it found the
             // window behind the popover, and hiding the items closed the popover
             // (jordanbaird/Ice#403, #526).
-            if menuBarInterfaceWindows(on: screen).contains(where: { $0.bounds.contains(mouseLocation) }) {
+            if menuBarInterfaceWindows(on: screen, in: windows).contains(where: { $0.bounds.contains(mouseLocation) }) {
                 return
             }
 
             // Get the window that was clicked.
-            let windowsUnderMouse = WindowInfo.createWindows(option: .onScreen).filter { window in
+            let windowsUnderMouse = windows.filter { window in
                 window.layer < CGWindowLevelForKey(.cursorWindow) && window.bounds.contains(mouseLocation)
             }
             guard
@@ -1306,14 +1317,17 @@ extension HIDEventManager {
     /// of apps that run without a Dock icon, as menu bar apps do. An ordinary
     /// window is not counted, even when it reaches up to the menu bar.
     ///
-    /// This asks the window server for one window list, so it is only called
-    /// when the items are about to be shown or hidden, never per event.
-    func menuBarInterfaceWindows(on screen: NSScreen) -> [WindowInfo] {
+    /// This asks the window server for one window list, unless the on screen
+    /// windows are passed in `windows`, so it is only called when the items
+    /// are about to be shown or hidden, never per event.
+    func menuBarInterfaceWindows(
+        on screen: NSScreen,
+        in windows: [WindowInfo] = WindowInfo.createWindows(option: .onScreen)
+    ) -> [WindowInfo] {
         let displayBounds = CGDisplayBounds(screen.displayID)
         let ownPID = ProcessInfo.processInfo.processIdentifier
         let menuLevel = Int(CGWindowLevelForKey(.popUpMenuWindow))
         let cursorLevel = Int(CGWindowLevelForKey(.cursorWindow))
-        let windows = WindowInfo.createWindows(option: .onScreen)
 
         // The bottom edge of the menu bar, in window server coordinates.
         let menuBarBottom: CGFloat = {
@@ -1354,17 +1368,21 @@ extension HIDEventManager {
 
     /// A Boolean value that indicates whether a menu is open just below the
     /// menu bar of the given screen.
-    func isMenuOpen(on screen: NSScreen) -> Bool {
+    func isMenuOpen(
+        on screen: NSScreen,
+        in windows: [WindowInfo] = WindowInfo.createWindows(option: .onScreen)
+    ) -> Bool {
         let menuLevel = Int(CGWindowLevelForKey(.popUpMenuWindow))
-        return menuBarInterfaceWindows(on: screen).contains { $0.layer == menuLevel }
+        return menuBarInterfaceWindows(on: screen, in: windows).contains { $0.layer == menuLevel }
     }
 
     /// A Boolean value that indicates whether Mission Control is open.
     ///
-    /// This asks the window server for one window list, so it is only called
-    /// when the items are about to be shown, never per event.
-    func isMissionControlActive() -> Bool {
-        WindowInfo.isMissionControlActive(in: WindowInfo.createWindows(option: .onScreen))
+    /// This asks the window server for one window list, unless the on screen
+    /// windows are passed in `windows`, so it is only called when the items
+    /// are about to be shown, never per event.
+    func isMissionControlActive(in windows: [WindowInfo] = WindowInfo.createWindows(option: .onScreen)) -> Bool {
+        WindowInfo.isMissionControlActive(in: windows)
     }
 
     /// A Boolean value that indicates whether the given screen's menu bar is

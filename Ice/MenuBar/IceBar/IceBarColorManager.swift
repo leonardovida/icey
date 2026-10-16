@@ -86,9 +86,24 @@ final class IceBarColorManager: ObservableObject {
                 DistributedNotificationCenter.default()
                     .publisher(for: DistributedNotificationCenter.interfaceThemeChangedNotification)
                     .replace(with: ()),
-                Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
-                    .autoconnect()
-                    .replace(with: ())
+                // The update below does nothing while the panel is hidden, so the
+                // timer only runs while the panel is visible.
+                iceBarPanel.publisher(for: \.isVisible)
+                    .receive(on: DispatchQueue.main)
+                    .map { [weak iceBarPanel] _ in
+                        iceBarPanel?.isVisible == true
+                    }
+                    .removeDuplicates()
+                    .map { isVisible -> AnyPublisher<Void, Never> in
+                        guard isVisible else {
+                            return Empty().eraseToAnyPublisher()
+                        }
+                        return Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
+                            .autoconnect()
+                            .replace(with: ())
+                            .eraseToAnyPublisher()
+                    }
+                    .switchToLatest()
             )
             .receive(on: DispatchQueue.main)
             .sink { [weak self, weak iceBarPanel] in

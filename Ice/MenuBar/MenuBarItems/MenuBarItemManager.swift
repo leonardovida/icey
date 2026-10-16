@@ -85,10 +85,27 @@ final class MenuBarItemManager: ObservableObject {
     private func configureCancellables(with appState: AppState) {
         var c = Set<AnyCancellable>()
 
-        NSWorkspace.shared.publisher(for: \.runningApplications)
+        let runningApplications = NSWorkspace.shared.publisher(for: \.runningApplications)
             .delay(for: 0.25, scheduler: DispatchQueue.main)
-            .discardMerge(Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect())
-            .debounce(for: 1, scheduler: DispatchQueue.main)
+        let timer = Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect()
+        let cacheTriggers: AnyPublisher<Void, Never>
+        if #available(macOS 27.0, *) {
+            // Each cache asks every running process for its items on macOS 27, so a
+            // timer tick within a second of a change in the running apps still
+            // shares one cache with it.
+            cacheTriggers = runningApplications
+                .discardMerge(timer)
+                .debounce(for: 1, scheduler: DispatchQueue.main)
+                .eraseToAnyPublisher()
+        } else {
+            // Only changes in the running apps come in bursts. Debouncing the
+            // timer as well cost a second wakeup for every tick.
+            cacheTriggers = runningApplications
+                .debounce(for: 1, scheduler: DispatchQueue.main)
+                .discardMerge(timer)
+                .eraseToAnyPublisher()
+        }
+        cacheTriggers
             .sink { [weak self] in
                 guard let self else {
                     return

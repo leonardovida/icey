@@ -168,15 +168,34 @@ final class MenuBarManager: ObservableObject {
 
         appState?.publisherForWindow(.settings)
             .sink { [weak self] window in
-                self?.settingsWindow = window
+                // The publisher looks for the window again whenever the app's
+                // window list is reported, and can find the same one. Storing it
+                // again would add another visibility observer below, and
+                // invalidate every view that observes the app state.
+                guard let self, settingsWindow !== window else {
+                    return
+                }
+                settingsWindow = window
             }
             .store(in: &c)
 
+        // Update when the settings window is shown or hidden, then every 5 seconds
+        // while it is visible. The update does nothing while the window is hidden,
+        // so the timer only runs while the window is visible.
         $settingsWindow
             .removeNil()
             .flatMap { $0.publisher(for: \.isVisible) }
-            .discardMerge(Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect())
             .receive(on: DispatchQueue.main)
+            .map { [weak self] _ -> AnyPublisher<Void, Never> in
+                let update = Just(())
+                guard self?.settingsWindow?.isVisible == true else {
+                    return update.eraseToAnyPublisher()
+                }
+                return update
+                    .append(Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect().replace(with: ()))
+                    .eraseToAnyPublisher()
+            }
+            .switchToLatest()
             .sink { [weak self] in
                 self?.updateAverageColorInfo()
             }

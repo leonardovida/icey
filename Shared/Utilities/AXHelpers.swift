@@ -39,8 +39,13 @@ enum AXHelpers {
         queue.sync { Application(runningApp) }
     }
 
-    static func extrasMenuBar(for app: Application) -> UIElement? {
-        queue.sync { try? app.attribute(.extrasMenuBar) }
+    /// Returns the extras menu bar of the given app, or `nil` if the app
+    /// answered that it has none.
+    ///
+    /// Throws if the app could not answer, for example because it did not
+    /// respond in time.
+    static func extrasMenuBar(for app: Application) throws -> UIElement? {
+        try queue.sync { try app.attribute(.extrasMenuBar) }
     }
 
     static func children(for element: UIElement) -> [UIElement] {

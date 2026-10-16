@@ -26,6 +26,17 @@ final class SourcePIDCache {
     /// interface to access relevant information, such as its process
     /// identifier and extras menu bar.
     private final class CachedApplication {
+        /// An app's answer when asked for its extras menu bar.
+        enum ExtrasMenuBarAnswer {
+            /// The app's extras menu bar.
+            case bar(UIElement)
+            /// The app answered that it has no extras menu bar.
+            case missing
+            /// The app was not asked, or could not answer, for example
+            /// because it did not respond in time.
+            case unknown
+        }
+
         private let runningApp: NSRunningApplication
         private var extrasMenuBar: UIElement?
 
@@ -62,26 +73,60 @@ final class SourcePIDCache {
         ///
         /// When the element is first created, it gets stored for efficient
         /// access on subsequent calls.
-        func getOrCreateExtrasMenuBar() -> UIElement? {
+        func getOrCreateExtrasMenuBar() -> ExtrasMenuBarAnswer {
             if let extrasMenuBar {
-                return extrasMenuBar
+                return .bar(extrasMenuBar)
             }
             guard
                 isValidForAccessibility,
-                let app = AXHelpers.application(for: runningApp),
-                let bar = AXHelpers.extrasMenuBar(for: app)
+                let app = AXHelpers.application(for: runningApp)
             else {
-                return nil
+                return .unknown
             }
-            extrasMenuBar = bar
-            return bar
+            do {
+                guard let bar = try AXHelpers.extrasMenuBar(for: app) else {
+                    return .missing
+                }
+                extrasMenuBar = bar
+                return .bar(bar)
+            } catch {
+                return .unknown
+            }
         }
     }
 
     /// State for the cache.
     private struct State {
+        /// How long an app's answer that it has no extras menu bar is
+        /// trusted when searching again for a window that was not matched.
+        ///
+        /// An app that adds its first item while such a window is still
+        /// unmatched is asked again once its answer expires.
+        static let noExtrasMenuBarAnswerLifetime = Duration.seconds(30)
+
+        /// The most windows kept in `unmatchedWindowIDs`.
+        static let maxUnmatchedWindowCount = 64
+
         var apps = [CachedApplication]()
         var pids = [CGWindowID: pid_t]()
+
+        /// When each app last answered that it has no extras menu bar,
+        /// by process identifier.
+        ///
+        /// A window that no app's items match, such as an item whose
+        /// process is a helper, is searched for again on every update of
+        /// the menu bar items. Each search asked every app without an
+        /// extras menu bar again, waking each of them. A new state is
+        /// created when the running apps change, which clears this.
+        var noExtrasMenuBarAnswers = [pid_t: ContinuousClock.Instant]()
+
+        /// The windows that a search of every app did not match.
+        ///
+        /// Only searches for these windows skip the apps in
+        /// `noExtrasMenuBarAnswers`. A window not searched for before may
+        /// belong to an app that has just added its first item, so every
+        /// app is asked for it.
+        var unmatchedWindowIDs = Set<CGWindowID>()
 
         /// Returns the latest bounds of the given window after ensuring
         /// that the bounds are stable (a.k.a. not currently changing).
@@ -136,8 +181,27 @@ final class SourcePIDCache {
 
             partitionApps()
 
+            let now = ContinuousClock.now
+            let skipsAppsWithoutBar = unmatchedWindowIDs.contains(window.windowID)
+
             for app in apps {
-                guard let bar = app.getOrCreateExtrasMenuBar() else {
+                let pid = app.processIdentifier
+                if
+                    skipsAppsWithoutBar,
+                    let answerTime = noExtrasMenuBarAnswers[pid],
+                    now - answerTime < Self.noExtrasMenuBarAnswerLifetime
+                {
+                    continue
+                }
+                let bar: UIElement
+                switch app.getOrCreateExtrasMenuBar() {
+                case .bar(let extrasMenuBar):
+                    bar = extrasMenuBar
+                    noExtrasMenuBarAnswers.removeValue(forKey: pid)
+                case .missing:
+                    noExtrasMenuBarAnswers[pid] = now
+                    continue
+                case .unknown:
                     continue
                 }
                 for child in AXHelpers.children(for: bar) {
@@ -150,10 +214,16 @@ final class SourcePIDCache {
                     else {
                         continue
                     }
-                    pids[window.windowID] = app.processIdentifier
+                    pids[window.windowID] = pid
+                    unmatchedWindowIDs.remove(window.windowID)
                     return
                 }
             }
+
+            if unmatchedWindowIDs.count >= Self.maxUnmatchedWindowCount {
+                unmatchedWindowIDs.removeAll()
+            }
+            unmatchedWindowIDs.insert(window.windowID)
         }
     }
 

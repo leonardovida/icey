@@ -43,11 +43,14 @@ final class MenuBarAppearanceEditorPanel: NSPanel {
     /// Sets up the panel.
     func performSetup(with appState: AppState) {
         self.appState = appState
-        configureContentView(with: appState)
         configureCancellables()
     }
 
     /// Configures the panel's content view.
+    ///
+    /// The panel builds its content view each time it is shown, and
+    /// releases it once closed, so the editor is not updated, laid out
+    /// and drawn while nobody can see it.
     private func configureContentView(with appState: AppState) {
         let hostingView = MenuBarAppearanceEditorHostingView(appState: appState)
         setFrame(hostingView.frame, display: true)
@@ -66,12 +69,28 @@ final class MenuBarAppearanceEditorPanel: NSPanel {
             .store(in: &c)
 
         publisher(for: \.isVisible)
-            .sink { isVisible in
+            .sink { [weak self] isVisible in
                 if isVisible {
                     NSColorPanel.shared.hidesOnDeactivate = false
+                    // macOS shows the panel again without calling show(on:)
+                    // when the app is unhidden.
+                    if let self, !(self.contentView is MenuBarAppearanceEditorHostingView), let appState = self.appState {
+                        let topLeft = CGPoint(x: self.frame.minX, y: self.frame.maxY)
+                        self.configureContentView(with: appState)
+                        self.setFrameTopLeftPoint(topLeft)
+                    }
                 } else {
                     NSColorPanel.shared.hidesOnDeactivate = true
                     NSColorPanel.shared.close()
+                    // Wait a turn, as the panel can close from one of the
+                    // editor's own actions. Keep the content while the app
+                    // is hidden, as the panel comes back when it's unhidden.
+                    DispatchQueue.main.async {
+                        guard let self, !self.isVisible, !NSApp.isHidden else {
+                            return
+                        }
+                        self.contentView = nil
+                    }
                 }
             }
             .store(in: &c)
@@ -88,6 +107,9 @@ final class MenuBarAppearanceEditorPanel: NSPanel {
 
     /// Shows the panel on the given screen.
     func show(on screen: NSScreen) {
+        if !(contentView is MenuBarAppearanceEditorHostingView), let appState {
+            configureContentView(with: appState)
+        }
         updatePosition(for: screen)
         makeKeyAndOrderFront(nil)
     }

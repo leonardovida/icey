@@ -32,6 +32,11 @@ struct HotkeyRecorder<Label: View>: View {
                 model.isPresentingSystemReservedError = false
             }
         }
+        .onDisappear {
+            // The model goes away with the view, and a hotkey left disabled
+            // by an unfinished recording would stay off.
+            model.stopRecording()
+        }
     }
 
     @ViewBuilder

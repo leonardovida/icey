@@ -9,12 +9,13 @@ import SwiftUI
 // MARK: - SettingsWindow
 
 struct SettingsWindow: Scene {
-    @ObservedObject var appState: AppState
+    let appState: AppState
     @StateObject private var model = SettingsWindowModel()
 
     var body: some Scene {
         IceWindow(id: .settings) {
             SettingsView(navigationState: appState.navigationState)
+                .presentedWhileWindowIsOpen(.settings)
                 .onWindowChange { window in
                     model.observeWindowToolbar(window)
                 }

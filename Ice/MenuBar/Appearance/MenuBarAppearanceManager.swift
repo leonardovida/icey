@@ -34,6 +34,12 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// The displays the current overlay panels were built for.
     private var overlayPanelDisplays = [OverlayPanelDisplay]()
 
+    /// The timer that drives the periodic updates of every overlay panel.
+    private var overlayPanelUpdateTimer: AnyCancellable?
+
+    /// The number of times the overlay panel update timer has fired.
+    private var overlayPanelUpdateCount = 0
+
     /// The amount to inset the menu bar if called for by the configuration,
     /// on a menu bar tall enough to take it.
     private let preferredMenuBarInsetAmount: CGFloat = if #available(macOS 26.0, *) { 3.5 } else { 5 }
@@ -143,6 +149,7 @@ final class MenuBarAppearanceManager: ObservableObject {
                 if overlayPanels.isEmpty || !mayNeedOverlayPanels(for: configuration) {
                     configureOverlayPanels(with: configuration)
                 }
+                updateOverlayPanelUpdateTimer(for: configuration)
             }
             .store(in: &c)
 
@@ -191,6 +198,7 @@ final class MenuBarAppearanceManager: ObservableObject {
             while let panel = overlayPanels.popFirst() {
                 panel.close()
             }
+            updateOverlayPanelUpdateTimer(for: configuration)
             return
         }
 
@@ -217,6 +225,70 @@ final class MenuBarAppearanceManager: ObservableObject {
 
         self.overlayPanels = overlayPanels
         overlayPanelDisplays = Self.overlayPanelDisplays()
+
+        // Start the periodic updates afresh with the new panels, as each panel
+        // used to start its own timers when it was built.
+        overlayPanelUpdateTimer = nil
+        updateOverlayPanelUpdateTimer(for: configuration)
+    }
+
+    /// Starts or stops the timer that drives the overlay panels' periodic
+    /// updates, as the given configuration calls for.
+    ///
+    /// The panels update the desktop wallpaper every 5 seconds and the
+    /// application menu frame every 10 seconds, for the shapes that draw
+    /// them. macOS no longer posts a notification when the wallpaper
+    /// changes. Each panel used to run its own timer for each, and each
+    /// update took its own window list, so the panels of several displays
+    /// woke the app separately to ask the window server the same thing.
+    /// One timer now takes a single window list for every panel, and only
+    /// runs while there are panels with a shape to update.
+    private func updateOverlayPanelUpdateTimer(for configuration: MenuBarAppearanceConfigurationV2) {
+        guard
+            !overlayPanels.isEmpty,
+            configuration.shapeKind != .noShape
+        else {
+            overlayPanelUpdateTimer = nil
+            return
+        }
+        guard overlayPanelUpdateTimer == nil else {
+            return
+        }
+        overlayPanelUpdateCount = 0
+        overlayPanelUpdateTimer = Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.performPeriodicOverlayPanelUpdates()
+            }
+    }
+
+    /// Performs the overlay panels' periodic updates, with one list of on
+    /// screen windows for every panel.
+    private func performPeriodicOverlayPanelUpdates() {
+        overlayPanelUpdateCount += 1
+        var flags: Set<MenuBarOverlayPanel.UpdateFlag> = [.desktopWallpaper]
+        if overlayPanelUpdateCount.isMultiple(of: 2) {
+            flags.insert(.applicationMenuFrame)
+        }
+        let updates = overlayPanels.compactMap { panel in
+            let panelFlags = panel.periodicUpdateFlags(from: flags)
+            return panelFlags.isEmpty ? nil : (panel, panelFlags)
+        }
+        guard !updates.isEmpty else {
+            return
+        }
+        let windows = WindowInfo.createWindows(option: .onScreen)
+        // Each panel's update makes Accessibility calls, so give each its own
+        // turn on the main actor, as its own timer did, instead of making
+        // them all in one loop.
+        for (panel, panelFlags) in updates {
+            Task { [weak self] in
+                guard self?.overlayPanels.contains(panel) == true else {
+                    return
+                }
+                panel.performPeriodicUpdates(for: panelFlags, windows: windows)
+            }
+        }
     }
 
     /// Returns each display's identifier, frame and scale, which is what the

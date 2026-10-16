@@ -1063,7 +1063,10 @@ extension HIDEventManager {
 
     /// A Boolean value that indicates whether the mouse pointer is within
     /// the bounds of the menu bar.
-    func isMouseInsideMenuBar(appState: AppState, screen: NSScreen) -> Bool {
+    ///
+    /// - Parameter visibleFrameMaxY: The top of the screen's visible frame, if
+    ///   the caller has just read it.
+    func isMouseInsideMenuBar(appState: AppState, screen: NSScreen, visibleFrameMaxY: CGFloat? = nil) -> Bool {
         guard let mouseLocation = MouseHelpers.locationAppKit else {
             return false
         }
@@ -1079,11 +1082,8 @@ extension HIDEventManager {
             return false
         }
 
-        // The bottom edge of the menu bar.
-        var menuBarMinY = screen.visibleFrame.maxY
-
-        // Whether the control item below is in this screen's menu bar.
-        var isControlItemOnScreen = false
+        // The bottom edge of the control item below, if it is in this screen's menu bar.
+        var controlItemMinY: CGFloat?
 
         // The Ice icon must be vertically visible. Otherwise, we can infer
         // that the menu bar is hidden and the mouse is not inside.
@@ -1120,22 +1120,26 @@ extension HIDEventManager {
             // is checked, both ways, because stacked displays can share a horizontal
             // range, and a collapsed section's divider reaches far off the left edge.
             if screen.frame.contains(CGPoint(x: controlItemFrame.maxX - 1, y: controlItemFrame.midY)) {
-                menuBarMinY = min(menuBarMinY, controlItemFrame.minY)
-                isControlItemOnScreen = true
+                controlItemMinY = controlItemFrame.minY
             }
         }
 
-        // Infer the menu bar frame from the screen frame.
+        // Infer the menu bar frame from the screen frame. Its bottom edge is the
+        // top of the visible frame, or the control item's bottom edge if that is
+        // lower. Reading the visible frame asks the window server, which took
+        // longer than the rest of this check, so it is read last, and only when
+        // the answer depends on it.
         let isInsideFrame = mouseLocation.x >= screen.frame.minX &&
             mouseLocation.x <= screen.frame.maxX &&
             mouseLocation.y <= screen.frame.maxY &&
-            mouseLocation.y >= menuBarMinY
+            (controlItemMinY.map { mouseLocation.y >= $0 } == true ||
+                mouseLocation.y >= (visibleFrameMaxY ?? screen.visibleFrame.maxY))
 
         // A control item in another display's menu bar says nothing about whether
         // this one is revealed. Asked only when the pointer is at the top of
         // the screen, and only before macOS 27 (see above).
         if #unavailable(macOS 27.0) {
-            if isInsideFrame && !isControlItemOnScreen {
+            if isInsideFrame && controlItemMinY == nil {
                 return !isMenuBarConcealedByFullscreen(on: screen)
             }
         }

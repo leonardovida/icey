@@ -16,6 +16,11 @@ final class MenuBarSearchPanel: NSPanel {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
+    /// Counts the panel's presentations, so that a show that is still
+    /// waiting for its captures when the panel is closed or shown again
+    /// doesn't present the panel.
+    private var presentationCount = 0
+
     /// Model for menu bar item search.
     private let model = MenuBarSearchModel()
 
@@ -138,6 +143,9 @@ final class MenuBarSearchPanel: NSPanel {
             averageColorCapture = model.captureAverageColor(for: screen)
         }
 
+        presentationCount += 1
+        let presentation = presentationCount
+
         Task {
             await appState.imageCache.updateCache()
 
@@ -147,6 +155,10 @@ final class MenuBarSearchPanel: NSPanel {
                 } else {
                     Logger.default.error("Menu bar capture did not finish within a second when showing the search panel")
                 }
+            }
+
+            guard presentation == presentationCount else {
+                return
             }
 
             let hostingView = MenuBarSearchHostingView(appState: appState, model: model, displayID: screen.displayID, panel: self)
@@ -176,6 +188,7 @@ final class MenuBarSearchPanel: NSPanel {
 
     /// Dismisses the search panel.
     override func close() {
+        presentationCount += 1
         super.close()
         contentView = nil
         mouseDownMonitor.stop()

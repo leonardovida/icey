@@ -49,6 +49,9 @@ final class AppState: ObservableObject {
     /// Manager for user notifications.
     let userNotificationManager = UserNotificationManager()
 
+    /// Manager for the anonymous usage statistics.
+    let usageStatisticsManager = UsageStatisticsManager()
+
     /// Storage for ``concealer27``, typed loosely so the property exists on every macOS.
     private var concealer27Storage: AnyObject?
 
@@ -137,6 +140,7 @@ final class AppState: ObservableObject {
         imageCache.performSetup(with: self)
         updatesManager.performSetup(with: self)
         userNotificationManager.performSetup(with: self)
+        usageStatisticsManager.performSetup(with: self)
 
         configureCancellables()
 

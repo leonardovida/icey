@@ -171,6 +171,12 @@ extension Defaults {
         case tempShowInterval = "TempShowInterval"
         case showInDockWhileSettingsOpen = "ShowInDockWhileSettingsOpen"
 
+        // MARK: About Settings
+        case sendAnonymousStatistics = "SendAnonymousStatistics"
+
+        // MARK: Usage Statistics
+        case usageStatisticsLastSentDay = "UsageStatisticsLastSentDay"
+
         // MARK: Menu Bar Items
         case knownMenuBarItems = "KnownMenuBarItems"
 
@@ -196,6 +202,7 @@ extension Defaults {
         case hasMigratedIcey3 = "hasMigratedIcey3"
         case hasMigratedIcey5 = "hasMigratedIcey5"
         case hasMigratedIcey6 = "hasMigratedIcey6"
+        case hasMigratedIcey7 = "hasMigratedIcey7"
 
         // MARK: Deprecated (Appearance Settings)
         case menuBarHasBorder = "MenuBarHasBorder"

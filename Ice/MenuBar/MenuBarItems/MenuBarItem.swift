@@ -29,6 +29,12 @@ struct MenuBarItem: CustomStringConvertible {
     /// A Boolean value that indicates whether the item is on screen.
     let isOnScreen: Bool
 
+    /// The item's display name, once it has been worked out.
+    ///
+    /// Items read through Accessibility on macOS 27 keep this empty cache.
+    /// The other initializers pass the application they already looked up.
+    private var displayNameCache = DisplayNameCache()
+
     /// A Boolean value that indicates whether this item can be moved.
     var isMovable: Bool {
         tag.isMovable
@@ -78,9 +84,21 @@ struct MenuBarItem: CustomStringConvertible {
         return NSRunningApplication(processIdentifier: sourcePID)
     }
 
-    // TODO: Generate this once, during initialization.
     /// A name associated with the item, suited for display.
+    ///
+    /// The name is worked out on the first read, and kept while the
+    /// application that created the item is running. Until that application
+    /// is known, and once it has quit, every read looks it up again.
     var displayName: String {
+        displayNameCache.name(
+            lookUpApplication: { sourceApplication },
+            makeName: { makeDisplayName(sourceApplication: $0) }
+        )
+    }
+
+    /// Returns the item's display name, given the application that
+    /// created it.
+    private func makeDisplayName(sourceApplication: NSRunningApplication?) -> String {
         /// Converts "UpperCamelCase" to "Title Case".
         ///
         /// Ignores cases where a single lowercase letter immediately
@@ -172,6 +190,7 @@ struct MenuBarItem: CustomStringConvertible {
         self.bounds = itemWindow.bounds
         self.title = itemWindow.title
         self.isOnScreen = itemWindow.isOnScreen
+        self.displayNameCache = DisplayNameCache(application: applications.application(for: itemWindow.ownerPID))
     }
 
     /// Creates a menu bar item without checks.
@@ -188,6 +207,7 @@ struct MenuBarItem: CustomStringConvertible {
         self.bounds = itemWindow.bounds
         self.title = itemWindow.title
         self.isOnScreen = itemWindow.isOnScreen
+        self.displayNameCache = DisplayNameCache(application: sourcePID.flatMap { applications.application(for: $0) })
     }
 }
 
@@ -343,6 +363,76 @@ extension MenuBarItem: Hashable {
         hasher.combine(sourcePID)
         hasher.combine(title)
         hasher.combine(isOnScreen)
+    }
+}
+
+// MARK: - DisplayNameCache
+
+/// Keeps a menu bar item's display name, so that it is worked out once
+/// rather than on every read.
+///
+/// Working out a name looks up the item's application and often runs a
+/// regular expression, and the Ice Bar, the search panel and the layout
+/// bar read the names of every item each time they update. Copies of an
+/// item share one cache, and items are compared and hashed without it.
+private struct DisplayNameCache {
+    private struct State {
+        /// The application that created the item, if it is known.
+        var application: NSRunningApplication?
+
+        /// The name worked out for ``application``.
+        var name: String?
+    }
+
+    /// The cached state.
+    ///
+    /// Items are read from more than one task at once, so the state is
+    /// protected by a lock. `NSRunningApplication` is thread safe.
+    private let state: OSAllocatedUnfairLock<State>
+
+    /// Creates a cache for an item created by the given application.
+    ///
+    /// - Parameter application: The application that created the item, if
+    ///   it has been looked up already.
+    init(application: NSRunningApplication? = nil) {
+        self.state = OSAllocatedUnfairLock(uncheckedState: State(application: application))
+    }
+
+    /// Returns the item's display name.
+    ///
+    /// The kept name is returned while its application is running. Without
+    /// one, or once it has quit, the application is looked up and the name
+    /// is worked out again, which is what every read did before there was
+    /// a cache. A newly found application that is running is kept.
+    ///
+    /// - Parameters:
+    ///   - lookUpApplication: Looks up the application that created the item.
+    ///   - makeName: Works out the name for the given application.
+    func name(
+        lookUpApplication: () -> NSRunningApplication?,
+        makeName: (NSRunningApplication?) -> String
+    ) -> String {
+        let (application, name) = state.withLockUnchecked { ($0.application, $0.name) }
+        if let application, !application.isTerminated {
+            if let name {
+                return name
+            }
+            let name = makeName(application)
+            state.withLockUnchecked { state in
+                if state.application === application {
+                    state.name = name
+                }
+            }
+            return name
+        }
+        let newApplication = lookUpApplication()
+        let newName = makeName(newApplication)
+        if let newApplication, !newApplication.isTerminated {
+            state.withLockUnchecked { state in
+                state = State(application: newApplication, name: newName)
+            }
+        }
+        return newName
     }
 }
 

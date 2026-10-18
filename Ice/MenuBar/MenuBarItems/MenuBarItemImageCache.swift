@@ -29,6 +29,62 @@ final class MenuBarItemImageCache: ObservableObject {
         var nsImage: NSImage {
             NSImage(cgImage: cgImage, size: scaledSize)
         }
+
+        /// Returns a Boolean value that indicates whether this image has the
+        /// same scale, size, pixel format and pixels as the given image.
+        ///
+        /// `==` compares the base images by identity, so a capture of an item
+        /// that hasn't changed is never equal to the image it replaces. This
+        /// compares the bytes of every pixel instead.
+        func hasSamePixels(as other: CapturedImage) -> Bool {
+            if self == other {
+                return true
+            }
+            let a = cgImage
+            let b = other.cgImage
+            guard
+                scale == other.scale,
+                a.width == b.width,
+                a.height == b.height,
+                a.width > 0,
+                a.height > 0,
+                a.bitsPerComponent == b.bitsPerComponent,
+                a.bitsPerPixel == b.bitsPerPixel,
+                a.bytesPerRow == b.bytesPerRow,
+                a.bitmapInfo == b.bitmapInfo,
+                a.colorSpace == b.colorSpace,
+                a.renderingIntent == b.renderingIntent,
+                a.shouldInterpolate == b.shouldInterpolate,
+                a.isMask == b.isMask,
+                a.decode == nil,
+                b.decode == nil,
+                let dataA = a.dataProvider?.data,
+                let dataB = b.dataProvider?.data,
+                let bytesA = CFDataGetBytePtr(dataA),
+                let bytesB = CFDataGetBytePtr(dataB)
+            else {
+                return false
+            }
+            // Compare row by row, leaving out the padding at the end of each row.
+            // A crop's data starts at its first pixel and keeps the rows of the
+            // image it was cropped from, so it can be longer than the crop.
+            let bytesPerRow = a.bytesPerRow
+            let rowLength = (a.width * a.bitsPerPixel + 7) / 8
+            let requiredLength = (a.height - 1) * bytesPerRow + rowLength
+            guard
+                CFDataGetLength(dataA) >= requiredLength,
+                CFDataGetLength(dataB) >= requiredLength
+            else {
+                return false
+            }
+            for row in 0..<a.height {
+                let offset = row * bytesPerRow
+                if memcmp(bytesA + offset, bytesB + offset, rowLength) != 0 {
+                    return false
+                }
+            }
+            return true
+        }
     }
 
     /// The result of an image capture operation.
@@ -78,6 +134,13 @@ final class MenuBarItemImageCache: ObservableObject {
 
     /// The cached item images, keyed by their corresponding tags.
     @Published private(set) var images = [MenuBarItemTag: CapturedImage]()
+
+    /// Sends after every update of the cache, including the updates that
+    /// leave ``images`` unchanged and so don't publish it.
+    let updates = PassthroughSubject<Void, Never>()
+
+    /// The item cache at the time ``images`` was last published.
+    private var itemCacheAtLastPublish: MenuBarItemManager.ItemCache?
 
     /// Logger for the menu bar item image cache.
     private let logger = Logger(category: "MenuBarItemImageCache")
@@ -492,18 +555,45 @@ final class MenuBarItemImageCache: ObservableObject {
     /// Merges the given images into the cache, dropping the images of items
     /// that no longer exist, so that the cache doesn't grow without bound as
     /// apps come and go.
+    ///
+    /// When every new image has the same pixels as the cached one, the cached
+    /// images are kept, and ``images`` is only published if items were dropped,
+    /// or if the item cache changed since it was last published. Every view of
+    /// the images redrew on each capture of an unchanged menu bar otherwise.
+    /// The views that read the item cache alongside the images, such as the
+    /// "Unable to display menu bar items" check, still see each change to it.
+    ///
+    /// The comparison is all or nothing, rather than per item: a cropped image
+    /// keeps the whole capture it was cropped from alive, so keeping some old
+    /// images next to some new ones would keep several captures in memory.
     @MainActor
     private func mergeImages(_ newImages: [MenuBarItemTag: CapturedImage], appState: AppState) {
-        let currentTags = Set(appState.itemManager.itemCache.managedItems.map(\.tag))
+        defer {
+            updates.send()
+        }
+
+        let itemCache = appState.itemManager.itemCache
+        let currentTags = Set(itemCache.managedItems.map(\.tag))
+
+        var merged = images
         // Skip pruning while the item cache is empty, so that every image
         // isn't dropped at once.
-        guard !currentTags.isEmpty else {
-            images.merge(newImages) { (_, new) in new }
+        if !currentTags.isEmpty {
+            merged = merged.filter { currentTags.contains($0.key) }
+        }
+
+        let isUnchanged = newImages.allSatisfy { tag, newImage in
+            merged[tag]?.hasSamePixels(as: newImage) == true
+        }
+        if !isUnchanged {
+            merged.merge(newImages) { (_, new) in new }
+        }
+
+        guard merged != images || itemCache != itemCacheAtLastPublish else {
             return
         }
-        images = images
-            .filter { currentTags.contains($0.key) }
-            .merging(newImages) { (_, new) in new }
+        images = merged
+        itemCacheAtLastPublish = itemCache
     }
 
     /// Updates the cache for the given sections, if necessary.

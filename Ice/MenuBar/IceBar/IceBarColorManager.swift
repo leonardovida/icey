@@ -175,7 +175,12 @@ final class IceBarColorManager: ObservableObject {
 
         // Just use `menuBarWindow` as the source for now, regardless
         // of whether its image contributed to the average.
-        colorInfo = MenuBarAverageColorInfo(color: averageColor, source: .menuBarWindow)
+        let info = MenuBarAverageColorInfo(color: averageColor, source: .menuBarWindow)
+
+        // Assigning an equal colour redrew the Ice Bar every few seconds.
+        if colorInfo != info {
+            colorInfo = info
+        }
     }
 
     func updateAllProperties(with frame: CGRect, screen: NSScreen) {

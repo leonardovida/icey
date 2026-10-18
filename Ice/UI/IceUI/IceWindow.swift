@@ -130,6 +130,21 @@ extension IceWindowIdentifier {
     func prepareContent() {
         Self.contentRequests.send(self)
     }
+
+    /// Whether the window's content is built when SwiftUI creates the
+    /// window at launch, before the window first opens.
+    ///
+    /// The permissions window takes its size from its content, so it
+    /// needs the content when it is created to get its size and position
+    /// on first open. The settings window gets its default size and size
+    /// limits from outside the content, so its content waits until the
+    /// window opens.
+    fileprivate var buildsContentWhenCreated: Bool {
+        switch self {
+        case .settings: false
+        case .permissions: true
+        }
+    }
 }
 
 /// A modifier that keeps a view in the view tree only while its window
@@ -141,10 +156,15 @@ extension IceWindowIdentifier {
 /// view that takes any size in place of the content, so the window keeps
 /// its frame, and the content is built again when the window opens.
 private struct IceWindowContentModifier: ViewModifier {
-    @State private var isPresented = true
+    @State private var isPresented: Bool
     @State private var cancellable: AnyCancellable?
 
     let id: IceWindowIdentifier
+
+    init(id: IceWindowIdentifier) {
+        self.id = id
+        self._isPresented = State(initialValue: id.buildsContentWhenCreated)
+    }
 
     func body(content: Content) -> some View {
         ZStack {

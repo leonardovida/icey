@@ -255,8 +255,9 @@ extension MenuBarItem {
     private static func getMenuBarItemsExperimental(on display: CGDirectDisplayID?, option: ListOption) async -> [MenuBarItem] {
         var items = [MenuBarItem]()
         var applications = RunningApplicationLookup()
-        for window in getMenuBarItemWindows(on: display, option: option) {
-            let sourcePID = await MenuBarItemService.Connection.shared.sourcePID(for: window)
+        let windows = getMenuBarItemWindows(on: display, option: option)
+        let sourcePIDs = await MenuBarItemService.Connection.shared.sourcePIDs(for: windows)
+        for (window, sourcePID) in zip(windows, sourcePIDs) {
             let item = MenuBarItem(uncheckedItemWindow: window, sourcePID: sourcePID, applications: &applications)
             items.append(item)
         }

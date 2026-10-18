@@ -37,10 +37,18 @@ extension MenuBarItemService {
     enum Request: Codable {
         case start
         case sourcePID(WindowInfo)
+        /// Asks for the source process of each of the given windows.
+        ///
+        /// A service from a version of the app before this request was
+        /// added does not reply to it, and the app then asks for one
+        /// window at a time with `sourcePID`.
+        case sourcePIDs([WindowInfo])
     }
 
     enum Response: Codable {
         case start
         case sourcePID(pid_t?)
+        /// The source process of each requested window, in order.
+        case sourcePIDs([pid_t?])
     }
 }

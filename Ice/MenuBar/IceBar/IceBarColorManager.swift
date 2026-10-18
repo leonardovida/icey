@@ -6,12 +6,24 @@
 import Combine
 import SwiftUI
 
+@MainActor
 final class IceBarColorManager: ObservableObject {
     @Published private(set) var colorInfo: MenuBarAverageColorInfo?
 
     private weak var iceBarPanel: IceBarPanel?
 
     private var windowImage: CGImage?
+
+    /// The number of window image captures started so far.
+    ///
+    /// The captures run off the main thread. Each one is numbered when it
+    /// starts, and a capture stores its image only if no later one has
+    /// stored its own already, so an older capture that finishes last does
+    /// not replace a newer image.
+    private var windowImageRequestCount = 0
+
+    /// The number of the capture that stored ``windowImage``.
+    private var windowImageRequest = 0
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -119,9 +131,20 @@ final class IceBarColorManager: ObservableObject {
                 else {
                     return
                 }
-                updateWindowImage(for: screen)
-                withAnimation {
-                    self.updateColorInfo(with: iceBarPanel.frame, screen: screen)
+                let windowImageUpdate = updateWindowImage(for: screen)
+                Task {
+                    await windowImageUpdate.value
+                    // The capture took a moment, so the panel can have closed
+                    // or moved to another display since.
+                    guard
+                        iceBarPanel.isVisible,
+                        iceBarPanel.screen == screen
+                    else {
+                        return
+                    }
+                    withAnimation {
+                        self.updateColorInfo(with: iceBarPanel.frame, screen: screen)
+                    }
                 }
             }
             .store(in: &c)
@@ -130,26 +153,41 @@ final class IceBarColorManager: ObservableObject {
         cancellables = c
     }
 
-    private func updateWindowImage(for screen: NSScreen) {
-        let windows = WindowInfo.createWindows(option: .onScreen)
+    /// Captures the menu bar on the given screen off the main thread, and
+    /// stores the image.
+    ///
+    /// - Returns: A task that finishes once the image is stored, or once the
+    ///   capture failed, which keeps the previous image.
+    @discardableResult
+    private func updateWindowImage(for screen: NSScreen) -> Task<Void, Never> {
+        windowImageRequestCount += 1
+        let request = windowImageRequestCount
         let displayID = screen.displayID
+        return Task {
+            let image = await ScreenCapture.menuBarStrip(for: displayID)
+            storeWindowImage(image, request: request)
+        }
+    }
 
-        guard
-            let menuBarWindow = WindowInfo.menuBarWindow(from: windows, for: displayID),
-            let wallpaperWindow = WindowInfo.wallpaperWindow(from: windows, for: displayID)
-        else {
+    /// Stores the image of the given capture, unless it failed or a later
+    /// capture stored its image first.
+    private func storeWindowImage(_ image: CGImage?, request: Int) {
+        guard let image, request > windowImageRequest else {
             return
         }
-
-        guard let image = ScreenCapture.captureWindows(
-            with: [menuBarWindow.windowID, wallpaperWindow.windowID],
-            screenBounds: withMutableCopy(of: wallpaperWindow.bounds) { $0.size.height = 1 },
-            option: .nominalResolution
-        ) else {
-            return
-        }
-
         windowImage = image
+        windowImageRequest = request
+    }
+
+    /// Starts a capture of the menu bar on the given screen, off the main
+    /// thread, for the panel that is about to be shown there.
+    ///
+    /// Pass its image to ``updateAllProperties(with:screen:windowImage:)``.
+    func captureWindowImage(for screen: NSScreen) -> Task<CGImage?, Never> {
+        let displayID = screen.displayID
+        return Task {
+            await ScreenCapture.menuBarStrip(for: displayID)
+        }
     }
 
     private func updateColorInfo(with frame: CGRect, screen: NSScreen) {
@@ -184,7 +222,18 @@ final class IceBarColorManager: ObservableObject {
     }
 
     func updateAllProperties(with frame: CGRect, screen: NSScreen) {
-        updateWindowImage(for: screen)
+        updateAllProperties(with: frame, screen: screen, windowImage: ScreenCapture.captureMenuBarStrip(for: screen.displayID))
+    }
+
+    /// Updates the color for the panel that is about to be shown, using an
+    /// image from ``captureWindowImage(for:)``.
+    ///
+    /// The image counts as captured now, as the panel's own capture always
+    /// was, so a capture started while it was taken cannot replace it. Pass
+    /// `nil` to keep the previous image, as a failed capture does.
+    func updateAllProperties(with frame: CGRect, screen: NSScreen, windowImage image: CGImage?) {
+        windowImageRequestCount += 1
+        storeWindowImage(image, request: windowImageRequestCount)
         updateColorInfo(with: frame, screen: screen)
     }
 

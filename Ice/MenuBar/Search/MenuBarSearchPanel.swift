@@ -16,6 +16,11 @@ final class MenuBarSearchPanel: NSPanel {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
+    /// Counts the panel's presentations, so that a show that is still
+    /// waiting for its captures when the panel is closed or shown again
+    /// doesn't present the panel.
+    private var presentationCount = 0
+
     /// Model for menu bar item search.
     private let model = MenuBarSearchModel()
 
@@ -129,8 +134,36 @@ final class MenuBarSearchPanel: NSPanel {
         // Important that we set the navigation state before updating the cache.
         appState.navigationState.isSearchPresented = true
 
+        // A panel that is about to appear, or to move to another display, needs
+        // the color of the menu bar there. It is captured off the main thread,
+        // alongside the cache update, and set before the panel is shown. It used
+        // to be captured on the main thread as the panel became visible.
+        var averageColorCapture: Task<CGColor?, Never>?
+        if !isVisible || self.screen?.displayID != screen.displayID {
+            averageColorCapture = model.captureAverageColor(for: screen)
+        }
+
+        presentationCount += 1
+        let presentation = presentationCount
+
         Task {
             await appState.imageCache.updateCache()
+
+            if let averageColorCapture {
+                if await averageColorCapture.finished(within: .seconds(1)) {
+                    let averageColor = await averageColorCapture.value
+                    guard presentation == presentationCount else {
+                        return
+                    }
+                    model.setAverageColor(averageColor, for: screen)
+                } else {
+                    Logger.default.error("Menu bar capture did not finish within a second when showing the search panel")
+                }
+            }
+
+            guard presentation == presentationCount else {
+                return
+            }
 
             let hostingView = MenuBarSearchHostingView(appState: appState, model: model, displayID: screen.displayID, panel: self)
             hostingView.setFrameSize(hostingView.intrinsicContentSize)
@@ -159,6 +192,7 @@ final class MenuBarSearchPanel: NSPanel {
 
     /// Dismisses the search panel.
     override func close() {
+        presentationCount += 1
         super.close()
         contentView = nil
         mouseDownMonitor.stop()

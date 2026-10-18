@@ -4,6 +4,7 @@
 //
 
 import CoreGraphics
+import os
 import ScreenCaptureKit
 
 /// A namespace for screen capture operations.
@@ -130,6 +131,73 @@ enum ScreenCapture {
         )
     }
 
+    /// The state of the menu bar color captures.
+    private struct MenuBarColorCaptures {
+        /// The callers waiting for a strip capture that has not started,
+        /// by display.
+        var waitingForStrip = [CGDirectDisplayID: [CheckedContinuation<CGImage?, Never>]]()
+
+        /// The callers waiting for an average color capture that has not
+        /// started, by display.
+        var waitingForAverageColor = [CGDirectDisplayID: [CheckedContinuation<CGColor?, Never>]]()
+
+        /// When the capture that is running started.
+        var runningSince: ContinuousClock.Instant?
+    }
+
+    /// The state of the menu bar color captures.
+    private static let menuBarColorCaptures = OSAllocatedUnfairLock(initialState: MenuBarColorCaptures())
+
+    /// How long a capture may run before the queue counts as blocked.
+    private static let menuBarColorCaptureLimit: Duration = .seconds(2)
+
+    /// Runs the given capture on ``menuBarColorQueue``, and returns its result.
+    ///
+    /// Requests for the same kind and display that arrive before a capture
+    /// starts share it, so at most one waits for each. While a capture has
+    /// run for longer than ``menuBarColorCaptureLimit``, which happens only
+    /// when the window server doesn't answer, new requests return `nil` at
+    /// once, as a failed capture does, so they can't pile up behind it.
+    private static func menuBarColorCapture<Value: Sendable>(
+        for displayID: CGDirectDisplayID,
+        waiting: WritableKeyPath<MenuBarColorCaptures, [CGDirectDisplayID: [CheckedContinuation<Value?, Never>]]> & Sendable,
+        capture: @escaping @Sendable () -> Value?
+    ) async -> Value? {
+        await withCheckedContinuation { continuation in
+            let shouldStart: Bool? = menuBarColorCaptures.withLock { state in
+                if let runningSince = state.runningSince, runningSince.duration(to: .now) > menuBarColorCaptureLimit {
+                    return nil
+                }
+                if state[keyPath: waiting][displayID] != nil {
+                    state[keyPath: waiting][displayID]?.append(continuation)
+                    return false
+                }
+                state[keyPath: waiting][displayID] = [continuation]
+                return true
+            }
+            guard let shouldStart else {
+                continuation.resume(returning: nil)
+                return
+            }
+            guard shouldStart else {
+                return
+            }
+            menuBarColorQueue.async {
+                let callers = menuBarColorCaptures.withLock { state in
+                    state.runningSince = .now
+                    return state[keyPath: waiting].removeValue(forKey: displayID) ?? []
+                }
+                let value = capture()
+                menuBarColorCaptures.withLock { state in
+                    state.runningSince = nil
+                }
+                for caller in callers {
+                    caller.resume(returning: value)
+                }
+            }
+        }
+    }
+
     /// Captures the strip that ``captureMenuBarStrip(for:)`` captures, off the
     /// main thread.
     ///
@@ -137,23 +205,18 @@ enum ScreenCapture {
     /// for the window server, so a caller that crops or averages the image
     /// afterwards does not wait.
     static func menuBarStrip(for displayID: CGDirectDisplayID) async -> CGImage? {
-        await withCheckedContinuation { continuation in
-            menuBarColorQueue.async {
-                let image = captureMenuBarStrip(for: displayID)
-                _ = image?.dataProvider?.data
-                continuation.resume(returning: image)
-            }
+        await menuBarColorCapture(for: displayID, waiting: \.waitingForStrip) {
+            let image = captureMenuBarStrip(for: displayID)
+            _ = image?.dataProvider?.data
+            return image
         }
     }
 
     /// Returns the average color, ignoring alpha, of the strip that
     /// ``captureMenuBarStrip(for:)`` captures, computed off the main thread.
     static func menuBarAverageColor(for displayID: CGDirectDisplayID) async -> CGColor? {
-        await withCheckedContinuation { continuation in
-            menuBarColorQueue.async {
-                let color = captureMenuBarStrip(for: displayID)?.averageColor(option: .ignoreAlpha)
-                continuation.resume(returning: color)
-            }
+        await menuBarColorCapture(for: displayID, waiting: \.waitingForAverageColor) {
+            captureMenuBarStrip(for: displayID)?.averageColor(option: .ignoreAlpha)
         }
     }
 }

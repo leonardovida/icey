@@ -40,6 +40,17 @@ extension MenuBarItemService {
             qos: .userInitiated
         )
 
+        /// How long the connection asks for one window at a time after
+        /// the service fails a request for several windows.
+        private static let batchRequestRetryInterval = Duration.seconds(60)
+
+        /// When the service last failed a request for several windows.
+        ///
+        /// A service from an older version of the app does not know that
+        /// request, as when a running service is still the old one during
+        /// an update.
+        private let batchRequestFailure = OSAllocatedUnfairLock<ContinuousClock.Instant?>(initialState: nil)
+
         /// Creates a new connection.
         private init() {
             let queue = DispatchQueue.targetingGlobal(
@@ -87,6 +98,55 @@ extension MenuBarItemService {
                         continuation.resume(returning: pid)
                     } else {
                         logger.error("Source PID request returned invalid response \(String(describing: response))")
+                        continuation.resume(returning: nil)
+                    }
+                }
+            }
+        }
+
+        /// Returns the source process identifier for each of the given
+        /// windows, in order.
+        ///
+        /// The windows are sent in one request. If the service fails it,
+        /// each window is sent in a request of its own, as before the
+        /// batch request existed, so a service from an older version of
+        /// the app still answers.
+        func sourcePIDs(for windows: [WindowInfo]) async -> [pid_t?] {
+            guard !windows.isEmpty else {
+                return []
+            }
+            if let pids = await batchSourcePIDs(for: windows) {
+                return pids
+            }
+            var pids = [pid_t?]()
+            for window in windows {
+                pids.append(await sourcePID(for: window))
+            }
+            return pids
+        }
+
+        /// Returns the source process identifier for each of the given
+        /// windows from one request, or `nil` if the request was not sent
+        /// or the service failed it.
+        private func batchSourcePIDs(for windows: [WindowInfo]) async -> [pid_t?]? {
+            await withCheckedContinuation { continuation in
+                requestQueue.async { [self] in
+                    let sendsBatchRequest = batchRequestFailure.withLock { failure in
+                        failure.map { .now - $0 >= Self.batchRequestRetryInterval } ?? true
+                    }
+                    guard sendsBatchRequest else {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    if
+                        case .sourcePIDs(let pids) = session.send(request: .sourcePIDs(windows)),
+                        pids.count == windows.count
+                    {
+                        batchRequestFailure.withLock { $0 = nil }
+                        continuation.resume(returning: pids)
+                    } else {
+                        logger.notice("Source PIDs request failed, sending one request per window")
+                        batchRequestFailure.withLock { $0 = .now }
                         continuation.resume(returning: nil)
                     }
                 }

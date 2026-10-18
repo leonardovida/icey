@@ -95,6 +95,30 @@ final class SourcePIDCache {
         }
     }
 
+    /// The answers that apps gave during one search for the source
+    /// processes of a list of windows.
+    ///
+    /// The windows are still searched for one at a time, but each app is
+    /// asked for its extras menu bar, and each of its items for its frame,
+    /// at most once per search, rather than once per window. An app that
+    /// does not respond in time then delays a search once, not once per
+    /// window. The answers, failed and timed out ones included, are not
+    /// kept after the search.
+    private struct SearchAnswers {
+        /// Each asked app's answer when asked for its extras menu bar, by
+        /// process identifier.
+        var extrasMenuBars = [pid_t: CachedApplication.ExtrasMenuBarAnswer]()
+
+        /// The children of each asked app's extras menu bar, by process
+        /// identifier.
+        var children = [pid_t: [UIElement]]()
+
+        /// The frames of the children examined so far, in order, by
+        /// process identifier. A child that is disabled or has no frame
+        /// is `nil`.
+        var childFrames = [pid_t: [CGRect?]]()
+    }
+
     /// State for the cache.
     private struct State {
         /// How long an app's answer that it has no extras menu bar is
@@ -128,29 +152,40 @@ final class SourcePIDCache {
         /// app is asked for it.
         var unmatchedWindowIDs = Set<CGWindowID>()
 
-        /// Returns the latest bounds of the given window after ensuring
-        /// that the bounds are stable (a.k.a. not currently changing).
+        /// Returns the latest bounds of the given windows after ensuring
+        /// that the bounds are stable (a.k.a. not currently changing), by
+        /// window identifier.
         ///
         /// This method blocks until stable bounds can be determined, or
-        /// until retrieving the bounds for the window fails.
-        private func stableBounds(for window: WindowInfo) -> CGRect? {
-            var cachedBounds = window.bounds
+        /// until retrieving the bounds for a window fails. Each window is
+        /// checked as it would be on its own, but the windows share the
+        /// waits between checks. A window whose bounds could not be
+        /// retrieved, or did not settle, is left out.
+        private func stableBounds(for windows: [WindowInfo]) -> [CGWindowID: CGRect] {
+            var stableBounds = [CGWindowID: CGRect]()
+            var pending = windows.map { (window: $0, cachedBounds: $0.bounds) }
 
             for n in 1...5 {
-                guard let currentBounds = window.currentBounds() else {
-                    // Failure here means the window probably doesn't
-                    // exist anymore.
-                    return nil
+                pending = pending.compactMap { window, cachedBounds in
+                    guard let currentBounds = window.currentBounds() else {
+                        // Failure here means the window probably doesn't
+                        // exist anymore.
+                        return nil
+                    }
+                    if currentBounds == cachedBounds {
+                        stableBounds[window.windowID] = currentBounds
+                        return nil
+                    }
+                    return (window, currentBounds)
                 }
-                if currentBounds == cachedBounds {
-                    return currentBounds
+                if pending.isEmpty {
+                    break
                 }
-                cachedBounds = currentBounds
                 // Compute the sleep interval from the current attempt.
                 Thread.sleep(forTimeInterval: TimeInterval(n) / 100)
             }
 
-            return nil
+            return stableBounds
         }
 
         /// Reorders the cached apps so that those that are confirmed
@@ -170,15 +205,32 @@ final class SourcePIDCache {
             apps = lhs + rhs
         }
 
-        /// Updates the cached process identifier for the given window.
-        mutating func updatePID(for window: WindowInfo) {
-            guard
-                AXHelpers.isProcessTrusted(),
-                let windowBounds = stableBounds(for: window)
-            else {
+        /// Updates the cached process identifiers for the given windows.
+        ///
+        /// The windows are searched for in order, each as it would be on
+        /// its own, with the apps' answers shared between them.
+        mutating func updatePIDs(for windows: [WindowInfo]) {
+            guard AXHelpers.isProcessTrusted() else {
                 return
             }
 
+            let bounds = stableBounds(for: windows)
+            var answers = SearchAnswers()
+
+            for window in windows {
+                guard
+                    pids[window.windowID] == nil,
+                    let windowBounds = bounds[window.windowID]
+                else {
+                    continue
+                }
+                updatePID(for: window, windowBounds: windowBounds, answers: &answers)
+            }
+        }
+
+        /// Updates the cached process identifier for the given window,
+        /// using and adding to the answers of the current search.
+        private mutating func updatePID(for window: WindowInfo, windowBounds: CGRect, answers: inout SearchAnswers) {
             partitionApps()
 
             let now = ContinuousClock.now
@@ -193,8 +245,10 @@ final class SourcePIDCache {
                 {
                     continue
                 }
+                let answer = answers.extrasMenuBars[pid] ?? app.getOrCreateExtrasMenuBar()
+                answers.extrasMenuBars[pid] = answer
                 let bar: UIElement
-                switch app.getOrCreateExtrasMenuBar() {
+                switch answer {
                 case .bar(let extrasMenuBar):
                     bar = extrasMenuBar
                     noExtrasMenuBarAnswers.removeValue(forKey: pid)
@@ -204,12 +258,21 @@ final class SourcePIDCache {
                 case .unknown:
                     continue
                 }
-                for child in AXHelpers.children(for: bar) {
-                    guard AXHelpers.isEnabled(child) else {
-                        continue
+                let children = answers.children[pid] ?? AXHelpers.children(for: bar)
+                answers.children[pid] = children
+                for (index, child) in children.enumerated() {
+                    let childFrame: CGRect?
+                    if let frames = answers.childFrames[pid], index < frames.count {
+                        childFrame = frames[index]
+                    } else {
+                        // The children are examined in order, and only
+                        // until one matches, so this child is the next
+                        // one not yet examined.
+                        childFrame = AXHelpers.isEnabled(child) ? AXHelpers.frame(for: child) : nil
+                        answers.childFrames[pid, default: []].append(childFrame)
                     }
                     guard
-                        let childFrame = AXHelpers.frame(for: child),
+                        let childFrame,
                         childFrame.center.distance(to: windowBounds.center) <= 1
                     else {
                         continue
@@ -289,12 +352,18 @@ final class SourcePIDCache {
     /// Returns the cached process identifier for the given window,
     /// updating the cache if needed.
     func pid(for window: WindowInfo) -> pid_t? {
+        pids(for: [window])[0]
+    }
+
+    /// Returns the cached process identifier for each of the given
+    /// windows, in order, updating the cache if needed.
+    func pids(for windows: [WindowInfo]) -> [pid_t?] {
         state.withLock { state in
-            if let pid = state.pids[window.windowID] {
-                return pid
+            let uncachedWindows = windows.filter { state.pids[$0.windowID] == nil }
+            if !uncachedWindows.isEmpty {
+                state.updatePIDs(for: uncachedWindows)
             }
-            state.updatePID(for: window)
-            return state.pids[window.windowID]
+            return windows.map { state.pids[$0.windowID] }
         }
     }
 }

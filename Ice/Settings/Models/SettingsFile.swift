@@ -28,8 +28,9 @@ import UniformTypeIdentifiers
 /// Only the keys in ``entries`` are written or read. Everything else Icey
 /// keeps in its defaults is left out on purpose:
 ///
-/// - Migration markers and `MacOS27LayoutSeeded`, which record what this Mac
-///   has already done.
+/// - Migration markers, `MacOS27LayoutSeeded` and
+///   `UsageStatisticsLastSentDay`, which record what this Mac has already
+///   done.
 /// - `MacOS27MenuReach` and `MacOS27MenuOwner`, measurements of this Mac's
 ///   displays, keyed by display.
 /// - `MacOS27ClickRestoreDelay` and `MacOS27IceBarWaitsForRefresh`, hidden
@@ -365,6 +366,9 @@ extension SettingsFile {
         // macOS 27
         (.macOS27Layout, .macOS27Layout),
         (.showCaptureIndicator, .bool),
+
+        // About
+        (.sendAnonymousStatistics, .bool),
     ]
 }
 

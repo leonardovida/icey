@@ -8,6 +8,7 @@ import SwiftUI
 struct AboutSettingsPane: View {
     @EnvironmentObject var appState: AppState
     @ObservedObject var updatesManager: UpdatesManager
+    @ObservedObject var usageStatisticsManager: UsageStatisticsManager
     @Environment(\.openURL) private var openURL
 
     private var acknowledgementsURL: URL {
@@ -26,6 +27,27 @@ struct AboutSettingsPane: View {
 
     private var issuesURL: URL {
         repositoryURL.appendingPathComponent("issues")
+    }
+
+    private var privacyURL: URL {
+        // swiftlint:disable:next force_unwrapping
+        URL(string: "https://github.com/leonardovida/icey#privacy-and-anonymous-statistics")!
+    }
+
+    /// The annotation of the statistics setting, ending with a link to the
+    /// README's privacy section.
+    private var statisticsAnnotation: AttributedString {
+        var text = AttributedString(
+            localized: """
+                Once a day: Icey version, macOS version, Mac model, CPU, memory, displays \
+                and which features are on. No identifiers.
+                """
+        )
+        var link = AttributedString(localized: "Learn more")
+        link.link = privacyURL
+        text.append(AttributedString(" "))
+        text.append(link)
+        return text
     }
 
     private var lastUpdateCheckString: String {
@@ -109,8 +131,20 @@ struct AboutSettingsPane: View {
             if updatesManager.canCheckForUpdates {
                 checkForUpdates
             }
+            sendAnonymousStatistics
         }
         .frame(maxWidth: 600)
+    }
+
+    @ViewBuilder
+    private var sendAnonymousStatistics: some View {
+        Toggle(
+            "Send anonymous statistics",
+            isOn: $usageStatisticsManager.isEnabled
+        )
+        .annotation {
+            Text(statisticsAnnotation)
+        }
     }
 
     @ViewBuilder

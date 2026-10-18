@@ -43,6 +43,7 @@ extension MigrationManager {
             migrateIcey3(),
             migrateIcey5(),
             migrateIcey6(),
+            migrateIcey7(),
         ]
 
         for result in results {
@@ -467,6 +468,30 @@ extension MigrationManager {
 
         Defaults.set(true, forKey: .hasMigratedIcey6)
         logger.info("Successfully migrated to Icey 6 settings")
+
+        return .success
+    }
+}
+
+// MARK: - Migrate Icey 7
+
+extension MigrationManager {
+    /// Performs all migrations for the seventh Icey release.
+    ///
+    /// The release adds anonymous statistics, which Settings > About can
+    /// turn off. The setting is written turned on, its default, as the
+    /// README describes. The day of the last report needs nothing written.
+    private func migrateIcey7() -> MigrationResult {
+        guard !Defaults.bool(forKey: .hasMigratedIcey7) else {
+            return .success
+        }
+
+        if Defaults.object(forKey: .sendAnonymousStatistics) == nil {
+            Defaults.set(true, forKey: .sendAnonymousStatistics)
+        }
+
+        Defaults.set(true, forKey: .hasMigratedIcey7)
+        logger.info("Successfully migrated to Icey 7 settings")
 
         return .success
     }

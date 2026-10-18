@@ -35,6 +35,25 @@ ICONS = ROOT / "Resources" / "AppIcon"
 
 STATUS_ORDER = ["fixed", "partial", "open", "closed", "not-a-bug", "feature"]
 
+# The page view counter (https://github.com/leonardovida/icey-stats). Each page
+# sends its path, the referring site's host name and the event, with no cookies
+# or storage, and nothing at all when Do Not Track or Global Privacy Control is
+# on. The download page and clicks on DMG links also count a download.
+STATS_HIT_URL = "https://icey-stats.178-105-139-229.sslip.io/v1/hit"
+PRIVACY_URL = f"{GH}#privacy-and-anonymous-statistics"
+COUNTER_SCRIPT = """<script>
+(function(){try{
+var n=navigator;
+if(n.doNotTrack==="1"||n.globalPrivacyControl||!n.sendBeacon)return;
+var ref="";
+try{var h=new URL(document.referrer).hostname;if(h!==location.hostname)ref=h}catch(e){}
+var send=function(event){try{n.sendBeacon(%s,JSON.stringify({path:location.pathname,ref:ref,event:event}))}catch(e){}};
+send("pageview");
+if(/\\/download\\/$/.test(location.pathname))send("download");
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(a&&/\\.dmg$|\\/releases\\/latest$/.test(a.href))send("download")},true);
+}catch(e){}})();
+</script>""" % json.dumps(STATS_HIT_URL)
+
 
 def load():
     return json.loads(DATA.read_text())
@@ -309,6 +328,7 @@ class Site:
 <meta property="og:image" content="{self.base_url}/icon-512.png">
 <meta name="twitter:card" content="summary">
 {ld}
+{COUNTER_SCRIPT}
 </head>
 <body>
 <header class="top"><div class="wrap">
@@ -320,7 +340,8 @@ class Site:
 </main>
 <footer><div class="wrap">
 Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 license</a>. It continues <a href="{UPSTREAM}">Ice</a> by Jordan Baird.
-<a href="{GH}/issues/new/choose">Report a bug or request a feature</a>.
+<a href="{GH}/issues/new/choose">Report a bug or request a feature</a>.<br>
+<a href="{PRIVACY_URL}">Privacy</a>: this site counts page views and downloads without cookies, and honors Do Not Track.
 </div></footer>
 </body>
 </html>

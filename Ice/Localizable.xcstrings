@@ -6903,6 +6903,64 @@
         }
       }
     },
+    "Learn more" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Infos"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más información"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En savoir plus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ulteriori informazioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "詳しく見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "더 알아보기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saiba mais"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "进一步了解"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進一步瞭解"
+          }
+        }
+      }
+    },
     "Light Appearance" : {
       "localizations" : {
         "de" : {
@@ -8875,6 +8933,64 @@
         }
       }
     },
+    "Once a day: Icey version, macOS version, Mac model, CPU, memory, displays and which features are on. No identifiers." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einmal am Tag: Icey-Version, macOS-Version, Mac-Modell, CPU, Arbeitsspeicher, Displays und welche Funktionen aktiviert sind. Keine Kennungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una vez al día: versión de Icey, versión de macOS, modelo de Mac, CPU, memoria, pantallas y qué funciones están activadas. Sin identificadores."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une fois par jour : version d’Icey, version de macOS, modèle de Mac, processeur, mémoire, écrans et fonctionnalités activées. Aucun identifiant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una volta al giorno: versione di Icey, versione di macOS, modello di Mac, CPU, memoria, schermi e funzioni attive. Nessun identificativo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1日1回：Icey のバージョン、macOS のバージョン、Mac のモデル、CPU、メモリ、ディスプレイ、オンになっている機能。識別子は含まれません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하루 한 번: Icey 버전, macOS 버전, Mac 모델, CPU, 메모리, 디스플레이 및 켜져 있는 기능. 식별자는 포함되지 않습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma vez por dia: versão do Icey, versão do macOS, modelo do Mac, CPU, memória, telas e quais recursos estão ativados. Nenhum identificador."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每天一次：Icey 版本、macOS 版本、Mac 机型、CPU、内存、显示器以及开启了哪些功能。不含任何标识符。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每天一次：Icey 版本、macOS 版本、Mac 機型、CPU、記憶體、顯示器以及開啟了哪些功能。不含任何識別碼。"
+          }
+        }
+      }
+    },
     "Open %@ Settings" : {
       "localizations" : {
         "de" : {
@@ -10437,6 +10553,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "區域分隔線樣式"
+          }
+        }
+      }
+    },
+    "Send anonymous statistics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anonyme Statistiken senden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar estadísticas anónimas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer des statistiques anonymes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invia statistiche anonime"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匿名の統計情報を送信"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "익명 통계 보내기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar estatísticas anônimas"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送匿名统计信息"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "傳送匿名統計資料"
           }
         }
       }

@@ -1,0 +1,139 @@
+name: Usage stats
+
+# Sends a daily snapshot of the repository's public numbers to icey-stats
+# (https://github.com/leonardovida/icey-stats): stars, forks, watchers, open
+# issues and the download count of every release asset. When the
+# ICEY_TRAFFIC_TOKEN secret is set, it also sends GitHub's 14-day traffic:
+# views, clones, popular referrers and popular paths.
+#
+# Secrets:
+#   ICEY_STATS_INGEST_TOKEN  set by icey-stats' scripts/deploy.py, never by hand.
+#   ICEY_TRAFFIC_TOKEN       optional. A fine-grained token for this repository
+#                            with "Administration: read", which the traffic
+#                            endpoints need. Without it, traffic is skipped.
+#
+# The job uses only the Python preinstalled on the runner. Run it by hand with
+# `gh workflow run usage-stats.yml --repo leonardovida/icey`.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: usage-stats
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Collect and send a snapshot
+        env:
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          TRAFFIC_TOKEN: ${{ secrets.ICEY_TRAFFIC_TOKEN }}
+          INGEST_TOKEN: ${{ secrets.ICEY_STATS_INGEST_TOKEN }}
+          INGEST_URL: https://icey-stats.178-105-139-229.sslip.io/v1/github
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          def gh(path, token, base=None):
+              request = urllib.request.Request(
+                  (base or f"https://api.github.com/repos/{os.environ['REPO']}") + path,
+                  headers={
+                      "Authorization": f"Bearer {token}",
+                      "Accept": "application/vnd.github+json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "User-Agent": "icey-usage-stats",
+                  },
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          ingest_token = os.environ.get("INGEST_TOKEN", "")
+          if not ingest_token:
+              print("::error::The ICEY_STATS_INGEST_TOKEN secret is not set.")
+              sys.exit(1)
+
+          token = os.environ["GH_TOKEN"]
+          repo = gh("", token)
+          # open_issues_count includes open pull requests, so count issues alone.
+          open_issues = gh(
+              f"/search/issues?q=repo:{os.environ['REPO']}+type:issue+state:open&per_page=1",
+              token,
+              base="https://api.github.com",
+          )["total_count"]
+
+          # Every published release, newest first. The service keeps up to 500.
+          releases = []
+          for page in range(1, 6):
+              batch = gh(f"/releases?per_page=100&page={page}", token)
+              releases += batch
+              if len(batch) < 100:
+                  break
+
+          snapshot = {
+              "collected_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+              "repository": os.environ["REPO"],
+              "repo": {
+                  "stars": repo["stargazers_count"],
+                  "forks": repo["forks_count"],
+                  "watchers": repo["subscribers_count"],
+                  "open_issues": open_issues,
+              },
+              "releases": [
+                  {
+                      "tag": r["tag_name"],
+                      "published_at": r["published_at"],
+                      "assets": [{"name": a["name"], "download_count": a["download_count"]} for a in r["assets"]],
+                  }
+                  for r in releases
+                  if not r["draft"]
+              ],
+          }
+
+          traffic_token = os.environ.get("TRAFFIC_TOKEN", "")
+          if not traffic_token:
+              print("::notice::ICEY_TRAFFIC_TOKEN is not set, so traffic is skipped.")
+          else:
+              try:
+                  snapshot["traffic"] = {
+                      "views": gh("/traffic/views", traffic_token),
+                      "clones": gh("/traffic/clones", traffic_token),
+                      "referrers": gh("/traffic/popular/referrers", traffic_token),
+                      "paths": gh("/traffic/popular/paths", traffic_token),
+                  }
+              except urllib.error.HTTPError as error:
+                  print(f"::notice::Traffic skipped: GitHub answered HTTP {error.code}.")
+
+          print(f"Snapshot: {len(snapshot['releases'])} releases, traffic {'included' if 'traffic' in snapshot else 'skipped'}.")
+          request = urllib.request.Request(
+              os.environ["INGEST_URL"],
+              data=json.dumps(snapshot).encode(),
+              method="POST",
+              headers={"Authorization": f"Bearer {ingest_token}", "Content-Type": "application/json"},
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  status = response.status
+          except urllib.error.HTTPError as error:
+              status = error.code
+          except urllib.error.URLError as error:
+              print(f"::error::Could not reach icey-stats: {error.reason}")
+              sys.exit(1)
+          if not 200 <= status < 300:
+              print(f"::error::icey-stats answered HTTP {status}.")
+              sys.exit(1)
+          print(f"icey-stats answered HTTP {status}.")
+          PY

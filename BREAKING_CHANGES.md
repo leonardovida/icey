@@ -4,6 +4,14 @@ This page lists every Icey change that needs you to do something: settings that 
 
 What changed in each version is described in [GitHub Releases](https://github.com/leonardovida/icey/releases). That is the main place for updates. [CHANGELOG.md](CHANGELOG.md) is a short index of releases.
 
+## 0.14.0
+
+Release: [v0.14.0](https://github.com/leonardovida/icey/releases/tag/v0.14.0). Applies when you upgrade from any earlier version.
+
+| Change | What to do |
+|---|---|
+| Icey sends anonymous statistics once a day: Icey version, macOS version, Mac model, CPU, memory, displays, language and which features are on. No identifiers, and the server stores no IP addresses. See [Privacy and anonymous statistics](README.md#privacy-and-anonymous-statistics). | Nothing, or turn off Settings > About > **Send anonymous statistics** if you'd rather not send them. |
+
 ## 0.11.13-dev.2-icey.1
 
 Release: [v0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1). Applies when you upgrade from Icey 0.11.12-icey.1 or from Ice 0.11.12.

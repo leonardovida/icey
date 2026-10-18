@@ -96,7 +96,7 @@ Icey gathers anonymous Mac model, OS version and CPU statistics to understand wh
 
 **How often.** About 2 minutes after Icey opens, if it hasn't sent a report that day (UTC). After that, macOS picks an energy-efficient time about once a day. Icey stores only the day of its last report. A report that fails is not retried before the next day's. Because each Mac sends at most one report a day, the number of reports in a day is roughly the number of Macs that used Icey that day.
 
-**What is never sent.** No identifier of any kind: no install ID, device ID, serial number, user name or computer name. Reports have no ID either, so two reports from the same Mac can't be linked. Icey never sends the names of your menu bar items, the apps you use, your hotkeys, your display names or anything you type.
+**What is never sent.** No identifier of any kind: no install ID, device ID, serial number, user name or computer name. Reports carry no ID either. A Mac with a rare mix of model, settings and language can still send the same values day after day, so treat the reports as anonymous, not as impossible to tell apart. Icey never sends the names of your menu bar items, the apps you use, your hotkeys, your display names or anything you type.
 
 **Where it goes.** To [icey-stats](https://github.com/leonardovida/icey-stats), a small open-source service on a server run by the maintainer. It stores the report and the UTC day and hour it arrived. It never stores or logs IP addresses or user agents, and it drops any field it doesn't expect. The data isn't shared with anyone or sent to any analytics company. The service's [privacy section](https://github.com/leonardovida/icey-stats#privacy) lists exactly what it keeps.
 

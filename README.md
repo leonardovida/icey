@@ -35,6 +35,7 @@ Icey is a drop-in replacement. It installs over Ice and keeps your settings.
 | Upgrade notes | [BREAKING_CHANGES.md](BREAKING_CHANGES.md) |
 | Ice bugs fixed | [Ice bugs fixed in Icey](https://leonardovida.github.io/icey/fixes/), with what was wrong and what changed ([docs/upstream-issues.md](docs/upstream-issues.md)) |
 | Price and license | Free, [GPL-3.0](LICENSE) |
+| Privacy | Anonymous daily statistics with no identifiers, which you can turn off in Settings > About ([details](#privacy-and-anonymous-statistics)) |
 | Contributing | Issues, feature requests and pull requests are welcome, including from AI agents ([CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md)) |
 
 ## Install
@@ -76,6 +77,34 @@ ditto build/Build/Products/Release/Icey.app /Applications/Icey.app
 ```
 
 Builds you make yourself are ad-hoc signed, so macOS asks for the permissions again after each build.
+
+## Privacy and anonymous statistics
+
+Icey gathers anonymous Mac model, OS version and CPU statistics to understand what to optimize for and which versions to support. The statistics are on by default. To turn them off, open Settings > About and turn off "Send anonymous statistics". Icey then sends nothing, and stops a report that is on its way.
+
+**What Icey sends.** Once a day at most, Icey sends one small report with:
+
+- the report format version, and Icey's version and build number,
+- the macOS version, such as 26.5.1,
+- the Mac's model identifier, such as `Mac15,10`, which is the same for every Mac of that model,
+- the processor: Apple silicon or Intel, its name (such as Apple M3 Max) and its number of cores,
+- the memory, rounded to the nearest gigabyte,
+- how many displays are connected, and whether one has a notch,
+- the language Icey runs in, such as `en` or `pt-BR`,
+- which Icey features are on, such as the Ice Bar, show on hover, the always-hidden section, menu bar styling, settings for each display, Launch at Login and automatic updates,
+- a few setting values, such as the auto-rehide strategy, where the Ice Bar appears, where new items go and the menu bar item spacing.
+
+**How often.** About 2 minutes after Icey opens, if it hasn't sent a report that day (UTC). After that, macOS picks an energy-efficient time about once a day. Icey stores only the day of its last report. A report that fails is not retried before the next day's. Because each Mac sends at most one report a day, the number of reports in a day is roughly the number of Macs that used Icey that day.
+
+**What is never sent.** No identifier of any kind: no install ID, device ID, serial number, user name or computer name. Reports have no ID either, so two reports from the same Mac can't be linked. Icey never sends the names of your menu bar items, the apps you use, your hotkeys, your display names or anything you type.
+
+**Where it goes.** To [icey-stats](https://github.com/leonardovida/icey-stats), a small open-source service on a server run by the maintainer. It stores the report and the UTC day and hour it arrived. It never stores or logs IP addresses or user agents, and it drops any field it doesn't expect. The data isn't shared with anyone or sent to any analytics company. The service's [privacy section](https://github.com/leonardovida/icey-stats#privacy) lists exactly what it keeps.
+
+**The website.** The [website](https://leonardovida.github.io/icey/) counts page views and download clicks: for each day, the page, the referring site's name (such as `news.ycombinator.com`, never the full address) and the event. It uses no cookies and no storage, and counts nothing when your browser sends Do Not Track or Global Privacy Control.
+
+**GitHub numbers.** A daily GitHub Actions job sends the repository's public numbers to the same service: stars, forks, release download counts and GitHub's 14-day traffic totals.
+
+Debug builds from source write the report to the log instead of sending it, unless they are started with the `-IceySendStatistics` argument.
 
 ## What's new
 
@@ -202,6 +231,7 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 - [x] Export and import settings
 - [x] Hide the Dock icon while Settings is open
 - [x] Automatic updates
+- [x] Anonymous daily statistics, which you can turn off ([details](#privacy-and-anonymous-statistics))
 - [ ] Menu bar widgets
 
 Want one of the unchecked features? [Open a feature request](https://github.com/leonardovida/icey/issues/new/choose) or a pull request.

@@ -72,6 +72,10 @@ final class LayoutBarItemView: NSView {
         }
     }
 
+    /// A Boolean value that indicates whether the view last drew the warning
+    /// that the item's process is unresponsive.
+    private var isShowingUnresponsiveWarning = false
+
     /// Creates a view that displays the given menu bar item.
     init(appState: AppState, item: MenuBarItem) {
         self.item = item
@@ -121,6 +125,27 @@ final class LayoutBarItemView: NSView {
                     self.cachedImage = cachedImage
                 }
                 .store(in: &c)
+
+            // The view used to redraw after every update of the image cache,
+            // which kept the unresponsive warning current. The images are now
+            // only published when they change, so check the warning instead,
+            // and redraw only if it changed.
+            appState.imageCache.updates
+                .sink { [weak self] in
+                    guard
+                        let self,
+                        let appState = self.appState,
+                        !needsDisplay,
+                        !isDraggingPlaceholder,
+                        appState.imageCache.images[item.tag] != nil
+                    else {
+                        return
+                    }
+                    if Bridging.isProcessUnresponsive(item.ownerPID) != isShowingUnresponsiveWarning {
+                        needsDisplay = true
+                    }
+                }
+                .store(in: &c)
         }
 
         cancellables = c
@@ -142,6 +167,7 @@ final class LayoutBarItemView: NSView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
+        isShowingUnresponsiveWarning = false
         if !isDraggingPlaceholder {
             cachedImage?.nsImage.draw(
                 in: bounds,
@@ -150,6 +176,7 @@ final class LayoutBarItemView: NSView {
                 fraction: isEnabled ? 1.0 : 0.67
             )
             if Bridging.isProcessUnresponsive(item.ownerPID) {
+                isShowingUnresponsiveWarning = true
                 let warningImage = NSImage.warning
                 let width: CGFloat = 15
                 let scale = width / warningImage.size.width

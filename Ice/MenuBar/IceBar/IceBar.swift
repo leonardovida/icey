@@ -388,6 +388,7 @@ private final class IceBarHostingView: NSHostingView<IceBarContentView> {
             itemManager: appState.itemManager,
             imageCache: appState.imageCache,
             menuBarManager: appState.menuBarManager,
+            appearanceManager: appState.appearanceManager,
             screen: screen,
             section: section
         )
@@ -417,8 +418,18 @@ private struct IceBarContentView: View {
     @ObservedObject var itemManager: MenuBarItemManager
     @ObservedObject var imageCache: MenuBarItemImageCache
     @ObservedObject var menuBarManager: MenuBarManager
+    @ObservedObject var appearanceManager: MenuBarAppearanceManager
     @State private var frame = CGRect.zero
     @State private var scrollIndicatorsFlashTrigger = 0
+
+    /// Declared so that the bar redraws when the system appearance changes,
+    /// which ``configuration`` follows when it has separate light and dark
+    /// settings.
+    ///
+    /// The bar used to redraw with every image capture and colour update,
+    /// which caught up with the appearance as a side effect. Those now only
+    /// redraw it when the images or the colour change.
+    @Environment(\.colorScheme) private var colorScheme
 
     let screen: NSScreen
     let section: MenuBarSection.Name
@@ -428,7 +439,7 @@ private struct IceBarContentView: View {
     }
 
     private var configuration: MenuBarAppearanceConfigurationV2 {
-        appState.appearanceManager.configuration
+        appearanceManager.configuration
     }
 
     private var horizontalPadding: CGFloat {

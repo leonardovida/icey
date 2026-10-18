@@ -168,36 +168,130 @@ final class MenuBarItemImageCache: ObservableObject {
 
     // MARK: Capturing Images
 
-    /// Captures a composite image of the given items, then crops out an image
-    /// for each item and returns the result.
-    private nonisolated func compositeCapture(_ items: [MenuBarItem], scale: CGFloat) -> CaptureResult {
+    /// The widest composite capture, in pixels, that the window server returns.
+    /// A wider one returns `nil`.
+    private static let maxCompositeWidth: CGFloat = 16384
+
+    /// Captures composite images of the given sections' items, then crops out
+    /// an image for each item and returns the result.
+    ///
+    /// Takes one composite per menu bar row. A composite covers the bounding
+    /// box of its windows, so one composite of windows on two rows (the menu
+    /// bars of two displays, while the active menu bar moves between them)
+    /// also covers all the empty space between the rows: with one display above
+    /// the other, tens of megabytes, which every crop below keeps alive. Windows
+    /// on different rows never overlap, so each crop has the same pixels either way.
+    ///
+    /// The sections that share a row share its composite, as long as the
+    /// composite stays narrow enough to be captured. If it can't be captured,
+    /// each section in it is captured on its own.
+    private nonisolated func compositeCapture(_ sections: [[MenuBarItem]], scale: CGFloat) -> CaptureResult {
         var result = CaptureResult()
 
-        var windowIDs = [CGWindowID]()
-        var storage = [CGWindowID: (MenuBarItem, CGRect)]()
-        var boundsUnion = CGRect.null
+        // The windows of each row, as one group per section, in their original
+        // order, and the index of each row in `rows`, keyed by the top edge its
+        // windows share.
+        var rows = [[[(item: MenuBarItem, bounds: CGRect)]]]()
+        var rowIndices = [CGFloat: Int]()
 
-        for item in items {
-            let windowID = item.windowID
+        for items in sections {
+            // The index of this section's group in each row it has windows on.
+            var groupIndices = [Int: Int]()
 
-            // Don't use `item.bounds`, it could be out of date.
-            guard let bounds = Bridging.getWindowBounds(for: windowID) else {
-                result.excluded.append(item)
-                continue
+            for item in items {
+                // Don't use `item.bounds`, it could be out of date.
+                guard let bounds = Bridging.getWindowBounds(for: item.windowID) else {
+                    result.excluded.append(item)
+                    continue
+                }
+
+                let rowIndex: Int
+                if let index = rowIndices[bounds.minY] {
+                    rowIndex = index
+                } else {
+                    rowIndex = rows.count
+                    rowIndices[bounds.minY] = rowIndex
+                    rows.append([])
+                }
+
+                if let groupIndex = groupIndices[rowIndex] {
+                    rows[rowIndex][groupIndex].append((item, bounds))
+                } else {
+                    groupIndices[rowIndex] = rows[rowIndex].count
+                    rows[rowIndex].append([(item, bounds)])
+                }
+            }
+        }
+
+        for row in rows {
+            // Batch the row's groups, in order, while the batch's composite fits.
+            var batch = [[(item: MenuBarItem, bounds: CGRect)]]()
+            var batchUnion = CGRect.null
+
+            for group in row {
+                let groupUnion = group.reduce(CGRect.null) { $0.union($1.bounds) }
+                if !batch.isEmpty, batchUnion.union(groupUnion).width * scale > Self.maxCompositeWidth {
+                    compositeCapture(batch: batch, into: &result)
+                    batch.removeAll()
+                    batchUnion = .null
+                }
+                batch.append(group)
+                batchUnion = batchUnion.union(groupUnion)
             }
 
-            windowIDs.append(windowID)
-            storage[windowID] = (item, bounds)
+            compositeCapture(batch: batch, into: &result)
+        }
+
+        return result
+    }
+
+    /// Captures one composite image of the given groups of windows, which are
+    /// on one menu bar row, and adds the cropped item images to `result`.
+    ///
+    /// If that composite fails, captures each group on its own, so that every
+    /// group gets the result it gets when no other group shares its row.
+    private nonisolated func compositeCapture(
+        batch: [[(item: MenuBarItem, bounds: CGRect)]],
+        into result: inout CaptureResult
+    ) {
+        if batch.count > 1, let rowResult = compositeCapture(row: batch.flatMap { $0 }) {
+            result.images.merge(rowResult.images) { (_, new) in new }
+            result.excluded += rowResult.excluded
+            return
+        }
+
+        for group in batch {
+            guard let groupResult = compositeCapture(row: group) else {
+                result.excluded += group.map(\.item) // Exclude all items in the group.
+                continue
+            }
+            result.images.merge(groupResult.images) { (_, new) in new }
+            result.excluded += groupResult.excluded
+        }
+    }
+
+    /// Captures a composite image of the given windows, which are on one menu
+    /// bar row, then crops out an image for each item and returns the result.
+    ///
+    /// Returns `nil` if the composite can't be captured, is transparent, or
+    /// has an implausible scale.
+    private nonisolated func compositeCapture(row: [(item: MenuBarItem, bounds: CGRect)]) -> CaptureResult? {
+        var result = CaptureResult()
+
+        var boundsUnion = CGRect.null
+        var windowArea: CGFloat = 0
+
+        for (_, bounds) in row {
             boundsUnion = boundsUnion.union(bounds)
+            windowArea += bounds.width * bounds.height
         }
 
         guard
-            let compositeImage = ScreenCapture.captureWindows(with: windowIDs, option: captureOption),
+            let compositeImage = ScreenCapture.captureWindows(with: row.map(\.item.windowID), option: captureOption),
             !compositeImage.isTransparent(),
             boundsUnion.width > 0
         else {
-            result.excluded = items // Exclude all items.
-            return result
+            return nil
         }
 
         // Derive the scale from the capture rather than trusting the one passed in.
@@ -216,16 +310,18 @@ final class MenuBarItemImageCache: ObservableObject {
         let actualScale = CGFloat(compositeImage.width) / boundsUnion.width
         guard actualScale >= 0.5, actualScale <= 4 else {
             logger.warning("Implausible capture scale \(actualScale, privacy: .public); excluding items")
-            result.excluded = items
-            return result
+            return nil
         }
 
-        // Crop out each item from the composite.
-        for windowID in windowIDs {
-            guard let (item, bounds) = storage[windowID] else {
-                continue
-            }
+        // Each crop keeps the whole composite alive. When the row holds several
+        // sections, the composite spans the gaps between them (thousands of
+        // points, where the section dividers push the hidden items), so copy
+        // the crops out of it instead. Within one section the windows sit next
+        // to each other, and the composite is about the size of its crops.
+        let copiesCrops = boundsUnion.width * boundsUnion.height > 2 * windowArea
 
+        // Crop out each item from the composite.
+        for (item, bounds) in row {
             let cropRect = CGRect(
                 x: (bounds.origin.x - boundsUnion.origin.x) * actualScale,
                 y: (bounds.origin.y - boundsUnion.origin.y) * actualScale,
@@ -241,7 +337,10 @@ final class MenuBarItemImageCache: ObservableObject {
                 continue
             }
 
-            result.images[item.tag] = CapturedImage(cgImage: image, scale: actualScale)
+            result.images[item.tag] = CapturedImage(
+                cgImage: copiesCrops ? (image.copyingPixels() ?? image) : image,
+                scale: actualScale
+            )
         }
 
         return result
@@ -275,16 +374,18 @@ final class MenuBarItemImageCache: ObservableObject {
         return result
     }
 
-    /// Captures the images of the given menu bar items and returns the result.
-    private nonisolated func captureImages(of items: [MenuBarItem], scale: CGFloat, appState: AppState) async -> CaptureResult {
+    /// Captures the images of the given sections' menu bar items and returns
+    /// the result.
+    private nonisolated func captureImages(of sections: [[MenuBarItem]], scale: CGFloat, appState: AppState) async -> CaptureResult {
         // Use individual capture after a move operation, since composite capture
         // doesn't account for overlapping items.
         if await appState.itemManager.lastMoveOperationOccurred(within: .seconds(2)) {
             logger.debug("Capturing individually due to recent item movement")
+            let items = sections.flatMap { $0 }
             return await onCaptureQueue { [self] in individualCapture(items, scale: scale) }
         }
 
-        let compositeResult = await onCaptureQueue { [self] in compositeCapture(items, scale: scale) }
+        let compositeResult = await onCaptureQueue { [self] in compositeCapture(sections, scale: scale) }
 
         if compositeResult.excluded.isEmpty {
             return compositeResult // All items captured successfully.
@@ -305,17 +406,6 @@ final class MenuBarItemImageCache: ObservableObject {
         individualResult.images.merge(compositeResult.images) { (_, new) in new }
 
         return individualResult
-    }
-
-    /// Captures the images of the menu bar items in the given section and returns
-    /// a dictionary containing the images, keyed by their menu bar item tags.
-    private func captureImages(for section: MenuBarSection.Name, scale: CGFloat, appState: AppState) async -> [MenuBarItemTag: CapturedImage] {
-        let items = await appState.itemManager.itemCache.managedItems(for: section)
-        let captureResult = await captureImages(of: items, scale: scale, appState: appState)
-        if !captureResult.excluded.isEmpty {
-            logger.error("Some items failed capture: \(captureResult.excluded, privacy: .public)")
-        }
-        return captureResult.images
     }
 
     // MARK: Update Cache
@@ -359,14 +449,32 @@ final class MenuBarItemImageCache: ObservableObject {
         }
 
         let scale = screen.backingScaleFactor
-        var newImages = [MenuBarItemTag: CapturedImage]()
+
+        // Capture the items of all sections together, so that sections that
+        // share a menu bar row share one composite capture.
+        var sectionItems = [(section: MenuBarSection.Name, items: [MenuBarItem])]()
 
         for section in sections {
-            guard await !appState.itemManager.itemCache[section].isEmpty else {
+            let items = await appState.itemManager.itemCache.managedItems(for: section)
+            guard !items.isEmpty else {
                 continue
             }
+            sectionItems.append((section, items))
+        }
 
-            let sectionImages = await captureImages(for: section, scale: scale, appState: appState)
+        let captureResult = await captureImages(of: sectionItems.map(\.items), scale: scale, appState: appState)
+        let excludedTags = Set(captureResult.excluded.map(\.tag))
+        var newImages = [MenuBarItemTag: CapturedImage]()
+
+        for (section, items) in sectionItems {
+            let excluded = items.filter { excludedTags.contains($0.tag) }
+            if !excluded.isEmpty {
+                logger.error("Some items failed capture: \(excluded, privacy: .public)")
+            }
+
+            let sectionImages = items.compactMap { item in
+                captureResult.images[item.tag].map { (item.tag, $0) }
+            }
 
             guard !sectionImages.isEmpty else {
                 logger.warning("Failed item image cache for \(section.logString, privacy: .public)")

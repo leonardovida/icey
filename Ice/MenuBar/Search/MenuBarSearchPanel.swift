@@ -244,6 +244,7 @@ private struct MenuBarSearchContentView: View {
     @EnvironmentObject var itemManager: MenuBarItemManager
     @EnvironmentObject var model: MenuBarSearchModel
     @FocusState private var searchFieldIsFocused: Bool
+    @State private var rowCache = MenuBarSearchRowCache()
 
     let displayID: CGDirectDisplayID
     let closePanel: () -> Void
@@ -387,6 +388,8 @@ private struct MenuBarSearchContentView: View {
         typealias SearchItem = (listItem: ListItem, title: String)
         typealias ScoredItem = (listItem: ListItem, score: Double)
 
+        var listedItems = [MenuBarItem]()
+
         let searchItems: [SearchItem] = MenuBarSection.Name.allCases
             .reduce(into: []) { items, name in
                 if
@@ -410,11 +413,14 @@ private struct MenuBarSearchContentView: View {
                     let listItem = ListItem.item(id: .item(item.tag)) {
                         performAction(for: item)
                     } content: {
-                        MenuBarSearchItemView(item: item)
+                        MenuBarSearchItemRow(item: item, rowCache: rowCache)
                     }
                     items.append(SearchItem(listItem, item.displayName))
+                    listedItems.append(item)
                 }
             }
+
+        rowCache.removeEntries(notMatching: listedItems)
 
         if model.searchText.isEmpty {
             model.displayedItems = searchItems.map { $0.listItem }
@@ -569,38 +575,144 @@ private let controlCenterIcon: NSImage? = {
     return app.icon
 }()
 
-private struct MenuBarSearchItemView: View {
-    @EnvironmentObject var appState: AppState
-    @EnvironmentObject var imageCache: MenuBarItemImageCache
-    @EnvironmentObject var model: MenuBarSearchModel
+/// Icons and images for the rows of the search panel, worked out once
+/// rather than every time a row is drawn.
+///
+/// A row is drawn again on every keystroke, selection change and image
+/// update. Looking up an item's application icon, and trimming its image,
+/// gave the same result each time. The cache lives as long as the panel's
+/// content, which is created each time the panel is shown.
+@MainActor
+private final class MenuBarSearchRowCache {
+    /// An application that created listed items, and its icon.
+    private final class ApplicationEntry {
+        let application: NSRunningApplication
+        lazy var icon: NSImage? = application.icon
 
-    let item: MenuBarItem
-
-    private var itemImage: NSImage {
-        guard
-            let cached = imageCache.images[item.tag],
-            let trimmed = cached.cgImage.trimmingTransparency(around: [.minXEdge, .maxXEdge])
-        else {
-            return NSImage()
+        init(application: NSRunningApplication) {
+            self.application = application
         }
-        let size = CGSize(
-            width: CGFloat(trimmed.width) / cached.scale,
-            height: CGFloat(trimmed.height) / cached.scale
-        )
-        return NSImage(cgImage: trimmed, size: size)
     }
 
-    private var appIcon: NSImage? {
-        guard let app = item.sourceApplication else {
+    private struct ImageEntry {
+        let source: MenuBarItemImageCache.CapturedImage
+        let image: NSImage
+    }
+
+    /// The applications of the listed items, by process.
+    private var applications = [pid_t: ApplicationEntry]()
+
+    /// The trimmed images of the listed items, with the images they were
+    /// trimmed from.
+    private var images = [MenuBarItemTag: ImageEntry]()
+
+    /// Returns the icon to show for the given item.
+    func appIcon(for item: MenuBarItem) -> NSImage? {
+        guard let entry = applicationEntry(for: item) else {
             return nil
         }
         switch item.tag.namespace {
         case .controlCenter, .systemUIServer, .textInputMenuAgent:
             return controlCenterIcon
         default:
-            return app.icon
+            return entry.icon
         }
     }
+
+    /// Returns the application that created the given item.
+    ///
+    /// An application is kept while it is running. Until one is found, and
+    /// once it has quit, it is looked up again, as it was for every row drawn.
+    private func applicationEntry(for item: MenuBarItem) -> ApplicationEntry? {
+        guard let sourcePID = item.sourcePID else {
+            return nil
+        }
+        if let entry = applications[sourcePID], !entry.application.isTerminated {
+            return entry
+        }
+        guard let application = item.sourceApplication else {
+            applications[sourcePID] = nil
+            return nil
+        }
+        let entry = ApplicationEntry(application: application)
+        applications[sourcePID] = application.isTerminated ? nil : entry
+        return entry
+    }
+
+    /// Returns the image to show for the given item, trimmed of the
+    /// transparency at its sides.
+    ///
+    /// - Parameters:
+    ///   - tag: The item's tag.
+    ///   - cached: The item's image in the image cache.
+    func itemImage(for tag: MenuBarItemTag, cached: MenuBarItemImageCache.CapturedImage?) -> NSImage {
+        guard let cached else {
+            return NSImage()
+        }
+        if
+            let entry = images[tag],
+            entry.source.cgImage === cached.cgImage,
+            entry.source.scale == cached.scale
+        {
+            return entry.image
+        }
+        let image: NSImage
+        if let trimmed = cached.cgImage.trimmingTransparency(around: [.minXEdge, .maxXEdge]) {
+            let size = CGSize(
+                width: CGFloat(trimmed.width) / cached.scale,
+                height: CGFloat(trimmed.height) / cached.scale
+            )
+            image = NSImage(cgImage: trimmed, size: size)
+        } else {
+            image = NSImage()
+        }
+        images[tag] = ImageEntry(source: cached, image: image)
+        return image
+    }
+
+    /// Removes the icons and images of items that are no longer listed.
+    func removeEntries(notMatching items: [MenuBarItem]) {
+        let tags = Set(items.map(\.tag))
+        let pids = Set(items.compactMap(\.sourcePID))
+        images = images.filter { tags.contains($0.key) }
+        applications = applications.filter { pids.contains($0.key) }
+    }
+}
+
+/// A row of the search panel for a menu bar item.
+///
+/// The row observes what its content depends on, and works out the
+/// content's values each time it is updated. The content view is drawn
+/// again only when one of those values has changed.
+private struct MenuBarSearchItemRow: View {
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var imageCache: MenuBarItemImageCache
+    @EnvironmentObject var model: MenuBarSearchModel
+
+    let item: MenuBarItem
+    let rowCache: MenuBarSearchRowCache
+
+    var body: some View {
+        MenuBarSearchItemView(
+            appState: appState,
+            displayName: item.displayName,
+            appIcon: rowCache.appIcon(for: item),
+            itemImage: rowCache.itemImage(for: item.tag, cached: imageCache.images[item.tag]),
+            itemWidth: item.bounds.width,
+            colorInfo: model.averageColorInfo
+        )
+    }
+}
+
+/// The content of a search panel row, drawn from the values its row
+/// works out.
+private struct MenuBarSearchItemView: View {
+    let appState: AppState
+    let displayName: String
+    let appIcon: NSImage?
+    let itemImage: NSImage
+    let itemWidth: CGFloat
+    let colorInfo: MenuBarAverageColorInfo?
 
     private var backgroundShape: some InsettableShape {
         if #available(macOS 26.0, *) {
@@ -633,7 +745,7 @@ private struct MenuBarSearchItemView: View {
 
     @ViewBuilder
     private var labelText: some View {
-        Text(item.displayName)
+        Text(displayName)
     }
 
     @ViewBuilder
@@ -665,12 +777,12 @@ private struct MenuBarSearchItemView: View {
     private var itemView: some View {
         Image(nsImage: itemImage)
             .frame(
-                width: item.bounds.width,
+                width: itemWidth,
                 height: dimension
             )
             .menuBarItemContainer(
                 appState: appState,
-                colorInfo: model.averageColorInfo
+                colorInfo: colorInfo
             )
             .clipShape(backgroundShape)
             .overlay {

@@ -2,6 +2,10 @@
 
 Full notes for every version are in [GitHub Releases](https://github.com/leonardovida/icey/releases), the main place for Icey updates. A copy of each release's notes is kept in [release-notes/](release-notes/). Changes that need you to do something are listed in [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 
+## [0.14.0](https://github.com/leonardovida/icey/releases/tag/v0.14.0)
+
+Adds anonymous daily statistics (Mac model, macOS version, CPU and which features are on, with no identifiers), on by default and switched off in Settings > About. It also cuts memory spikes with stacked displays and redraws in the Ice Bar, search and Settings. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.14.0.md).
+
 ## [0.13.0](https://github.com/leonardovida/icey/releases/tag/v0.13.0)
 
 Makes Icey lighter on CPU, energy and the window server: closed windows stop redrawing, idle timers pause, drags elsewhere no longer reach Icey, and the appearance setting shrinks from about 63 KB to under 1 KB. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.13.0.md).

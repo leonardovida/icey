@@ -358,6 +358,66 @@ extension CGImage {
         }
         return context.isTransparent()
     }
+
+    // MARK: Copying
+
+    /// Returns a copy of the image that owns its pixels, or `nil` if the
+    /// copy can't be made.
+    ///
+    /// An image returned by `cropping(to:)` keeps the whole image it was
+    /// cropped from alive. The copy keeps only its own pixels: the same bytes,
+    /// in the same format and color space.
+    func copyingPixels() -> CGImage? {
+        guard
+            bitsPerPixel % 8 == 0,
+            let colorSpace
+        else {
+            return nil
+        }
+
+        let bytesPerRow = width * (bitsPerPixel / 8)
+
+        guard let data = CFDataCreateMutable(nil, bytesPerRow * height) else {
+            return nil
+        }
+
+        CFDataSetLength(data, bytesPerRow * height)
+
+        guard
+            let context = CGContext(
+                data: CFDataGetMutableBytePtr(data),
+                width: width,
+                height: height,
+                bitsPerComponent: bitsPerComponent,
+                bytesPerRow: bytesPerRow,
+                space: colorSpace,
+                bitmapInfo: bitmapInfo.rawValue
+            )
+        else {
+            return nil
+        }
+
+        context.setBlendMode(.copy)
+        context.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        guard let provider = CGDataProvider(data: data) else {
+            return nil
+        }
+
+        return CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: bitsPerComponent,
+            bitsPerPixel: bitsPerPixel,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo,
+            provider: provider,
+            decode: decode,
+            shouldInterpolate: shouldInterpolate,
+            intent: renderingIntent
+        )
+    }
 }
 
 // MARK: - Collection where Element == MenuBarItem

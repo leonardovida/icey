@@ -48,9 +48,9 @@ jobs:
           import urllib.error
           import urllib.request
 
-          def gh(path, token):
+          def gh(path, token, base=None):
               request = urllib.request.Request(
-                  f"https://api.github.com/repos/{os.environ['REPO']}{path}",
+                  (base or f"https://api.github.com/repos/{os.environ['REPO']}") + path,
                   headers={
                       "Authorization": f"Bearer {token}",
                       "Accept": "application/vnd.github+json",
@@ -68,6 +68,12 @@ jobs:
 
           token = os.environ["GH_TOKEN"]
           repo = gh("", token)
+          # open_issues_count includes open pull requests, so count issues alone.
+          open_issues = gh(
+              f"/search/issues?q=repo:{os.environ['REPO']}+type:issue+state:open&per_page=1",
+              token,
+              base="https://api.github.com",
+          )["total_count"]
 
           # Every published release, newest first. The service keeps up to 500.
           releases = []
@@ -84,7 +90,7 @@ jobs:
                   "stars": repo["stargazers_count"],
                   "forks": repo["forks_count"],
                   "watchers": repo["subscribers_count"],
-                  "open_issues": repo["open_issues_count"],
+                  "open_issues": open_issues,
               },
               "releases": [
                   {

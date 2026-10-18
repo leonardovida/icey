@@ -129,8 +129,25 @@ final class MenuBarSearchPanel: NSPanel {
         // Important that we set the navigation state before updating the cache.
         appState.navigationState.isSearchPresented = true
 
+        // A panel that is about to appear, or to move to another display, needs
+        // the color of the menu bar there. It is captured off the main thread,
+        // alongside the cache update, and set before the panel is shown. It used
+        // to be captured on the main thread as the panel became visible.
+        var averageColorCapture: Task<CGColor?, Never>?
+        if !isVisible || self.screen?.displayID != screen.displayID {
+            averageColorCapture = model.captureAverageColor(for: screen)
+        }
+
         Task {
             await appState.imageCache.updateCache()
+
+            if let averageColorCapture {
+                if await averageColorCapture.finished(within: .seconds(1)) {
+                    model.setAverageColor(await averageColorCapture.value, for: screen)
+                } else {
+                    Logger.default.error("Menu bar capture did not finish within a second when showing the search panel")
+                }
+            }
 
             let hostingView = MenuBarSearchHostingView(appState: appState, model: model, displayID: screen.displayID, panel: self)
             hostingView.setFrameSize(hostingView.intrinsicContentSize)

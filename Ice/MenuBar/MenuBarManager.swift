@@ -24,6 +24,18 @@ final class MenuBarManager: ObservableObject {
     /// Reference to the settings window.
     @Published private var settingsWindow: NSWindow?
 
+    /// The number of average color updates started so far.
+    ///
+    /// Updates other than the first one after the settings window is shown
+    /// capture the menu bar off the main thread. Each one is numbered when it
+    /// starts, and sets its color only if no later update has set its own
+    /// already, so an older capture that finishes last does not replace a
+    /// newer color.
+    private var averageColorRequestCount = 0
+
+    /// The number of the update that set ``averageColorInfo``.
+    private var averageColorRequest = 0
+
     /// Logger for the menu bar manager.
     private let logger = Logger(category: "MenuBarManager")
 
@@ -182,22 +194,26 @@ final class MenuBarManager: ObservableObject {
         // Update when the settings window is shown or hidden, then every 5 seconds
         // while it is visible. The update does nothing while the window is hidden,
         // so the timer only runs while the window is visible.
+        //
+        // The update when the window is shown captures the menu bar on the main
+        // thread, so the window does not first draw the color of the last time it
+        // was open. The timer's updates capture it off the main thread.
         $settingsWindow
             .removeNil()
             .flatMap { $0.publisher(for: \.isVisible) }
             .receive(on: DispatchQueue.main)
-            .map { [weak self] _ -> AnyPublisher<Void, Never> in
-                let update = Just(())
+            .map { [weak self] _ -> AnyPublisher<Bool, Never> in
+                let update = Just(true)
                 guard self?.settingsWindow?.isVisible == true else {
                     return update.eraseToAnyPublisher()
                 }
                 return update
-                    .append(Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect().replace(with: ()))
+                    .append(Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect().replace(with: false))
                     .eraseToAnyPublisher()
             }
             .switchToLatest()
-            .sink { [weak self] in
-                self?.updateAverageColorInfo()
+            .sink { [weak self] waitsForCapture in
+                self?.updateAverageColorInfo(waitsForCapture: waitsForCapture)
             }
             .store(in: &c)
 
@@ -349,7 +365,11 @@ final class MenuBarManager: ObservableObject {
 
     /// Updates the ``averageColorInfo`` property with the current average color
     /// of the menu bar.
-    func updateAverageColorInfo() {
+    ///
+    /// - Parameter waitsForCapture: Whether to capture the menu bar on the
+    ///   calling thread and set the color before returning. Otherwise the
+    ///   capture runs off the main thread, and the color is set when it ends.
+    func updateAverageColorInfo(waitsForCapture: Bool) {
         guard
             let settingsWindow,
             settingsWindow.isVisible,
@@ -366,26 +386,29 @@ final class MenuBarManager: ObservableObject {
             return
         }
 
-        let windows = WindowInfo.createWindows(option: .onScreen)
+        averageColorRequestCount += 1
+        let request = averageColorRequestCount
         let displayID = screen.displayID
 
-        guard
-            let menuBarWindow = WindowInfo.menuBarWindow(from: windows, for: displayID),
-            let wallpaperWindow = WindowInfo.wallpaperWindow(from: windows, for: displayID)
-        else {
+        if waitsForCapture {
+            let color = ScreenCapture.captureMenuBarStrip(for: displayID)?.averageColor(option: .ignoreAlpha)
+            setAverageColor(color, request: request)
+        } else {
+            Task {
+                let color = await ScreenCapture.menuBarAverageColor(for: displayID)
+                setAverageColor(color, request: request)
+            }
+        }
+    }
+
+    /// Sets the average color from the given update, unless its capture
+    /// failed or a later update set its color first.
+    private func setAverageColor(_ color: CGColor?, request: Int) {
+        guard let color, request > averageColorRequest else {
             return
         }
 
-        guard
-            let image = ScreenCapture.captureWindows(
-                with: [menuBarWindow.windowID, wallpaperWindow.windowID],
-                screenBounds: withMutableCopy(of: wallpaperWindow.bounds) { $0.size.height = 1 },
-                option: .nominalResolution
-            ),
-            let color = image.averageColor(option: .ignoreAlpha)
-        else {
-            return
-        }
+        averageColorRequest = request
 
         let info = MenuBarAverageColorInfo(color: color, source: .menuBarWindow)
 

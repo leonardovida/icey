@@ -92,4 +92,68 @@ enum ScreenCapture {
     static func captureWindow(with windowID: CGWindowID, screenBounds: CGRect? = nil, option: CGWindowImageOption = []) -> CGImage? {
         captureWindows(with: [windowID], screenBounds: screenBounds, option: option)
     }
+
+    // MARK: Menu Bar Color
+
+    /// The queue the menu bar color captures run on.
+    ///
+    /// A capture blocks its thread for about 10 milliseconds, waiting on the
+    /// window server, for about 1 millisecond of work. It runs here rather than
+    /// on the main thread. Like the item captures in ``MenuBarItemImageCache``,
+    /// it stays off the Swift concurrency pool, and the queue is serial, so a
+    /// capture that never returns costs one thread. It is a queue of its own,
+    /// so that the Ice Bar's color capture does not wait behind its item capture.
+    private static let menuBarColorQueue = DispatchQueue(
+        label: "com.jordanbaird.Ice.MenuBarColorCapture",
+        qos: .userInitiated
+    )
+
+    /// Captures a one pixel high strip of the menu bar and the wallpaper
+    /// behind it, across the given display.
+    ///
+    /// The menu bar's average color is read from this image. This blocks
+    /// the calling thread.
+    static func captureMenuBarStrip(for displayID: CGDirectDisplayID) -> CGImage? {
+        let windows = WindowInfo.createWindows(option: .onScreen)
+
+        guard
+            let menuBarWindow = WindowInfo.menuBarWindow(from: windows, for: displayID),
+            let wallpaperWindow = WindowInfo.wallpaperWindow(from: windows, for: displayID)
+        else {
+            return nil
+        }
+
+        return captureWindows(
+            with: [menuBarWindow.windowID, wallpaperWindow.windowID],
+            screenBounds: withMutableCopy(of: wallpaperWindow.bounds) { $0.size.height = 1 },
+            option: .nominalResolution
+        )
+    }
+
+    /// Captures the strip that ``captureMenuBarStrip(for:)`` captures, off the
+    /// main thread.
+    ///
+    /// The image's pixels are read before it is returned. The first read waits
+    /// for the window server, so a caller that crops or averages the image
+    /// afterwards does not wait.
+    static func menuBarStrip(for displayID: CGDirectDisplayID) async -> CGImage? {
+        await withCheckedContinuation { continuation in
+            menuBarColorQueue.async {
+                let image = captureMenuBarStrip(for: displayID)
+                _ = image?.dataProvider?.data
+                continuation.resume(returning: image)
+            }
+        }
+    }
+
+    /// Returns the average color, ignoring alpha, of the strip that
+    /// ``captureMenuBarStrip(for:)`` captures, computed off the main thread.
+    static func menuBarAverageColor(for displayID: CGDirectDisplayID) async -> CGColor? {
+        await withCheckedContinuation { continuation in
+            menuBarColorQueue.async {
+                let color = captureMenuBarStrip(for: displayID)?.averageColor(option: .ignoreAlpha)
+                continuation.resume(returning: color)
+            }
+        }
+    }
 }

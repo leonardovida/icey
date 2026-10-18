@@ -207,6 +207,15 @@ final class IceBarPanel: NSPanel {
         appState.navigationState.isIceBarPresented = true
         currentSection = section
 
+        // The capture of the menu bar for the panel's color does not depend on
+        // the panel, so it runs off the main thread, alongside the cache updates,
+        // instead of after them on the main thread. macOS 27 still captures
+        // below, where it always has.
+        var windowImageCapture: Task<CGImage?, Never>?
+        if #unavailable(macOS 27.0) {
+            windowImageCapture = colorManager.captureWindowImage(for: screen)
+        }
+
         if #available(macOS 27.0, *), !Defaults.bool(forKey: .macOS27IceBarWaitsForRefresh) {
             // Waiting for this refresh cannot help the bar that is about to open on macOS 27:
             // the hidden items are concealed, so they can be neither read nor photographed,
@@ -233,6 +242,17 @@ final class IceBarPanel: NSPanel {
 
             if await !cacheTask.finished(within: .seconds(1)) {
                 Logger.default.error("Cache update did not finish within a second when showing IceBarPanel")
+            }
+        }
+
+        // Usually finished by now. A capture that has not finished within a
+        // second leaves the previous image, as a failed capture does.
+        var windowImage: CGImage?
+        if let windowImageCapture {
+            if await windowImageCapture.finished(within: .seconds(1)) {
+                windowImage = await windowImageCapture.value
+            } else {
+                Logger.default.error("Menu bar capture did not finish within a second when showing IceBarPanel")
             }
         }
 
@@ -269,9 +289,11 @@ final class IceBarPanel: NSPanel {
         // Color manager handles frame changes automatically, but does so on
         // the main queue, so we need to update manually once before showing
         // the panel to prevent the color from flashing.
-        colorManager.updateAllProperties(with: frame, screen: screen)
         if #available(macOS 27.0, *) {
+            colorManager.updateAllProperties(with: frame, screen: screen)
             colorManager.setColor27()
+        } else {
+            colorManager.updateAllProperties(with: frame, screen: screen, windowImage: windowImage)
         }
 
         // A panel that is still fading out fades back in from where it is.

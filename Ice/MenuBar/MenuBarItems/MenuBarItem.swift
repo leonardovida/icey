@@ -302,20 +302,44 @@ extension MenuBarItem: Equatable {
         lhs.windowID == rhs.windowID &&
         lhs.ownerPID == rhs.ownerPID &&
         lhs.sourcePID == rhs.sourcePID &&
-        NSStringFromRect(lhs.bounds) == NSStringFromRect(rhs.bounds) &&
+        haveEqualDescriptions(lhs.bounds, rhs.bounds) &&
         lhs.title == rhs.title &&
         lhs.isOnScreen == rhs.isOnScreen
+    }
+
+    /// Returns a Boolean value that indicates whether `NSStringFromRect`
+    /// describes the given rectangles with the same string, which is how
+    /// items compare their bounds.
+    ///
+    /// Formatting both rectangles is the slow part of comparing two items,
+    /// and the item caches compare the same items again and again. Values
+    /// with identical bits always format identically, so only rectangles that
+    /// differ are formatted. Comparing the values themselves would not give
+    /// the same results: `==` treats `0` and `-0` as equal and `nan` as unequal
+    /// to itself, while their strings say the opposite, and values that differ
+    /// only past the sixth significant digit have the same string.
+    private static func haveEqualDescriptions(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
+        if
+            lhs.origin.x.bitPattern == rhs.origin.x.bitPattern,
+            lhs.origin.y.bitPattern == rhs.origin.y.bitPattern,
+            lhs.size.width.bitPattern == rhs.size.width.bitPattern,
+            lhs.size.height.bitPattern == rhs.size.height.bitPattern
+        {
+            return true
+        }
+        return NSStringFromRect(lhs) == NSStringFromRect(rhs)
     }
 }
 
 // MARK: MenuBarItem: Hashable
 extension MenuBarItem: Hashable {
     func hash(into hasher: inout Hasher) {
+        // The bounds are left out: hashing their description cost as much as
+        // comparing it, and items that are equal have equal bounds anyway.
         hasher.combine(tag)
         hasher.combine(windowID)
         hasher.combine(ownerPID)
         hasher.combine(sourcePID)
-        hasher.combine(NSStringFromRect(bounds))
         hasher.combine(title)
         hasher.combine(isOnScreen)
     }

@@ -170,34 +170,62 @@ final class MenuBarItemImageCache: ObservableObject {
 
     /// Captures a composite image of the given items, then crops out an image
     /// for each item and returns the result.
+    ///
+    /// Takes one composite per menu bar row. A composite covers the bounding
+    /// box of its windows, so one composite of windows on two rows (the menu
+    /// bars of two displays, while the active menu bar moves between them)
+    /// also covers all the empty space between the rows: with one display above
+    /// the other, tens of megabytes, which every crop below keeps alive. Windows
+    /// on different rows never overlap, so each crop has the same pixels either way.
     private nonisolated func compositeCapture(_ items: [MenuBarItem], scale: CGFloat) -> CaptureResult {
         var result = CaptureResult()
 
-        var windowIDs = [CGWindowID]()
-        var storage = [CGWindowID: (MenuBarItem, CGRect)]()
-        var boundsUnion = CGRect.null
+        // The windows of each row, in their original order, and the index of
+        // each row in `rows`, keyed by the top edge its windows share.
+        var rows = [[(item: MenuBarItem, bounds: CGRect)]]()
+        var rowIndices = [CGFloat: Int]()
 
         for item in items {
-            let windowID = item.windowID
-
             // Don't use `item.bounds`, it could be out of date.
-            guard let bounds = Bridging.getWindowBounds(for: windowID) else {
+            guard let bounds = Bridging.getWindowBounds(for: item.windowID) else {
                 result.excluded.append(item)
                 continue
             }
 
-            windowIDs.append(windowID)
-            storage[windowID] = (item, bounds)
+            if let index = rowIndices[bounds.minY] {
+                rows[index].append((item, bounds))
+            } else {
+                rowIndices[bounds.minY] = rows.count
+                rows.append([(item, bounds)])
+            }
+        }
+
+        for row in rows {
+            compositeCapture(row: row, into: &result)
+        }
+
+        return result
+    }
+
+    /// Captures a composite image of the given windows, which are on one menu
+    /// bar row, then crops out an image for each item and adds it to `result`.
+    private nonisolated func compositeCapture(
+        row: [(item: MenuBarItem, bounds: CGRect)],
+        into result: inout CaptureResult
+    ) {
+        var boundsUnion = CGRect.null
+
+        for (_, bounds) in row {
             boundsUnion = boundsUnion.union(bounds)
         }
 
         guard
-            let compositeImage = ScreenCapture.captureWindows(with: windowIDs, option: captureOption),
+            let compositeImage = ScreenCapture.captureWindows(with: row.map(\.item.windowID), option: captureOption),
             !compositeImage.isTransparent(),
             boundsUnion.width > 0
         else {
-            result.excluded = items // Exclude all items.
-            return result
+            result.excluded += row.map(\.item) // Exclude all items in the row.
+            return
         }
 
         // Derive the scale from the capture rather than trusting the one passed in.
@@ -216,16 +244,12 @@ final class MenuBarItemImageCache: ObservableObject {
         let actualScale = CGFloat(compositeImage.width) / boundsUnion.width
         guard actualScale >= 0.5, actualScale <= 4 else {
             logger.warning("Implausible capture scale \(actualScale, privacy: .public); excluding items")
-            result.excluded = items
-            return result
+            result.excluded += row.map(\.item)
+            return
         }
 
         // Crop out each item from the composite.
-        for windowID in windowIDs {
-            guard let (item, bounds) = storage[windowID] else {
-                continue
-            }
-
+        for (item, bounds) in row {
             let cropRect = CGRect(
                 x: (bounds.origin.x - boundsUnion.origin.x) * actualScale,
                 y: (bounds.origin.y - boundsUnion.origin.y) * actualScale,
@@ -243,8 +267,6 @@ final class MenuBarItemImageCache: ObservableObject {
 
             result.images[item.tag] = CapturedImage(cgImage: image, scale: actualScale)
         }
-
-        return result
     }
 
     /// Captures an image of each of the given items individually, then

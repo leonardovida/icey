@@ -151,7 +151,11 @@ final class MenuBarSearchPanel: NSPanel {
 
             if let averageColorCapture {
                 if await averageColorCapture.finished(within: .seconds(1)) {
-                    model.setAverageColor(await averageColorCapture.value, for: screen)
+                    let averageColor = await averageColorCapture.value
+                    guard presentation == presentationCount else {
+                        return
+                    }
+                    model.setAverageColor(averageColor, for: screen)
                 } else {
                     Logger.default.error("Menu bar capture did not finish within a second when showing the search panel")
                 }

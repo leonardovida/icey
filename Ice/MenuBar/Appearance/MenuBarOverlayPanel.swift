@@ -172,6 +172,8 @@ final class MenuBarOverlayPanel: NSPanel {
                 .compactMap { $0 == $1 ? nil : $0 }
         )
         .removeDuplicates()
+        // Key-value notifications can come on another thread.
+        .receive(on: DispatchQueue.main)
         .sink { [weak self] _ in
             guard let self, needsApplicationMenuFrame else {
                 return

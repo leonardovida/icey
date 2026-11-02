@@ -194,6 +194,8 @@ final class AppState: ObservableObject {
                 let delayed = initial.delay(for: 0.1, scheduler: DispatchQueue.main)
                 return Publishers.Merge(initial, delayed)
             })
+            // Key-value notifications can come on another thread.
+            .receive(on: DispatchQueue.main)
             .replace { Bridging.getActiveSpaceID() }
             .removeDuplicates()
             .sink { [weak self] spaceID in

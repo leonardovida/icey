@@ -10,7 +10,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
-| [#1024](https://github.com/jordanbaird/Ice/issues/1024) | A menu bar item moves back after you drag it | Next release |
+| [#1024](https://github.com/jordanbaird/Ice/issues/1024) | A menu bar item moves back after you drag it | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) |
 | [#1020](https://github.com/jordanbaird/Ice/issues/1020) | The update dialog's buttons don't respond | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #681. Ice 0.11.12 reads Ice's own update feed, so it never offers Icey. Install Icey from its releases page.) |
 | [#334](https://github.com/jordanbaird/Ice/issues/334) | Ice uses energy every time you move the mouse | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) |
 | [#479](https://github.com/jordanbaird/Ice/issues/479) | Ice has a high energy impact in Activity Monitor | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) |
@@ -54,7 +54,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#914](https://github.com/jordanbaird/Ice/issues/914) | The Ice Bar closes before the pointer reaches it | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#943](https://github.com/jordanbaird/Ice/issues/943) | The split menu bar shape looks brighter than the rest of the menu bar | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#919](https://github.com/jordanbaird/Ice/issues/919) | The Ice icon disappears and the layout pane keeps loading | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
-| [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | Next release |
+| [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) |
 | [#946](https://github.com/jordanbaird/Ice/issues/946) | Hidden items are shown as always-hidden after macOS Tahoe 26.5 | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Same cause as #702. Not reproduced on 26.5.) |
 | [#961](https://github.com/jordanbaird/Ice/issues/961) | Keep the app out of the Dock | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) |
 | [#892](https://github.com/jordanbaird/Ice/issues/892) | Turn off the right-click menu bar menu | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Comes from upstream Ice 0.11.13.) |
@@ -75,7 +75,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#838](https://github.com/jordanbaird/Ice/issues/838) | Ice freezes after running for days | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Not confirmed by the reporter.) |
 | [#837](https://github.com/jordanbaird/Ice/issues/837) | "Check for updates" alert appears at every launch | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#835](https://github.com/jordanbaird/Ice/issues/835) | Ice only changes the menu bar appearance on macOS 26.2 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
-| [#834](https://github.com/jordanbaird/Ice/issues/834) | Ice keeps asking for permissions it already has | Next release (Same as #1004.) |
+| [#834](https://github.com/jordanbaird/Ice/issues/834) | Ice keeps asking for permissions it already has | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) (Same as #1004.) |
 | [#833](https://github.com/jordanbaird/Ice/issues/833) | Nothing shows in Ice on macOS 26.1 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#832](https://github.com/jordanbaird/Ice/issues/832) | Items can't be rearranged in Menu Bar Layout on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#830](https://github.com/jordanbaird/Ice/issues/830) | Many bugs and heat | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (The report names no other specific bug.) |
@@ -163,8 +163,8 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#544](https://github.com/jordanbaird/Ice/issues/544) | Turn off Ice in fullscreen mode | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#526](https://github.com/jordanbaird/Ice/issues/526) | Another app's brightness slider keeps disappearing | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Not yet tested with MotionControl Light.) |
 | [#521](https://github.com/jordanbaird/Ice/issues/521) | Wallpaper shows over fullscreen apps with the split shape | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
-| [#513](https://github.com/jordanbaird/Ice/issues/513) | Hidden icons end up in the visible section | Next release |
-| [#486](https://github.com/jordanbaird/Ice/issues/486) | Display Zoom jumps around while Ice runs | Next release |
+| [#513](https://github.com/jordanbaird/Ice/issues/513) | Hidden icons end up in the visible section | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) |
+| [#486](https://github.com/jordanbaird/Ice/issues/486) | Display Zoom jumps around while Ice runs | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) |
 | [#468](https://github.com/jordanbaird/Ice/issues/468) | Turn off or customize the menu bar appearance in fullscreen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#456](https://github.com/jordanbaird/Ice/issues/456) | Right-clicking a window title on a display without a menu bar opens Ice's menu | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested on a multi-display setup.) |
 | [#452](https://github.com/jordanbaird/Ice/issues/452) | Rehide closes an open item menu | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (A menu bar app that keeps a window open under the menu bar all the time would also hold rehide off.) |
@@ -221,7 +221,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#470](https://github.com/jordanbaird/Ice/issues/470) | Menu bar layout isn't remembered after a restart | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Upstream closed it as #344. The whole layout changing at once is #769 and #702.) |
 | [#465](https://github.com/jordanbaird/Ice/issues/465) | Turn the Ice Bar or hiding off on a large external display | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) (Covers #223, #299 and #303.) |
 | [#433](https://github.com/jordanbaird/Ice/issues/433) | Applying item spacing opens apps twice or crashes them | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) (#27 also stopped a quit app's old process from counting as running.) |
-| [#419](https://github.com/jordanbaird/Ice/issues/419) | CleanShot X moves itself to the visible section | Next release (Same as #513 when the item was opened from the Ice Bar. Upstream closed it as #344.) |
+| [#419](https://github.com/jordanbaird/Ice/issues/419) | CleanShot X moves itself to the visible section | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) (Same as #513 when the item was opened from the Ice Bar. Upstream closed it as #344.) |
 | [#375](https://github.com/jordanbaird/Ice/issues/375) | Settings window doesn't open | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #371, fixed in Ice 0.11.4, which Icey is built on.) |
 | [#345](https://github.com/jordanbaird/Ice/issues/345) | Quit apps stay in Menu Bar Layout | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #332, fixed in Ice before Icey.) |
 | [#324](https://github.com/jordanbaird/Ice/issues/324) | Multi-language support | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) |

@@ -76,6 +76,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        // An item shown from the Ice Bar or search was left where it was shown
+        // when Icey quit, and macOS saved it there, in the visible section
+        // (jordanbaird/Ice#513, #419). Move such items back first, for no
+        // longer than a few seconds.
+        guard appState.itemManager.hasTemporarilyShownItems else {
+            return .terminateNow
+        }
+        Logger.default.debug("Rehiding temporarily shown items before quitting")
+        let itemManager = appState.itemManager
+        Task {
+            let rehide = Task {
+                await itemManager.rehideTemporarilyShownItems(isQuitting: true)
+            }
+            _ = await rehide.finished(within: .seconds(3))
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         // Keep the sections and the Icey icon where they are for the next launch.
         appState.itemManager.saveControlItemPositions()

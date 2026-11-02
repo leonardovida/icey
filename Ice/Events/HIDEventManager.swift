@@ -739,8 +739,6 @@ extension HIDEventManager {
     /// bar moves 50–150 ms after the release (measured on macOS 27.0.1, jordanbaird/Ice#1014).
     private static let itemMoveWait = Duration.milliseconds(200)
 
-
-
     /// The window numbers currently on screen.
     private static func windowNumbers() -> Set<Int> {
         let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []

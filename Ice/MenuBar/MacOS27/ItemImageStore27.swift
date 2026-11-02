@@ -381,8 +381,16 @@ final class ItemImageStore27 {
                 keyed[index + channel] = UInt8((Double(keyed[index + channel]) * opacity).rounded())
             }
         }
-        keyed.withUnsafeMutableBytes { buffer in
-            bytes.update(from: buffer.bindMemory(to: UInt8.self).baseAddress!, count: count)
+        // Copying from a shorter array would read past its end.
+        let isCopied = keyed.withUnsafeBufferPointer { buffer in
+            guard let baseAddress = buffer.baseAddress, buffer.count >= count else {
+                return false
+            }
+            bytes.update(from: baseAddress, count: count)
+            return true
+        }
+        guard isCopied else {
+            return nil
         }
         guard
             let keyedImage = context.makeImage(),

@@ -71,6 +71,9 @@ final class MenuBarItemManager: ObservableObject {
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
+    /// Observer that signals changes in the running applications.
+    private var runningApplicationsObservation: NSKeyValueObservation?
+
     /// The shared app state.
     private(set) weak var appState: AppState?
 
@@ -85,7 +88,18 @@ final class MenuBarItemManager: ObservableObject {
     private func configureCancellables(with appState: AppState) {
         var c = Set<AnyCancellable>()
 
-        let runningApplications = NSWorkspace.shared.publisher(for: \.runningApplications)
+        // Only the fact that the running applications changed matters here, so
+        // the list itself is never read. Combine's key-value publisher sent the
+        // list on to `delay`, whose timer kept it for a quarter of a second, and
+        // freeing it there crashed the app as it quit (#53).
+        let runningApplicationsChanged = PassthroughSubject<Void, Never>()
+        runningApplicationsObservation = NSWorkspace.shared.observe(
+            \.runningApplications,
+            options: []
+        ) { _, _ in
+            runningApplicationsChanged.send()
+        }
+        let runningApplications = runningApplicationsChanged
             .delay(for: 0.25, scheduler: DispatchQueue.main)
         let timer = Timer.publish(every: 5, tolerance: 1, on: .main, in: .default).autoconnect()
         let cacheTriggers: AnyPublisher<Void, Never>

@@ -1659,6 +1659,14 @@ extension MenuBarItemManager {
         /// The window of the item's shown interface.
         var shownInterfaceWindow: WindowInfo?
 
+        /// The tags of the items next to the shown item, left and right,
+        /// right after it was moved into view.
+        var shownNeighbors: (left: MenuBarItemTag?, right: MenuBarItemTag?)
+
+        /// A Boolean value that indicates whether Icey has tried to move
+        /// the item back.
+        var hasAttemptedRehide = false
+
         /// The number of attempts that have been made to rehide the item.
         var rehideAttempts = 0
 
@@ -1712,6 +1720,31 @@ extension MenuBarItemManager {
                 return item.windowID == windowID
             }
             return item.tag == tag
+        }
+
+        /// Returns a Boolean value that indicates whether the user has
+        /// moved the shown item since it was shown.
+        ///
+        /// An item the user Command-dragged to a new place was still moved
+        /// back to where it came from when the items were hidden again
+        /// (jordanbaird/Ice#1024). Another item appearing or going away
+        /// changes one neighbor, so the item only counts as moved when
+        /// both its neighbors have changed. Once Icey has tried to move
+        /// the item back, a changed position may be its own doing.
+        ///
+        /// - Parameters:
+        ///   - item: The shown item, as currently listed.
+        ///   - items: The current menu bar items, from left to right.
+        func wasMovedByUser(_ item: MenuBarItem, in items: [MenuBarItem]) -> Bool {
+            guard
+                !hasAttemptedRehide,
+                let index = items.firstIndex(where: { $0.windowID == item.windowID })
+            else {
+                return false
+            }
+            let left = items.indices.contains(index - 1) ? items[index - 1].tag : nil
+            let right = items.indices.contains(index + 1) ? items[index + 1].tag : nil
+            return left != shownNeighbors.left && right != shownNeighbors.right
         }
     }
 
@@ -1788,6 +1821,7 @@ extension MenuBarItemManager {
         }
 
         var items = await currentItems
+        let allItems = items
 
         guard let destination = getReturnDestination(for: item, in: items) else {
             logger.error("No return destination for \(item.logString, privacy: .public)")
@@ -1867,6 +1901,14 @@ extension MenuBarItemManager {
         }
 
         let context = TemporarilyShownItemContext(item: item, returnDestination: destination, returnSection: returnSection)
+        // The item was moved to the left of the target item, after the item
+        // that was left of the target.
+        let others = allItems.filter { $0.windowID != item.windowID }
+        let targetIndex = others.firstIndex { $0.windowID == targetItem.windowID }
+        context.shownNeighbors = (
+            left: targetIndex.flatMap { others.indices.contains($0 - 1) ? others[$0 - 1].tag : nil },
+            right: targetItem.tag
+        )
         temporarilyShownItemContexts.append(context)
 
         rehideTimer?.invalidate()
@@ -1969,6 +2011,11 @@ extension MenuBarItemManager {
                 }
                 continue
             }
+            if context.wasMovedByUser(item, in: items) {
+                logger.debug("\(item.logString, privacy: .public) was moved since it was shown, leaving it there")
+                continue
+            }
+            context.hasAttemptedRehide = true
             do {
                 try await move(item: item, to: currentReturnDestination(for: context, item: item, in: items))
                 try await confirmReturn(of: item, to: context.returnSection, in: items)

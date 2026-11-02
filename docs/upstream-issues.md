@@ -6,10 +6,12 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (219)
+## Fixed in Icey (221)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
+| [#1024](https://github.com/jordanbaird/Ice/issues/1024) | A menu bar item moves back after you drag it | Next release |
+| [#1020](https://github.com/jordanbaird/Ice/issues/1020) | The update dialog's buttons don't respond | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #681. Ice 0.11.12 reads Ice's own update feed, so it never offers Icey. Install Icey from its releases page.) |
 | [#334](https://github.com/jordanbaird/Ice/issues/334) | Ice uses energy every time you move the mouse | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) |
 | [#479](https://github.com/jordanbaird/Ice/issues/479) | Ice has a high energy impact in Activity Monitor | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) |
 | [#578](https://github.com/jordanbaird/Ice/issues/578) | Ice uses a lot of CPU after switching apps | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) |

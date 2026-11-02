@@ -470,11 +470,11 @@
       "number": 1004,
       "title": "Unable to proceed past permissions request.",
       "headline": "Ice keeps asking for a permission that is already enabled",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "System Settings showed Accessibility or Screen Recording as enabled, but Ice still asked for it.",
-      "fix": "Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch. The permissions window now also has a link that opens the right System Settings list, where a stale entry can be removed.",
-      "pr": 17
+      "fix": "The permissions window has a Reset and Ask Again button that removes the old entry and asks again, so macOS prompts afresh. If that fails, remove the app from the list in System Settings, then add it again. Screen Recording granted while Icey runs takes effect without a relaunch.",
+      "pr": 58
     },
     {
       "number": 929,
@@ -1080,12 +1080,12 @@
       "number": 834,
       "title": "[Bug]:",
       "headline": "Ice keeps asking for permissions it already has",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "Ice kept asking for permissions that System Settings showed as granted.",
-      "fix": "Remove the app from the list in System Settings > Privacy & Security with the minus button, then add Icey again.",
+      "fix": "Click Reset and Ask Again in Icey's permissions window, then allow Icey when macOS asks.",
       "note": "Same as #1004.",
-      "pr": 17
+      "pr": 58
     },
     {
       "number": 833,

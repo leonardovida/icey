@@ -42,13 +42,29 @@ final class EventTap {
     /// Shared logger for event taps.
     private static let logger = Logger(category: "EventTap")
 
+    /// The context passed to the shared callback, which refers to the tap
+    /// weakly.
+    ///
+    /// The callback runs on the main run loop, but a tap can be released on
+    /// another thread, as the taps for moving items are. The callback used to
+    /// rebuild the tap itself from an unretained pointer, so a tap released
+    /// while its callback was starting was used after it was freed. The
+    /// context outlives the tap, and is released on the main queue after the
+    /// tap's port is invalidated, once no callback can be running.
+    private final class CallbackContext {
+        weak var tap: EventTap?
+    }
+
     /// Shared callback for all event taps.
     private static let sharedCallback: CGEventTapCallBack = { _, type, event, refcon in
         guard let refcon else {
             return Unmanaged.passUnretained(event)
         }
-        let unretained: EventTap = Unmanaged.fromOpaque(refcon).takeUnretainedValue()
-        return withExtendedLifetime(unretained) { tap in
+        let context: CallbackContext = Unmanaged.fromOpaque(refcon).takeUnretainedValue()
+        guard let tap = context.tap else {
+            return Unmanaged.passUnretained(event)
+        }
+        return withExtendedLifetime(tap) { tap in
             if type == .tapDisabledByUserInput || type == .tapDisabledByTimeout {
                 tap.enable()
                 return nil
@@ -64,6 +80,7 @@ final class EventTap {
 
     private var machPort: CFMachPort?
     private var source: CFRunLoopSource?
+    private let context: Unmanaged<CallbackContext>
     private let runLoop: CFRunLoop
     private let callback: (EventTap, CGEvent) -> CGEvent?
 
@@ -119,6 +136,8 @@ final class EventTap {
         self.label = label
         self.callback = callback
         self.runLoop = CFRunLoopGetMain()
+        self.context = Unmanaged.passRetained(CallbackContext())
+        context.takeUnretainedValue().tap = self
 
         guard
             let machPort = EventTap.createMachPort(
@@ -126,7 +145,7 @@ final class EventTap {
                 location: location,
                 place: placement,
                 options: option,
-                userInfo: Unmanaged.passUnretained(self).toOpaque()
+                userInfo: context.toOpaque()
             ),
             let source = CFMachPortCreateRunLoopSource(nil, machPort, 0)
         else {
@@ -187,6 +206,12 @@ final class EventTap {
         if let machPort {
             CGEvent.tapEnable(tap: machPort, enable: false)
             CFMachPortInvalidate(machPort)
+        }
+        // A callback that started before the port was invalidated runs on the
+        // main queue, so it has returned by the time this block runs.
+        let context = context
+        DispatchQueue.main.async {
+            context.release()
         }
     }
 

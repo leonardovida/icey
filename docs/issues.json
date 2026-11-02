@@ -2,6 +2,16 @@
   "about": "Tracks every upstream Ice (jordanbaird/Ice) issue triaged for Icey. Scripts/build-site.py turns it into docs/upstream-issues.md and the website. Edit this file, never the generated page. status: fixed | partial | open | not-a-bug | feature. fixed_in: the Icey release tag that ships the fix, or null if it is not released yet. pr: the Icey pull request with the fix.",
   "issues": [
     {
+      "number": 1024,
+      "title": "[Bug]: Menu bar item reverts to its previous position after being dragged",
+      "headline": "A menu bar item moves back after you drag it",
+      "status": "fixed",
+      "fixed_in": null,
+      "symptom": "An item shown from the Ice Bar or search and then Command-dragged to a new place went back to its old position when the items were hidden again.",
+      "fix": "Icey notices that you moved the item and leaves it where you put it.",
+      "pr": 57
+    },
+    {
       "number": 1023,
       "title": "[Bug]: Menu bar appearance overlay for the built-in display is drawn on an external display as a solid black rectangle",
       "headline": "The built-in display's menu bar tint shows as a black bar on an external display",
@@ -11,6 +21,17 @@
       "fix": "An appearance overlay that lands on another display hides itself, then tries again to show on its own display instead of waiting for the next space change.",
       "note": "Same cause as #858 and #910. Not yet confirmed on two displays.",
       "pr": 55
+    },
+    {
+      "number": 1020,
+      "title": "[Bug]: Check for update dialog broken",
+      "headline": "The update dialog's buttons don't respond",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The \"Check for updates automatically?\" prompt ignored clicks and came back on every launch.",
+      "fix": "Icey brings the prompt to the front so it takes clicks and remembers your answer.",
+      "note": "Same as #681. Ice 0.11.12 reads Ice's own update feed, so it never offers Icey. Install Icey from its releases page.",
+      "pr": 5
     },
     {
       "number": 334,

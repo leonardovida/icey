@@ -30,6 +30,9 @@ class Permission: ObservableObject, Identifiable {
     /// The URL of the permission's list in System Settings > Privacy & Security.
     private let privacyListURL: URL?
 
+    /// The name of the permission's service, as `tccutil` knows it.
+    private let tccService: String
+
     /// The function that checks permissions.
     private let check: () -> Bool
 
@@ -46,6 +49,9 @@ class Permission: ObservableObject, Identifiable {
     /// Observer that observes the ``hasPermission`` property.
     private var hasPermissionCancellable: AnyCancellable?
 
+    /// The callers waiting for the app to be granted this permission.
+    private var permissionWaiters = [CheckedContinuation<Void, Never>]()
+
     /// Creates a permission.
     ///
     /// - Parameters:
@@ -54,6 +60,7 @@ class Permission: ObservableObject, Identifiable {
     ///   - isRequired: A Boolean value that indicates if the app can work without this permission.
     ///   - settingsURL: The URL of the settings pane to open.
     ///   - privacyListURL: The URL of the permission's list in System Settings.
+    ///   - tccService: The name of the permission's service, as `tccutil` knows it.
     ///   - check: A function that checks permissions.
     ///   - request: A function that requests permissions.
     init(
@@ -62,6 +69,7 @@ class Permission: ObservableObject, Identifiable {
         isRequired: Bool,
         settingsURL: URL?,
         privacyListURL: URL?,
+        tccService: String,
         check: @escaping () -> Bool,
         request: @escaping () -> Void
     ) {
@@ -70,6 +78,7 @@ class Permission: ObservableObject, Identifiable {
         self.isRequired = isRequired
         self.settingsURL = settingsURL
         self.privacyListURL = privacyListURL
+        self.tccService = tccService
         self.check = check
         self.request = request
         self.hasPermission = check()
@@ -118,23 +127,69 @@ class Permission: ObservableObject, Identifiable {
         }
     }
 
+    /// Removes the app's entry for this permission in System Settings, then
+    /// asks for the permission again, and returns whether the entry was removed.
+    ///
+    /// macOS ties the permission to the app's signature. An entry left by an
+    /// earlier copy of the app, such as Ice or an ad hoc signed build, stays
+    /// enabled in System Settings but no longer applies, and macOS does not
+    /// ask again while it is there (jordanbaird/Ice#1004, #834). Users had to
+    /// find the entry and remove it themselves.
+    func resetAndRequest() async -> Bool {
+        guard let bundleIdentifier = Bundle.main.bundleIdentifier else {
+            return false
+        }
+        let service = tccService
+        let isReset = await Task.detached {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            process.arguments = ["reset", service, bundleIdentifier]
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            do {
+                try process.run()
+            } catch {
+                return false
+            }
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        }.value
+        if isReset {
+            performRequest()
+        }
+        return isReset
+    }
+
     /// Asynchronously waits for the app to be granted this permission.
     func waitForPermission() async {
         configureCancellables()
         guard !hasPermission else {
             return
         }
-        return await withCheckedContinuation { continuation in
+        // Every caller waits on the same observer. A second call, such as a
+        // second click on a button that asks for the permission, replaced the
+        // observer, and the first caller waited forever.
+        await withCheckedContinuation { continuation in
+            permissionWaiters.append(continuation)
+            guard hasPermissionCancellable == nil else {
+                return
+            }
             hasPermissionCancellable = $hasPermission.sink { [weak self] hasPermission in
-                guard let self else {
-                    continuation.resume()
-                    return
-                }
                 if hasPermission {
-                    hasPermissionCancellable?.cancel()
-                    continuation.resume()
+                    self?.resumePermissionWaiters()
                 }
             }
+        }
+    }
+
+    /// Resumes everything waiting for the permission, and stops observing it.
+    private func resumePermissionWaiters() {
+        hasPermissionCancellable?.cancel()
+        hasPermissionCancellable = nil
+        let waiters = permissionWaiters
+        permissionWaiters.removeAll()
+        for waiter in waiters {
+            waiter.resume()
         }
     }
 
@@ -142,8 +197,7 @@ class Permission: ObservableObject, Identifiable {
     func stopCheck() {
         timerCancellable?.cancel()
         timerCancellable = nil
-        hasPermissionCancellable?.cancel()
-        hasPermissionCancellable = nil
+        resumePermissionWaiters()
     }
 
     /// Stops running the permission check once the permission is granted.
@@ -168,6 +222,7 @@ final class AccessibilityPermission: Permission {
             isRequired: true,
             settingsURL: nil,
             privacyListURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"),
+            tccService: "Accessibility",
             check: {
                 AXHelpers.isProcessTrusted()
             },
@@ -191,6 +246,7 @@ final class ScreenRecordingPermission: Permission {
             isRequired: false,
             settingsURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
             privacyListURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
+            tccService: "ScreenCapture",
             check: {
                 ScreenCapture.checkPermissions()
             },

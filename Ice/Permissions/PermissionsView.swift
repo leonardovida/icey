@@ -9,6 +9,9 @@ struct PermissionsView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var manager: AppPermissions
 
+    /// The titles of the permissions whose entries could not be reset.
+    @State private var failedResets = Set<String>()
+
     private var continueButtonText: LocalizedStringKey {
         if case .hasRequired = manager.permissionsState {
             "Continue in Limited Mode"
@@ -162,13 +165,35 @@ struct PermissionsView: View {
                 }
 
                 if !permission.hasPermission {
-                    // macOS ties the permission to the app's signature. After an update
-                    // of an ad hoc signed build, the old entry stays enabled in System
-                    // Settings but no longer applies to the new copy of the app.
+                    // macOS ties the permission to the app's signature. After moving
+                    // from Ice, or an update of an ad hoc signed build, the old entry
+                    // stays enabled in System Settings but no longer applies to the
+                    // new copy of the app, and macOS does not ask again.
                     Text("Already enabled in System Settings? Remove Icey from the list, then add it again.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+
+                    Button("Reset and Ask Again") {
+                        Task {
+                            if await permission.resetAndRequest() {
+                                failedResets.remove(permission.title)
+                                await permission.waitForPermission()
+                                appState.activate(withPolicy: .regular)
+                                appState.openWindow(.permissions)
+                            } else {
+                                failedResets.insert(permission.title)
+                            }
+                        }
+                    }
+                    .font(.callout)
+
+                    if failedResets.contains(permission.title) {
+                        Text("Icey couldn't reset the entry.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
 
                     Button("Open \(permission.title) Settings") {
                         permission.openPrivacyList()

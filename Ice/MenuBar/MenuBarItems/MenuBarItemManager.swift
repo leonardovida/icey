@@ -1765,6 +1765,18 @@ extension MenuBarItemManager {
         return nil
     }
 
+    /// A Boolean value that indicates whether the screen is zoomed in with
+    /// Zoom, in System Settings > Accessibility.
+    ///
+    /// A move posts mouse events at the item, which take the pointer there
+    /// and back, and Zoom follows the pointer, so the zoomed area jumped
+    /// whenever Icey moved an item in the background (jordanbaird/Ice#486).
+    /// The moves Icey makes on its own wait while the screen is zoomed in.
+    /// `UAZoomEnabled()` is false when Zoom is off or zoomed all the way out.
+    private nonisolated static var isScreenZoomed: Bool {
+        UAZoomEnabled()
+    }
+
     /// Schedules a timer for the given interval that rehides the
     /// temporarily shown items when fired.
     private func runRehideTimer(for interval: TimeInterval? = nil) {
@@ -1784,6 +1796,7 @@ extension MenuBarItemManager {
                 await self.rehideTemporarilyShownItems()
             }
         }
+        rehideTimer?.tolerance = min(interval / 10, 1)
     }
 
     /// Temporarily shows the given item.
@@ -1972,6 +1985,11 @@ extension MenuBarItemManager {
             guard hasUserPausedInput(for: .milliseconds(250)) else {
                 logger.debug("Found recent user input, so waiting to rehide")
                 runRehideTimer(for: 1)
+                return
+            }
+            guard !Self.isScreenZoomed else {
+                logger.debug("Screen is zoomed in, so waiting to rehide")
+                runRehideTimer(for: 5)
                 return
             }
         }
@@ -2376,6 +2394,9 @@ extension MenuBarItemManager {
                 return
             }
             while !pendingNewItems.isEmpty {
+                while Self.isScreenZoomed {
+                    try? await Task.sleep(for: .seconds(5))
+                }
                 await placeNewItem(pendingNewItems.removeFirst())
             }
             newItemPlacementTask = nil
@@ -2458,6 +2479,10 @@ extension MenuBarItemManager {
     ///   - items: The other menu bar items, ordered from left to right.
     private func enforceControlItemOrder(controlItems: ControlItemPair, items: [MenuBarItem]) async {
         guard let alwaysHidden = controlItems.alwaysHidden else {
+            return
+        }
+        // The next cache checks again.
+        guard !Self.isScreenZoomed else {
             return
         }
 

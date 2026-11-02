@@ -3141,12 +3141,11 @@
       "number": 486,
       "title": "Zoomed-in part of the screen sometimes jumps around when macOS Display Zoom is active (while running Ice)",
       "headline": "Display Zoom jumps around while Ice runs",
-      "status": "open",
+      "status": "fixed",
       "fixed_in": null,
       "symptom": "With Zoom on, the zoomed area jumped when Icey moved items in the background.",
-      "fix": "Not fixed yet.",
-      "note": "Moves post mouse events at the item's position, so the pointer jumps and Zoom follows it. A fix means pausing background moves while Zoom is on.",
-      "pr": null
+      "fix": "Icey no longer moves items on its own while the screen is zoomed in. Shown items are hidden again, and new items placed, once you zoom out.",
+      "pr": 63
     },
     {
       "number": 485,

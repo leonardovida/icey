@@ -6,7 +6,7 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (219)
+## Fixed in Icey (221)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
@@ -52,6 +52,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#914](https://github.com/jordanbaird/Ice/issues/914) | The Ice Bar closes before the pointer reaches it | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#943](https://github.com/jordanbaird/Ice/issues/943) | The split menu bar shape looks brighter than the rest of the menu bar | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#919](https://github.com/jordanbaird/Ice/issues/919) | The Ice icon disappears and the layout pane keeps loading | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | Next release |
 | [#946](https://github.com/jordanbaird/Ice/issues/946) | Hidden items are shown as always-hidden after macOS Tahoe 26.5 | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Same cause as #702. Not reproduced on 26.5.) |
 | [#961](https://github.com/jordanbaird/Ice/issues/961) | Keep the app out of the Dock | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) |
 | [#892](https://github.com/jordanbaird/Ice/issues/892) | Turn off the right-click menu bar menu | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Comes from upstream Ice 0.11.13.) |
@@ -72,6 +73,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#838](https://github.com/jordanbaird/Ice/issues/838) | Ice freezes after running for days | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Not confirmed by the reporter.) |
 | [#837](https://github.com/jordanbaird/Ice/issues/837) | "Check for updates" alert appears at every launch | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#835](https://github.com/jordanbaird/Ice/issues/835) | Ice only changes the menu bar appearance on macOS 26.2 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
+| [#834](https://github.com/jordanbaird/Ice/issues/834) | Ice keeps asking for permissions it already has | Next release (Same as #1004.) |
 | [#833](https://github.com/jordanbaird/Ice/issues/833) | Nothing shows in Ice on macOS 26.1 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#832](https://github.com/jordanbaird/Ice/issues/832) | Items can't be rearranged in Menu Bar Layout on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#830](https://github.com/jordanbaird/Ice/issues/830) | Many bugs and heat | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (The report names no other specific bug.) |
@@ -237,7 +239,6 @@ These have a fix that couldn't be confirmed yet, or that covers part of the repo
 | Upstream issue | Problem | Status |
 |---|---|---|
 | [#1023](https://github.com/jordanbaird/Ice/issues/1023) | The built-in display's menu bar tint shows as a black bar on an external display | An appearance overlay that lands on another display hides itself, then tries again to show on its own display instead of waiting for the next space change. Same cause as #858 and #910. Not yet confirmed on two displays. |
-| [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch. The permissions window now also has a link that opens the right System Settings list, where a stale entry can be removed. |
 | [#929](https://github.com/jordanbaird/Ice/issues/929) | Menu bar icons are scaled wrong on external displays | Item images now use the scale of the display they were captured on. Not yet confirmed on a two-display setup. |
 | [#987](https://github.com/jordanbaird/Ice/issues/987) | Ice Bar icons shrink on an external display | Item images now take their scale from the capture itself. Not yet confirmed on a two-display setup. |
 | [#955](https://github.com/jordanbaird/Ice/issues/955) | Ice Bar icons are scaled wrong on another display | Item images now take their scale from the capture itself. Not yet confirmed on a two-display setup. |
@@ -251,7 +252,6 @@ These have a fix that couldn't be confirmed yet, or that covers part of the repo
 | [#861](https://github.com/jordanbaird/Ice/issues/861) | Unable to move icons to the hidden section | After a failed move, the pane now redraws to show where the item really is, instead of where it was dropped. The timeout itself isn't addressed. |
 | [#858](https://github.com/jordanbaird/Ice/issues/858) | Menu bar overlay drawn on the wrong display | An appearance overlay that lands on another display now hides itself, and each display uses its own fullscreen state. Not yet confirmed on two displays. Please retest in Icey. |
 | [#845](https://github.com/jordanbaird/Ice/issues/845) | Shown hidden items can't be selected | With Caps Lock on, Icey waited for a key release that never came, so items clicked in the Ice Bar never opened. Caps Lock no longer blocks clicks. May not be the reporter's cause; please retest. |
-| [#834](https://github.com/jordanbaird/Ice/issues/834) | Ice keeps asking for permissions it already has | Remove the app from the list in System Settings > Privacy & Security with the minus button, then add Icey again. Same as #1004. |
 | [#829](https://github.com/jordanbaird/Ice/issues/829) | Ice Bar has the wrong size with a second monitor connected | Item images now use the scale of the display they were captured on. Same cause as #987 and #929. Not yet confirmed on two displays. |
 | [#825](https://github.com/jordanbaird/Ice/issues/825) | Ice Bar is drawn at a small resolution on a secondary screen | Item images now use the scale of the display they were captured on. Same cause as #987 and #929. Not yet confirmed on two displays. |
 | [#799](https://github.com/jordanbaird/Ice/issues/799) | Menu bar items don't hide again | Icey no longer mistakes a menu bar item that appears after the click for the item's open menu, which kept it waiting to hide the item forever. Another menu bar app showed the same problem, so macOS may be involved too. |

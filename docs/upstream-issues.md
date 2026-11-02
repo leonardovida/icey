@@ -6,7 +6,7 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (223)
+## Fixed in Icey (226)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
@@ -164,6 +164,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#526](https://github.com/jordanbaird/Ice/issues/526) | Another app's brightness slider keeps disappearing | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Not yet tested with MotionControl Light.) |
 | [#521](https://github.com/jordanbaird/Ice/issues/521) | Wallpaper shows over fullscreen apps with the split shape | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#513](https://github.com/jordanbaird/Ice/issues/513) | Hidden icons end up in the visible section | Next release |
+| [#486](https://github.com/jordanbaird/Ice/issues/486) | Display Zoom jumps around while Ice runs | Next release |
 | [#468](https://github.com/jordanbaird/Ice/issues/468) | Turn off or customize the menu bar appearance in fullscreen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#456](https://github.com/jordanbaird/Ice/issues/456) | Right-clicking a window title on a display without a menu bar opens Ice's menu | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested on a multi-display setup.) |
 | [#452](https://github.com/jordanbaird/Ice/issues/452) | Rehide closes an open item menu | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (A menu bar app that keeps a window open under the menu bar all the time would also hold rehide off.) |
@@ -339,7 +340,6 @@ These have a known or likely cause, but no fix yet. The notes on the fixes page 
 | [#658](https://github.com/jordanbaird/Ice/issues/658) | Games lose focus while Ice runs |
 | [#649](https://github.com/jordanbaird/Ice/issues/649) | Split menu bar moves when showing the desktop |
 | [#514](https://github.com/jordanbaird/Ice/issues/514) | Menu bar shadow moves with App Exposé |
-| [#486](https://github.com/jordanbaird/Ice/issues/486) | Display Zoom jumps around while Ice runs |
 | [#241](https://github.com/jordanbaird/Ice/issues/241) | Gap in menu bar items on the inactive display |
 | [#94](https://github.com/jordanbaird/Ice/issues/94) | Icons aren't hidden on an ultrawide screen |
 | [#534](https://github.com/jordanbaird/Ice/issues/534) | Gap on the second display when section dividers are hidden |

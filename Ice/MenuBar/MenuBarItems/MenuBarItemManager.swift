@@ -1942,11 +1942,20 @@ extension MenuBarItemManager {
         }
     }
 
+    /// A Boolean value that indicates whether any items are temporarily shown.
+    var hasTemporarilyShownItems: Bool {
+        !temporarilyShownItemContexts.isEmpty
+    }
+
     /// Rehides all temporarily shown items.
     ///
     /// If an item is currently showing its interface, this method waits
     /// for the interface to close before hiding the items.
-    func rehideTemporarilyShownItems() async {
+    ///
+    /// - Parameter isQuitting: A Boolean value that indicates whether the
+    ///   app is quitting. The items are then moved back at once, and are
+    ///   not tried again later.
+    func rehideTemporarilyShownItems(isQuitting: Bool = false) async {
         guard let appState else {
             logger.error("Missing AppState, so not rehiding")
             return
@@ -1954,15 +1963,17 @@ extension MenuBarItemManager {
         guard !temporarilyShownItemContexts.isEmpty else {
             return
         }
-        guard !temporarilyShownItemContexts.contains(where: { $0.isShowingInterface }) else {
-            logger.debug("Menu bar item interface is shown, so waiting to rehide")
-            runRehideTimer(for: 3)
-            return
-        }
-        guard hasUserPausedInput(for: .milliseconds(250)) else {
-            logger.debug("Found recent user input, so waiting to rehide")
-            runRehideTimer(for: 1)
-            return
+        if !isQuitting {
+            guard !temporarilyShownItemContexts.contains(where: { $0.isShowingInterface }) else {
+                logger.debug("Menu bar item interface is shown, so waiting to rehide")
+                runRehideTimer(for: 3)
+                return
+            }
+            guard hasUserPausedInput(for: .milliseconds(250)) else {
+                logger.debug("Found recent user input, so waiting to rehide")
+                runRehideTimer(for: 1)
+                return
+            }
         }
 
         var currentContexts = temporarilyShownItemContexts
@@ -2060,8 +2071,10 @@ extension MenuBarItemManager {
                 """
             )
             temporarilyShownItemContexts.append(contentsOf: failedContexts.reversed())
-            let rounds = failedContexts.map(\.failedRehideRounds).max() ?? 1
-            runRehideTimer(for: Self.rehideRetryInterval(afterFailedRounds: rounds))
+            if !isQuitting {
+                let rounds = failedContexts.map(\.failedRehideRounds).max() ?? 1
+                runRehideTimer(for: Self.rehideRetryInterval(afterFailedRounds: rounds))
+            }
         }
     }
 

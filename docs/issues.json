@@ -3060,12 +3060,11 @@
       "number": 513,
       "title": "[Bug]: Hidden icons end up in the Visible section after some interactions",
       "headline": "Hidden icons end up in the visible section",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.4",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "An item opened from the Ice Bar sometimes stayed in the visible section.",
-      "fix": "Icey now checks that a shown item is back in its section after hiding it again, no longer waits forever when the item's app adds or recreates a menu bar item on click, and keeps retrying if the item is briefly missing.",
-      "note": "Quitting Icey while an item is shown still leaves it visible.",
-      "pr": 24
+      "fix": "Icey now checks that a shown item is back in its section after hiding it again, no longer waits forever when the item's app adds or recreates a menu bar item on click, and keeps retrying if the item is briefly missing. Quitting Icey while an item is shown now moves it back first.",
+      "pr": 61
     },
     {
       "number": 512,
@@ -5301,11 +5300,11 @@
       "number": 419,
       "title": "[Bug]: I run the app CleanShotX and at least once a day Ice moves the icon from hidden to visible",
       "headline": "CleanShot X moves itself to the visible section",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.4",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "CleanShot X's item moved from the hidden to the visible section at some point each day, or after the app was reopened.",
-      "fix": "Icey now checks that an item opened from the hidden items is back in its section after hiding it again, and keeps retrying if the item is briefly missing.",
-      "pr": 24,
+      "fix": "Icey now checks that an item opened from the hidden items is back in its section after hiding it again, and keeps retrying if the item is briefly missing. Quitting Icey while the item is shown now moves it back first.",
+      "pr": 61,
       "note": "Same as #513 when the item was opened from the Ice Bar. Upstream closed it as #344."
     },
     {

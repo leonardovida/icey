@@ -227,12 +227,16 @@ final class MenuBarOverlayPanel: NSPanel {
 
         // The panel belongs to one display. If the window server moves it to
         // another one, take it off screen rather than draw that display's
-        // tint and shape across someone else's (see `orderOutIfOnOtherDisplay()`).
+        // tint and shape across someone else's (see `orderOutIfOnOtherDisplay()`),
+        // then try to show it on its own display again.
         NotificationCenter.default
             .publisher(for: NSWindow.didChangeScreenNotification, object: self)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.orderOutIfOnOtherDisplay()
+                guard let self, orderOutIfOnOtherDisplay() else {
+                    return
+                }
+                scheduleShowRetry()
             }
             .store(in: &c)
 
@@ -502,10 +506,6 @@ final class MenuBarOverlayPanel: NSPanel {
             return
         }
 
-        showRetryTask?.cancel()
-        showRetryTask = nil
-        showRetryCount = 0
-
         let newFrame = CGRect(
             x: owningScreen.frame.minX,
             y: (owningScreen.frame.maxY - menuBarHeight) - 5,
@@ -516,10 +516,24 @@ final class MenuBarOverlayPanel: NSPanel {
         alphaValue = 0
         setFrame(newFrame, display: false)
         orderFrontRegardless()
+        // Ordering the panel front can put it on the display with keyboard
+        // focus (see `orderOutIfOnOtherDisplay()`). Once it is on screen,
+        // setting the frame again moves it back to its own display.
+        if screen?.displayID != owningScreen.displayID {
+            setFrame(newFrame, display: false)
+        }
 
+        // A panel left on another display used to stay off screen until the
+        // next space change, so its display had no appearance at all
+        // (jordanbaird/Ice#1023). Try again, backing off between attempts.
         if orderOutIfOnOtherDisplay() {
+            scheduleShowRetry()
             return
         }
+
+        showRetryTask?.cancel()
+        showRetryTask = nil
+        showRetryCount = 0
 
         updateFlags = [.applicationMenuFrame, .desktopWallpaper]
 

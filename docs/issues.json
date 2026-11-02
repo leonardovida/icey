@@ -2,6 +2,17 @@
   "about": "Tracks every upstream Ice (jordanbaird/Ice) issue triaged for Icey. Scripts/build-site.py turns it into docs/upstream-issues.md and the website. Edit this file, never the generated page. status: fixed | partial | open | not-a-bug | feature. fixed_in: the Icey release tag that ships the fix, or null if it is not released yet. pr: the Icey pull request with the fix.",
   "issues": [
     {
+      "number": 1023,
+      "title": "[Bug]: Menu bar appearance overlay for the built-in display is drawn on an external display as a solid black rectangle",
+      "headline": "The built-in display's menu bar tint shows as a black bar on an external display",
+      "status": "partial",
+      "fixed_in": null,
+      "symptom": "With an external display arranged beside the built-in one, the built-in display's menu bar appearance was drawn as a solid bar on the external display, above all windows.",
+      "fix": "An appearance overlay that lands on another display hides itself, then tries again to show on its own display instead of waiting for the next space change.",
+      "note": "Same cause as #858 and #910. Not yet confirmed on two displays.",
+      "pr": 55
+    },
+    {
       "number": 334,
       "title": "Ice has noticeable energy impact during mouse movement",
       "headline": "Ice uses energy every time you move the mouse",

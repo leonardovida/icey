@@ -236,6 +236,7 @@ These have a fix that couldn't be confirmed yet, or that covers part of the repo
 
 | Upstream issue | Problem | Status |
 |---|---|---|
+| [#1023](https://github.com/jordanbaird/Ice/issues/1023) | The built-in display's menu bar tint shows as a black bar on an external display | An appearance overlay that lands on another display hides itself, then tries again to show on its own display instead of waiting for the next space change. Same cause as #858 and #910. Not yet confirmed on two displays. |
 | [#1004](https://github.com/jordanbaird/Ice/issues/1004) | Ice keeps asking for a permission that is already enabled | Icey explains what to do: remove the app from the list in System Settings with the minus button, then add it again. Screen Recording granted while Icey runs now takes effect without a relaunch. The permissions window now also has a link that opens the right System Settings list, where a stale entry can be removed. |
 | [#929](https://github.com/jordanbaird/Ice/issues/929) | Menu bar icons are scaled wrong on external displays | Item images now use the scale of the display they were captured on. Not yet confirmed on a two-display setup. |
 | [#987](https://github.com/jordanbaird/Ice/issues/987) | Ice Bar icons shrink on an external display | Item images now take their scale from the capture itself. Not yet confirmed on a two-display setup. |

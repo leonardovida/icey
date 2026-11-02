@@ -24,6 +24,15 @@ final class HIDEventManager: ObservableObject {
     /// The shared app state.
     private weak var appState: AppState?
 
+    /// The application menu frame read most recently, with the display, the
+    /// process that owned the menu bar, and when it was read.
+    private var applicationMenuFrameCache: (
+        displayID: CGDirectDisplayID,
+        pid: pid_t?,
+        date: ContinuousClock.Instant,
+        frame: CGRect?
+    )?
+
     /// Storage for internal observers.
     private var cancellables = Set<AnyCancellable>()
 
@@ -608,6 +617,11 @@ extension HIDEventManager {
             return nil
         }
         let concealer = appState.concealer27
+        // Nothing is bridged while nothing is concealed (see `ClockBridgeZone27`). The tap
+        // sees every click on the Mac, so leave before looking up the displays and items.
+        guard concealer.isConcealing else {
+            return event
+        }
         // The frames of the display the click landed on, so the clock of the display whose bar
         // is not active is recognised as well.
         let clickedDisplay = NSScreen.screens.first { CGDisplayBounds($0.displayID).contains(event.location) }?.displayID
@@ -1144,13 +1158,39 @@ extension HIDEventManager {
         return isInsideFrame
     }
 
+    /// Returns the frame of the application menu on the given screen, read
+    /// at most once a second for each display and menu bar owner.
+    ///
+    /// The frame takes several Accessibility calls, which block the main
+    /// thread. It was read for every mouse movement over the menu bar, and
+    /// every 50 milliseconds while a reveal was pending, and each call waited
+    /// up to a second for an application that was not responding, so Icey
+    /// froze for as long as the pointer stayed on the menu bar. An
+    /// application the window server reports as not responding is not asked.
+    private func applicationMenuFrame(for screen: NSScreen) -> CGRect? {
+        let pid = NSWorkspace.shared.menuBarOwningApplication?.processIdentifier
+        let now = ContinuousClock.now
+        let cached = applicationMenuFrameCache.flatMap { cache in
+            cache.displayID == screen.displayID && cache.pid == pid ? cache : nil
+        }
+        if let cached, now - cached.date < .seconds(1) {
+            return cached.frame
+        }
+        if let pid, Bridging.isProcessUnresponsive(pid) {
+            return cached?.frame
+        }
+        let frame = screen.getApplicationMenuFrame()
+        applicationMenuFrameCache = (screen.displayID, pid, now, frame)
+        return frame
+    }
+
     /// A Boolean value that indicates whether the mouse pointer is within
     /// the bounds of the current application menu.
     func isMouseInsideApplicationMenu(appState: AppState, screen: NSScreen) -> Bool {
         guard let mouseLocation = MouseHelpers.locationCoreGraphics else {
             return false
         }
-        guard var applicationMenuFrame = screen.getApplicationMenuFrame() else {
+        guard var applicationMenuFrame = applicationMenuFrame(for: screen) else {
             return false
         }
         if #available(macOS 27.0, *) {

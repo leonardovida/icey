@@ -35,6 +35,7 @@ final class Concealer27: ObservableObject {
     private var temporarilyShown = [String: Int]()
     private var cancellables = Set<AnyCancellable>()
     private var runningApplicationsObservation: NSKeyValueObservation?
+    private var runningApplicationsChangeObservation: NSKeyValueObservation?
 
     /// Whether any application is meant to be concealed right now.
     private(set) var isConcealing = false
@@ -60,9 +61,21 @@ final class Concealer27: ObservableObject {
         // applications are: an agent started while Ice conceals stayed hidden, whatever its
         // section, until something else happened to update the concealment. The running
         // applications are observed instead, which covers agents as well (adopted from
-        // @carlossantos74's jordanbaird/Ice#1001).
-        NSWorkspace.shared.publisher(for: \.runningApplications)
-            .map { Set($0.compactMap(\.bundleIdentifier)) }
+        // @carlossantos74's jordanbaird/Ice#1001). The list is read on the main thread only:
+        // key-value notifications can come on another thread, and the list Combine read there
+        // and kept is what crashed Icey as it quit (#53).
+        let runningApplicationsChanged = PassthroughSubject<Void, Never>()
+        runningApplicationsChangeObservation = NSWorkspace.shared.observe(
+            \.runningApplications,
+            options: []
+        ) { _, _ in
+            runningApplicationsChanged.send()
+        }
+        let runningBundleIDs = { Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier)) }
+        runningApplicationsChanged
+            .receive(on: DispatchQueue.main)
+            .map { runningBundleIDs() }
+            .prepend(runningBundleIDs())
             .removeDuplicates()
             .dropFirst()
             .receive(on: DispatchQueue.main)

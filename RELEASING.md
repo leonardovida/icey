@@ -33,6 +33,8 @@ Short and plain, for users. Use [release-notes/TEMPLATE.md](release-notes/TEMPLA
 
 Never add a testing or verification section. That belongs in the pull request.
 
+The same notes appear in Icey's update window: `Scripts/make-appcast.sh` converts `release-notes/$TAG.md` to HTML with `Scripts/release-notes-html.py`. The converter handles headings, paragraphs, bullets, numbered items, bold, code and links, so keep the notes to those.
+
 ## Tracking fixed Ice issues
 
 [docs/issues.json](docs/issues.json) lists every upstream Ice issue Icey has looked at. When a fix ships:

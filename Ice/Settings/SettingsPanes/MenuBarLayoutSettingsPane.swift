@@ -132,6 +132,26 @@ struct MenuBarLayoutSettingsPane: View {
 
                 LayoutBar(imageCache: appState.imageCache, section: name)
             }
+        } else if name == .alwaysHidden {
+            // With the section off, nothing said it exists, and items that only
+            // fit there could be reached from search alone (jordanbaird/Ice#502).
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name.displayString)
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text("The always-hidden section is off.")
+                        .foregroundStyle(.secondary)
+                    Button {
+                        appState.navigationState.settingsNavigationIdentifier = .advanced
+                    } label: {
+                        Text("Go to Advanced Settings")
+                    }
+                    .buttonStyle(.link)
+                }
+            }
+            .padding(.leading, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

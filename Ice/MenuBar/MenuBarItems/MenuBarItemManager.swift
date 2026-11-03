@@ -58,8 +58,18 @@ final class MenuBarItemManager: ObservableObject {
     /// The menu bar items Icey has seen, loaded from the defaults on first use.
     private var knownItems: KnownItems?
 
-    /// New menu bar items waiting to be moved to the section chosen for them.
-    private var pendingNewItems = [MenuBarItem]()
+    /// Menu bar items waiting to be moved: new items, to the section chosen
+    /// for new items (`nil`), and recreated items, back to their section.
+    private var pendingNewItems = [(item: MenuBarItem, section: MenuBarSection.Name?)]()
+
+    /// The section each menu bar item was last seen in, by
+    /// ``rememberedSectionKey(for:)``, loaded from the defaults on first use.
+    private var rememberedSections: [String: String]?
+
+    /// The window of each menu bar item at the previous cache update, by
+    /// ``rememberedSectionKey(for:)``. An item with another window has been
+    /// created again since, or is seen for the first time since launch.
+    private var lastSeenItemWindowIDs = [String: CGWindowID]()
 
     /// The task that moves new menu bar items, while it runs.
     private var newItemPlacementTask: Task<Void, Never>?
@@ -513,6 +523,7 @@ extension MenuBarItemManager {
             controlItemWindowIDs = (controlItems.hidden.windowID, controlItems.alwaysHidden?.windowID)
             await uncheckedCacheItems(items: items, controlItems: controlItems, displayID: displayID)
             recordNewItems(controlItems: controlItems)
+            restoreRecreatedItems(controlItems: controlItems)
         }
     }
 
@@ -2356,7 +2367,7 @@ extension MenuBarItemManager {
             foundNewItems = true
             logger.info("Found new menu bar item \(item.logString, privacy: .public) in the \(section.logString, privacy: .public)")
             if let target, target != section, !temporarilyShownItemContexts.contains(where: { $0.tag == item.tag }) {
-                pendingNewItems.append(item)
+                pendingNewItems.append((item, nil))
             }
         }
 
@@ -2383,6 +2394,109 @@ extension MenuBarItemManager {
         return section
     }
 
+    /// Returns the key to remember the section of the item with the given
+    /// tag by, or `nil` if the tag does not identify the item across launches.
+    private static func rememberedSectionKey(for tag: MenuBarItemTag) -> String? {
+        guard tag.namespace.isString else {
+            return nil
+        }
+        return "\(tag.namespace):\(tag.title)"
+    }
+
+    /// The value a section is remembered by in the defaults.
+    private static func storageValue(for section: MenuBarSection.Name) -> String {
+        switch section {
+        case .visible: "visible"
+        case .hidden: "hidden"
+        case .alwaysHidden: "alwaysHidden"
+        }
+    }
+
+    /// Remembers the section of each item in the cache, and queues items
+    /// that were created again in the leftmost section to go back to the
+    /// section they were in.
+    ///
+    /// Some apps don't keep their item's position. macOS puts the item they
+    /// create at each launch at the far left, in the always-hidden section,
+    /// and Icey moved it only the first time it saw the app
+    /// (jordanbaird/Ice#6, #732). An item is moved back only when it has a
+    /// new window, which is the case after its app created it again, or the
+    /// first time it is seen after Icey launches, and only out of the
+    /// leftmost section, where macOS puts such items. An item the user moves
+    /// keeps its window, so its new section is remembered instead.
+    ///
+    /// This runs after each cache update, so it adds no polling of its own.
+    private func restoreRecreatedItems(controlItems: ControlItemPair) {
+        // A shown item is out of its section for now, and a moved one may not
+        // have reached its place yet.
+        guard temporarilyShownItemContexts.isEmpty, temporaryMovesInProgress == 0 else {
+            return
+        }
+
+        var remembered = rememberedSections
+            ?? (Defaults.dictionary(forKey: .menuBarItemSections) as? [String: String])
+            ?? [:]
+        let leftmostSection: MenuBarSection.Name = controlItems.alwaysHidden == nil ? .hidden : .alwaysHidden
+
+        var entries = [(item: MenuBarItem, section: MenuBarSection.Name, key: String)]()
+        var keyCounts = [String: Int]()
+        for section in MenuBarSection.Name.allCases {
+            for item in itemCache[section] where !item.isControlItem && item.isMovable {
+                guard let key = Self.rememberedSectionKey(for: item.tag) else {
+                    continue
+                }
+                entries.append((item, section, key))
+                keyCounts[key, default: 0] += 1
+            }
+        }
+
+        var seenWindowIDs = [String: CGWindowID]()
+        var didChange = false
+        // Items that share a tag, such as those of several OneDrive accounts,
+        // can't be told apart across launches, so they are left alone.
+        for (item, section, key) in entries where keyCounts[key] == 1 {
+            seenWindowIDs[key] = item.windowID
+            let isNewWindow = lastSeenItemWindowIDs[key] != item.windowID
+            if
+                isNewWindow,
+                section == leftmostSection,
+                let saved = remembered[key],
+                saved != Self.storageValue(for: section),
+                let target = MenuBarSection.Name.allCases.first(where: { Self.storageValue(for: $0) == saved }),
+                target != .alwaysHidden || controlItems.alwaysHidden != nil
+            {
+                if !pendingNewItems.contains(where: { $0.item.windowID == item.windowID }) {
+                    logger.info("Found recreated menu bar item \(item.logString, privacy: .public), last seen in the \(target.logString, privacy: .public)")
+                    pendingNewItems.append((item, target))
+                }
+                continue
+            }
+            if remembered[key] != Self.storageValue(for: section) {
+                remembered[key] = Self.storageValue(for: section)
+                didChange = true
+            }
+        }
+        lastSeenItemWindowIDs = seenWindowIDs
+
+        // Keep the list bounded, forgetting items that are not in the menu bar.
+        if remembered.count > KnownItems.maxCount {
+            for key in remembered.keys where seenWindowIDs[key] == nil && keyCounts[key] == nil {
+                remembered.removeValue(forKey: key)
+                didChange = true
+                if remembered.count <= KnownItems.maxCount {
+                    break
+                }
+            }
+        }
+
+        if didChange {
+            Defaults.set(remembered, forKey: .menuBarItemSections)
+        }
+        rememberedSections = remembered
+
+        placePendingNewItems()
+    }
+
     /// Moves the queued new items one at a time, unless that is already
     /// being done.
     private func placePendingNewItems() {
@@ -2397,28 +2511,38 @@ extension MenuBarItemManager {
                 while Self.isScreenZoomed {
                     try? await Task.sleep(for: .seconds(5))
                 }
-                await placeNewItem(pendingNewItems.removeFirst())
+                let pending = pendingNewItems.removeFirst()
+                await placeNewItem(pending.item, in: pending.section)
             }
             newItemPlacementTask = nil
         }
     }
 
-    /// Moves the given new item to the section chosen for new items, if it
-    /// is still in the menu bar and not in that section already.
+    /// Moves the given item to the given section, or for a new item, to the
+    /// section chosen for new items, if it is still in the menu bar and not
+    /// in that section already.
     ///
     /// The menu bar is read again first, as the setting, the item and the
     /// control items may all have changed since the item was queued. A move
     /// that fails is not retried: the item is remembered either way.
-    private func placeNewItem(_ item: MenuBarItem) async {
+    private func placeNewItem(_ item: MenuBarItem, in section: MenuBarSection.Name?) async {
         guard let placement = appState?.settings.general.newItemPlacement else {
             return
         }
 
         var items = await MenuBarItem.getMenuBarItems(option: .activeSpace)
 
+        guard let controlItems = ControlItemPair(items: &items) else {
+            return
+        }
+        let target: MenuBarSection.Name?
+        if let section {
+            target = section == .alwaysHidden && controlItems.alwaysHidden == nil ? .hidden : section
+        } else {
+            target = targetSection(for: placement, controlItems: controlItems)
+        }
         guard
-            let controlItems = ControlItemPair(items: &items),
-            let target = targetSection(for: placement, controlItems: controlItems),
+            let target,
             let current = items.first(where: { $0.windowID == item.windowID })
         else {
             return
@@ -2449,7 +2573,7 @@ extension MenuBarItemManager {
             destination = .leftOfItem(controlItems.alwaysHidden ?? controlItems.hidden)
         }
 
-        logger.info("Moving new menu bar item \(current.logString, privacy: .public) to the \(target.logString, privacy: .public)")
+        logger.info("Moving \(section == nil ? "new" : "recreated", privacy: .public) menu bar item \(current.logString, privacy: .public) to the \(target.logString, privacy: .public)")
 
         do {
             try await move(item: current, to: destination)

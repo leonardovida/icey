@@ -6845,11 +6845,11 @@
       "number": 502,
       "title": "[Bug]: No Always Hidden Section in Ice Settings",
       "headline": "The always-hidden section is missing from Menu Bar Layout",
-      "status": "not-a-bug",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.4",
       "symptom": "Menu Bar Layout had no always-hidden section, so some items could only be reached through search.",
-      "fix": "The always-hidden section is off by default. Turn it on in Settings > Advanced.",
-      "pr": null
+      "fix": "With the always-hidden section off, Menu Bar Layout now says so, with a link to Advanced settings, where Enable the always-hidden section turns it on.",
+      "pr": 84
     },
     {
       "number": 492,

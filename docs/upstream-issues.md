@@ -6,7 +6,7 @@ This page maps bugs reported against [Ice](https://github.com/jordanbaird/Ice) (
 
 Each fix is described in the [release](https://github.com/leonardovida/icey/releases) that ships it, and on [Icey's website](https://leonardovida.github.io/icey/fixes/). Issue titles are quoted as they appear upstream. To report a problem that isn't listed, [open an issue in Icey](https://github.com/leonardovida/icey/issues/new/choose).
 
-## Fixed in Icey (312)
+## Fixed in Icey (313)
 
 | Upstream issue | Problem | Fixed in |
 |---|---|---|
@@ -269,6 +269,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#670](https://github.com/jordanbaird/Ice/issues/670) | The Ice Bar is solid black with Reduce Transparency on macOS 26 | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (The reporter couldn't confirm the fix. A custom Icey icon only follows light and dark mode if the option below the icon picker is on.) |
 | [#637](https://github.com/jordanbaird/Ice/issues/637) | Menu Bar Layout shows empty sections on a macOS 26 beta | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #973.) |
 | [#581](https://github.com/jordanbaird/Ice/issues/581) | Menu Bar Layout is blank on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #973.) |
+| [#502](https://github.com/jordanbaird/Ice/issues/502) | The always-hidden section is missing from Menu Bar Layout | [0.14.4](https://github.com/leonardovida/icey/releases/tag/v0.14.4) |
 | [#410](https://github.com/jordanbaird/Ice/issues/410) | "Do not press keys while moving menu bar items" when dragging in Menu Bar Layout | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (The Caps Lock change shipped in v0.11.13-dev.2-icey.3 (#17).) |
 | [#381](https://github.com/jordanbaird/Ice/issues/381) | Keyboard shortcut to turn the Ice Bar on and off | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) |
 | [#379](https://github.com/jordanbaird/Ice/issues/379) | The Ice Bar is wider than the screen | [0.14.3](https://github.com/leonardovida/icey/releases/tag/v0.14.3) (Not reproduced with BetterTouchTool.) |
@@ -620,7 +621,6 @@ Nothing in Icey's code explains these, and they couldn't be reproduced. If one s
 | [#849](https://github.com/jordanbaird/Ice/issues/849) | [Bug]: Tahoe -Ice menubar items missing on laptop screen compared to external monitor | macOS drops items that don't fit beside the notch. Reduce item spacing, hide some items, or turn on Settings > General > Use Ice Bar for displays with a notch. |
 | [#765](https://github.com/jordanbaird/Ice/issues/765) | [Question]: Project abandoned? | Ice is no longer maintained. Icey continues it with releases for macOS 26 and 27. |
 | [#598](https://github.com/jordanbaird/Ice/issues/598) | [Feature Request]: Provide basic functionality without screen recording | Screen Recording is already optional. Skip it during setup. Hiding, showing and Command-dragging items still work, but the Ice Bar, Menu Bar Layout images, search images and the menu bar appearance need it. |
-| [#502](https://github.com/jordanbaird/Ice/issues/502) | [Bug]: No Always Hidden Section in Ice Settings | The always-hidden section is off by default. Turn it on in Settings > Advanced. |
 | [#492](https://github.com/jordanbaird/Ice/issues/492) | [Bug]: macOS is constantly telling me "Ice is Accessing Your Screen" | This is a macOS bug that also hits other screen capture apps. Install the app in Applications, not from the download folder, and if it continues, remove the quarantine flag with `xattr -d com.apple.quarantine` on the app. |
 | [#275](https://github.com/jordanbaird/Ice/issues/275) | [Feature Request]: Ability to add custom icons - for both light and dark mode | Turn on Settings > General > Custom icon uses dynamic appearance. The icon then follows the menu bar's light or dark look. |
 | [#190](https://github.com/jordanbaird/Ice/issues/190) | [Bug]: Missing "Menu Bar Items" submenu | The pane was still in beta at the time. Icey has it as Settings > Menu Bar Layout. |

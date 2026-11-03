@@ -12355,6 +12355,64 @@
         }
       }
     },
+    "The always-hidden section is off." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der immer ausgeblendete Bereich ist deaktiviert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sección siempre oculta está desactivada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La section toujours masquée est désactivée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sezione sempre nascosta è disattivata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「常に非表示」セクションはオフです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "항상 숨김 영역이 꺼져 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A seção sempre oculta está desativada."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“始终隐藏”区域已关闭。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "始終隱藏區域已關閉。"
+          }
+        }
+      }
+    },
     "The General setting shows hidden menu bar items in the menu bar on this display." : {
       "localizations" : {
         "de" : {

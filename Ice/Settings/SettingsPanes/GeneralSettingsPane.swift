@@ -25,8 +25,15 @@ struct GeneralSettingsPane: View {
     }
 
     private var rehideIntervalKey: LocalizedStringKey {
-        let formatted = settings.rehideInterval.formatted()
-        if settings.rehideInterval == 1 {
+        let interval = settings.rehideInterval
+        // A minute or more reads better in minutes, such as "2 min, 30 sec",
+        // formatted in the user's language.
+        if interval >= 60, let seconds = Int(exactly: interval.rounded()) {
+            let formatted = Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated))
+            return "\(formatted)"
+        }
+        let formatted = interval.formatted()
+        if interval == 1 {
             return "\(formatted) second"
         } else {
             return "\(formatted) seconds"
@@ -322,10 +329,12 @@ struct GeneralSettingsPane: View {
             }
 
             if case .timed = settings.rehideStrategy {
+                // Up to five minutes, for items that are used for a while
+                // after they are shown (jordanbaird/Ice#39).
                 IceSlider(
                     rehideIntervalKey,
                     value: $settings.rehideInterval,
-                    in: 0...30,
+                    in: 0...300,
                     step: 1
                 )
             }

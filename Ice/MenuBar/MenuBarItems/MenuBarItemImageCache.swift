@@ -504,14 +504,17 @@ final class MenuBarItemImageCache: ObservableObject {
             return
         }
 
+        // This method runs off the main thread, and AppKit updates the
+        // screen list on the main thread when displays change, so the
+        // scale is read there.
         guard
             let displayID = await appState.itemManager.itemCache.displayID,
-            let screen = NSScreen.screens.first(where: { $0.displayID == displayID })
+            let scale = await MainActor.run(body: {
+                NSScreen.screens.first(where: { $0.displayID == displayID })?.backingScaleFactor
+            })
         else {
             return
         }
-
-        let scale = screen.backingScaleFactor
 
         // Capture the items of all sections together, so that sections that
         // share a menu bar row share one composite capture.

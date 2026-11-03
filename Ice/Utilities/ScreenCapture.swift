@@ -14,7 +14,13 @@ enum ScreenCapture {
 
     /// Returns a Boolean value that indicates whether the app has screen
     /// capture permissions.
+    ///
+    /// The window server gives the titles of other apps' windows only to apps
+    /// with the permission. Any one titled menu bar item proves it. Only the
+    /// first item used to be checked, so an item without a title reported the
+    /// permission as missing although it was granted (jordanbaird/Ice#896).
     static func checkPermissions() -> Bool {
+        var sawOtherWindow = false
         for windowID in Bridging.getMenuBarWindowList(option: [.itemsOnly, .activeSpace]) {
             guard
                 let window = WindowInfo(windowID: windowID),
@@ -22,7 +28,16 @@ enum ScreenCapture {
             else {
                 continue
             }
-            return window.title != nil
+            if window.title != nil {
+                return true
+            }
+            sawOtherWindow = true
+        }
+        if sawOtherWindow {
+            // No item had a title, so the permission is missing. This also
+            // notices a permission revoked while the app runs, which the
+            // fallback below does not.
+            return false
         }
         // CGPreflightScreenCaptureAccess() only returns an initial value,
         // but we can use it as a fallback.

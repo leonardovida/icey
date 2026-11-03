@@ -234,6 +234,21 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 - [x] Anonymous daily statistics, which you can turn off ([details](#privacy-and-anonymous-statistics))
 - [ ] Menu bar widgets
 
+### Automation
+
+Shortcuts, scripts, launchers such as Raycast and Alfred, and other apps can control Icey with `icey://` links. From Terminal, run for example `open icey://toggle-hidden`. In Shortcuts, use the Open URLs action.
+
+| Link | What it does |
+|---|---|
+| `icey://toggle-hidden` | Shows or hides the hidden section |
+| `icey://show-hidden`, `icey://hide-hidden` | Shows or hides the hidden section |
+| `icey://toggle-always-hidden` | Shows or hides the always-hidden section |
+| `icey://show-always-hidden`, `icey://hide-always-hidden` | Shows or hides the always-hidden section |
+| `icey://search` | Opens Search Menu Bar Items |
+| `icey://toggle-ice-bar` | Turns the Ice Bar on or off |
+| `icey://toggle-application-menus` | Hides or shows the application menus |
+| `icey://settings` | Opens Icey Settings |
+
 Want one of the unchecked features? [Open a feature request](https://github.com/leonardovida/icey/issues/new/choose) or a pull request.
 
 ### Languages

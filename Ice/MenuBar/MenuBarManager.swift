@@ -441,6 +441,15 @@ final class MenuBarManager: ObservableObject {
         editAppearanceItem.target = self
         menu.addItem(editAppearanceItem)
 
+        // The layout is changed far more often than the appearance (jordanbaird/Ice#497).
+        let layoutItem = NSMenuItem(
+            title: String(localized: "Edit Menu Bar Layout…"),
+            action: #selector(showMenuBarLayoutSettings),
+            keyEquivalent: ""
+        )
+        layoutItem.target = self
+        menu.addItem(layoutItem)
+
         menu.addItem(.separator())
 
         let settingsItem = NSMenuItem(
@@ -504,6 +513,15 @@ final class MenuBarManager: ObservableObject {
         } else {
             hideApplicationMenus()
         }
+    }
+
+    /// Opens the Menu Bar Layout pane of the settings window.
+    @objc private func showMenuBarLayoutSettings() {
+        guard let appState else {
+            return
+        }
+        appState.navigationState.settingsNavigationIdentifier = .menuBarLayout
+        appState.activateAndOpenSettings()
     }
 
     /// Shows the appearance editor panel.

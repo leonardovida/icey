@@ -78,6 +78,18 @@ ditto build/Build/Products/Release/Icey.app /Applications/Icey.app
 
 Builds you make yourself are ad-hoc signed, so macOS asks for the permissions again after each build.
 
+## Using Icey
+
+Icey splits the menu bar into sections, separated by dividers:
+
+- **Visible:** items to the right of the Icey icon, always shown.
+- **Hidden:** items to the left of the first divider. Click the Icey icon, or an empty part of the menu bar with Show on click on, to show them.
+- **Always-hidden:** items to the left of the second divider, shown only when you Option-click. Turn it on in Settings > Advanced > Enable the always-hidden section.
+
+To choose which section an item goes in, open Settings > Menu Bar Layout and drag it there, or right-click an empty part of the menu bar and choose Edit Menu Bar Layout. You can also hold ⌘ Command and drag items in the menu bar itself. macOS orders the items within each section.
+
+Settings > General decides how hidden items appear (in the menu bar or in the Ice Bar below it), when they show (click, hover or scroll) and when they hide again. Screen Recording is optional: without it, Icey still hides and shows items, but Menu Bar Layout, the Ice Bar and the item images in search need it. Answers to common problems are in [FREQUENT_ISSUES.md](FREQUENT_ISSUES.md).
+
 ## Privacy and anonymous statistics
 
 Icey gathers anonymous Mac model, OS version and CPU statistics to understand what to optimize for and which versions to support. The statistics are on by default. To turn them off, open Settings > About and turn off "Send anonymous statistics". Icey then sends nothing, and stops a report that is on its way.

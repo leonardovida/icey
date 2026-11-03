@@ -641,6 +641,11 @@ private struct IceBarItemView: View {
     var body: some View {
         if let image {
             Image(nsImage: image)
+                .resizable()
+                // Another app's hiding item can be thousands of points wide,
+                // and stretched the Ice Bar across the screen (jordanbaird/Ice#379).
+                // No real item is wider than this, and the others keep their size.
+                .frame(width: min(image.size.width, 300), height: image.size.height)
                 .contentShape(Rectangle())
                 .overlay {
                     IceBarItemClickView(

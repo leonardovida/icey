@@ -87,6 +87,23 @@ struct SectionedList<ItemID: Hashable>: View {
             }
             return .handled
         }
+        // Control-N and Control-P, as in Spotlight and Emacs-style text fields (jordanbaird/Ice#641).
+        .onKeyDown(key: .n, modifiers: .control, isEnabled: selection != nil) {
+            DispatchQueue.main.async {
+                if let nextSelectableItem {
+                    selection = nextSelectableItem.id
+                }
+            }
+            return .handled
+        }
+        .onKeyDown(key: .p, modifiers: .control, isEnabled: selection != nil) {
+            DispatchQueue.main.async {
+                if let previousSelectableItem {
+                    selection = previousSelectableItem.id
+                }
+            }
+            return .handled
+        }
         .onKeyDown(key: .return, isEnabled: selection != nil) {
             DispatchQueue.main.async {
                 items.first { $0.id == selection }?.action?()

@@ -23,6 +23,26 @@ extension View {
             return event
         }
     }
+
+    /// Returns a view that performs the given action when the specified
+    /// key is pressed with exactly the given modifier keys.
+    func onKeyDown(
+        key: KeyCode,
+        modifiers: NSEvent.ModifierFlags,
+        isEnabled: Bool = true,
+        action: @escaping () -> KeyCode.PressResult
+    ) -> some View {
+        localEventMonitor(mask: .keyDown, isEnabled: isEnabled) { event in
+            let pressed = event.modifierFlags.intersection([.command, .control, .option, .shift])
+            if event.keyCode == key.rawValue, pressed == modifiers {
+                return switch action() {
+                case .handled: nil
+                case .ignored: event
+                }
+            }
+            return event
+        }
+    }
 }
 
 extension KeyCode {

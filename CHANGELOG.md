@@ -2,6 +2,10 @@
 
 Full notes for every version are in [GitHub Releases](https://github.com/leonardovida/icey/releases), the main place for Icey updates. A copy of each release's notes is kept in [release-notes/](release-notes/). Changes that need you to do something are listed in [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 
+## [0.14.3](https://github.com/leonardovida/icey/releases/tag/v0.14.3)
+
+Adds `icey://` links for Shortcuts, scripts and launchers, an Edit Menu Bar Layout item in the menu bar's right-click menu, a hotkey to pause automatic rehiding and a longer timed rehide, and captures the wallpaper behind menu bar shapes far less often. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.14.3.md).
+
 ## [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2)
 
 Moves an item back to its section when its app recreates it at the far left, and shows each version's release notes in Icey's update window. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.14.2.md).

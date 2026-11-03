@@ -48,7 +48,8 @@ final class LayoutBarItemView: NSView {
     private var cachedImage: MenuBarItemImageCache.CapturedImage? {
         didSet {
             if let image = cachedImage {
-                setFrameSize(image.scaledSize)
+                let size = image.scaledSize
+                setFrameSize(CGSize(width: min(size.width, Self.maxWidth), height: size.height))
             } else {
                 setFrameSize(.zero)
             }
@@ -76,13 +77,20 @@ final class LayoutBarItemView: NSView {
     /// that the item's process is unresponsive.
     private var isShowingUnresponsiveWarning = false
 
+    /// The widest an item is drawn, in points.
+    private static let maxWidth: CGFloat = 300
+
     /// Creates a view that displays the given menu bar item.
     init(appState: AppState, item: MenuBarItem) {
         self.item = item
         self.appState = appState
 
-        // set the frame to the full item frame size; the image will be centered when displayed
-        super.init(frame: CGRect(origin: .zero, size: item.bounds.size))
+        // Set the frame to the item's size, with the width capped. Apps such as
+        // BetterTouchTool hide items with an item of their own that is
+        // thousands of points wide, which made the layout pane scroll for
+        // screens (jordanbaird/Ice#379, #313). No real item is that wide.
+        let size = CGSize(width: min(item.bounds.width, Self.maxWidth), height: item.bounds.height)
+        super.init(frame: CGRect(origin: .zero, size: size))
         unregisterDraggedTypes()
 
         self.toolTip = item.displayName

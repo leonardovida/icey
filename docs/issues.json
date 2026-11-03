@@ -7813,7 +7813,7 @@
       "title": "[ICE] 260308 - Screen capture permission detection returns false after inspecting only one window",
       "headline": "Screen Recording is reported missing although it is granted",
       "status": "fixed",
-      "fixed_in": null,
+      "fixed_in": "v0.14.5",
       "symptom": "The permission check looked only at the first menu bar item of another app. An item without a title made Ice report the permission as missing.",
       "fix": "Icey counts the permission as granted when any item has a title, and still notices when it is revoked.",
       "note": "Filed from a code review, not from a user report.",

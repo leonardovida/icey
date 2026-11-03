@@ -40,6 +40,20 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// The number of times the overlay panel update timer has fired.
     private var overlayPanelUpdateCount = 0
 
+    /// Each display's wallpaper file when the wallpaper was last captured
+    /// by the periodic updates.
+    private var lastWallpaperURLs = [CGDirectDisplayID: URL]()
+
+    /// When the periodic updates last captured the wallpaper.
+    private var lastWallpaperCapture: ContinuousClock.Instant?
+
+    /// How long the periodic updates go without capturing the wallpaper
+    /// while no display's wallpaper file changes.
+    ///
+    /// A dynamic wallpaper changes its picture without changing its file,
+    /// so it is captured again after this long.
+    private static let wallpaperRefreshInterval: Duration = .seconds(60)
+
     /// The amount to inset the menu bar if called for by the configuration,
     /// on a menu bar tall enough to take it.
     private let preferredMenuBarInsetAmount: CGFloat = if #available(macOS 26.0, *) { 3.5 } else { 5 }
@@ -235,10 +249,11 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// Starts or stops the timer that drives the overlay panels' periodic
     /// updates, as the given configuration calls for.
     ///
-    /// The panels update the desktop wallpaper every 5 seconds and the
-    /// application menu frame every 10 seconds, for the shapes that draw
-    /// them. macOS no longer posts a notification when the wallpaper
-    /// changes. Each panel used to run its own timer for each, and each
+    /// The panels update the application menu frame every 10 seconds, and
+    /// the desktop wallpaper when a display's wallpaper file changes, or at
+    /// least every minute, for the shapes that draw them. macOS no longer
+    /// posts a notification when the wallpaper changes, so the timer checks
+    /// the files every 5 seconds. Each panel used to run its own timer for each, and each
     /// update took its own window list, so the panels of several displays
     /// woke the app separately to ask the window server the same thing.
     /// One timer now takes a single window list for every panel, and only
@@ -255,6 +270,7 @@ final class MenuBarAppearanceManager: ObservableObject {
             return
         }
         overlayPanelUpdateCount = 0
+        lastWallpaperCapture = nil
         overlayPanelUpdateTimer = Timer.publish(every: 5, tolerance: 1, on: .main, in: .default)
             .autoconnect()
             .sink { [weak self] _ in
@@ -266,9 +282,15 @@ final class MenuBarAppearanceManager: ObservableObject {
     /// screen windows for every panel.
     private func performPeriodicOverlayPanelUpdates() {
         overlayPanelUpdateCount += 1
-        var flags: Set<MenuBarOverlayPanel.UpdateFlag> = [.desktopWallpaper]
+        var flags = Set<MenuBarOverlayPanel.UpdateFlag>()
+        if wallpaperNeedsCapture() {
+            flags.insert(.desktopWallpaper)
+        }
         if overlayPanelUpdateCount.isMultiple(of: 2) {
             flags.insert(.applicationMenuFrame)
+        }
+        guard !flags.isEmpty else {
+            return
         }
         let updates = overlayPanels.compactMap { panel in
             let panelFlags = panel.periodicUpdateFlags(from: flags)
@@ -289,6 +311,35 @@ final class MenuBarAppearanceManager: ObservableObject {
                 panel.performPeriodicUpdates(for: panelFlags, windows: windows)
             }
         }
+    }
+
+    /// Returns a Boolean value that indicates whether the periodic updates
+    /// should capture the wallpaper, and if so, notes that they do.
+    ///
+    /// Capturing the wallpaper every 5 seconds made protected video, such
+    /// as in the TV app, flicker every 5 seconds while a shape was on
+    /// (jordanbaird/Ice#105), and grows the window server's memory (#819).
+    /// It is now captured when a display's wallpaper file changes, and
+    /// otherwise once a minute, for dynamic wallpapers. A space switch, a
+    /// change between light and dark, and a change of shape capture it on
+    /// their own.
+    private func wallpaperNeedsCapture() -> Bool {
+        let workspace = NSWorkspace.shared
+        var urls = [CGDirectDisplayID: URL]()
+        for screen in NSScreen.screens {
+            urls[screen.displayID] = workspace.desktopImageURL(for: screen)
+        }
+        let now = ContinuousClock.now
+        if
+            urls == lastWallpaperURLs,
+            let lastWallpaperCapture,
+            now - lastWallpaperCapture < Self.wallpaperRefreshInterval
+        {
+            return false
+        }
+        lastWallpaperURLs = urls
+        lastWallpaperCapture = now
+        return true
     }
 
     /// Returns each display's identifier, frame and scale, which is what the

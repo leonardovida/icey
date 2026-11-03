@@ -687,11 +687,11 @@
       "number": 938,
       "title": "Option that lets you choose location of new items",
       "headline": "Choose which section new menu bar items appear in",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
       "symptom": "A request for a setting that decides where new menu bar items go.",
-      "fix": "Not started. Needs a way to recognize new items and move them automatically. Pull requests welcome.",
-      "pr": null
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden.",
+      "pr": 19
     },
     {
       "number": 961,
@@ -1945,12 +1945,12 @@
       "number": 713,
       "title": "[Feature Request]: Blacklist instead of whitelist strategy",
       "headline": "Hide new items by default instead of showing them",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
       "symptom": "A request for a blacklist instead of a whitelist.",
-      "fix": "Not started. Pull requests welcome.",
+      "fix": "Settings > General > New items appear in: choose Hidden.",
       "note": "Same request as #938.",
-      "pr": null
+      "pr": 19
     },
     {
       "number": 712,
@@ -2463,11 +2463,11 @@
       "number": 641,
       "title": "[Feature Request]: Support Ctrl+N and Ctrl+P to navigate down and up in the  menu bar items list",
       "headline": "Ctrl-N and Ctrl-P in the search list",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for Emacs-style navigation in search.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "In Search Menu Bar Items, Control-N and Control-P select the next and previous item, like the arrow keys.",
+      "pr": 72
     },
     {
       "number": 640,
@@ -2495,11 +2495,11 @@
       "number": 638,
       "title": "Can it support the multilingual version?",
       "headline": "Multilingual version",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.6",
       "symptom": "A request whether a multilingual version can be supported.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Icey is translated into German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, and Simplified and Traditional Chinese, and follows the Mac's language settings.",
+      "pr": 32
     },
     {
       "number": 636,
@@ -2852,11 +2852,12 @@
       "number": 554,
       "title": "[Feature Request]: Show menu bar item name on hover",
       "headline": "Show an item's name on hover",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
       "symptom": "A request for tooltips with item names.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "In the Ice Bar and Menu Bar Layout, hovering an item shows its name, and search lists items by name.",
+      "note": "Hovering an item in the menu bar itself shows whatever its app shows, which Icey can't change.",
+      "pr": 5
     },
     {
       "number": 552,
@@ -3028,11 +3029,11 @@
       "number": 516,
       "title": "[Feature Request]: Expose API for searching menu bar items for Launchbar/Alfred/Spotlight/etc",
       "headline": "API for searching menu bar items",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for LaunchBar, Alfred or Spotlight integration.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Icey can be controlled with icey:// links, for example icey://toggle-hidden or icey://search. Shortcuts, scripts, Raycast and Alfred can open them. The README lists every link.",
+      "pr": 74
     },
     {
       "number": 515,
@@ -3090,21 +3091,21 @@
       "number": 501,
       "title": "[Feature Request]: Raycast Integration",
       "headline": "Raycast integration",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for a Raycast extension.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Icey can be controlled with icey:// links, for example icey://toggle-hidden or icey://search. Shortcuts, scripts, Raycast and Alfred can open them. The README lists every link.",
+      "pr": 74
     },
     {
       "number": 497,
       "title": "[Feature Request]: Open 'Menu Bar Layout' from Right-Click",
       "headline": "Open Menu Bar Layout from the right-click menu",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for a context menu entry.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Right-click an empty part of the menu bar and choose Edit Menu Bar Layout.",
+      "pr": 73
     },
     {
       "number": 495,
@@ -3424,11 +3425,11 @@
       "number": 382,
       "title": "[Feature Request]: Add AppleScript or CLI support",
       "headline": "AppleScript or command-line support",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for automation support.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Icey can be controlled with icey:// links, for example icey://toggle-hidden or icey://search. Shortcuts, scripts, Raycast and Alfred can open them. The README lists every link.",
+      "pr": 74
     },
     {
       "number": 380,
@@ -3981,11 +3982,11 @@
       "number": 148,
       "title": "[Feature Request]: Custom trigger API for applications to implement",
       "headline": "Trigger API for other apps",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for an API to show items.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Icey can be controlled with icey:// links, for example icey://toggle-hidden or icey://search. Shortcuts, scripts, Raycast and Alfred can open them. The README lists every link.",
+      "pr": 74
     },
     {
       "number": 144,
@@ -4002,11 +4003,11 @@
       "number": 141,
       "title": "[Feature Request]: x-callback-url for automation",
       "headline": "x-callback-url automation",
-      "status": "feature",
-      "fixed_in": null,
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
       "symptom": "A request for URL scheme support.",
-      "fix": "Not started. Pull requests welcome.",
-      "pr": null
+      "fix": "Icey can be controlled with icey:// links, for example icey://toggle-hidden or icey://search. Shortcuts, scripts, Raycast and Alfred can open them. The README lists every link.",
+      "pr": 74
     },
     {
       "number": 113,
@@ -6667,6 +6668,1060 @@
       "fix": "Not planned. Icey needs macOS 14 or later, because it relies on APIs that older versions don't have.",
       "pr": null,
       "note": "Same as #49."
+    },
+    {
+      "number": 1022,
+      "title": "[Feature Request]:",
+      "headline": "A fork of Ice that runs on macOS 26 Tahoe",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "An announcement of another fork of Ice that runs on macOS 26 Tahoe, not a feature request.",
+      "fix": "Nothing to change in Icey. Icey supports macOS 26 Tahoe and macOS 27.",
+      "pr": null
+    },
+    {
+      "number": 901,
+      "title": "[Bug]: Invisible tray icon in menu bar layout in macos tahoe",
+      "headline": "Menu Bar Layout is invisible on macOS 26.3.1",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26.3.1, the Menu Bar Layout pane in Ice 0.11.12 was completely empty.",
+      "fix": "Icey identifies menu bar items on macOS 26 again, so the Menu Bar Layout pane shows them.",
+      "note": "Same as #891.",
+      "pr": 5
+    },
+    {
+      "number": 884,
+      "title": "[Bug]: Unclickable Update popup",
+      "headline": "The update window can't be clicked or closed",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26.3, the update window ignored clicks and couldn't be closed.",
+      "fix": "Icey brings the prompt to the front so it takes clicks and remembers your answer.",
+      "note": "Same as #931. Ice 0.11.12 reads Ice's own update feed, so it never offers Icey. Install Icey from its releases page.",
+      "pr": 5
+    },
+    {
+      "number": 869,
+      "title": "[Bug]: 升级mac 26.2，没有拖拽的图标 in “Menu Bar Layout”",
+      "headline": "Menu Bar Layout shows no icons on macOS 26.2",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26.2, the Menu Bar Layout sections were white and showed no icons to drag.",
+      "fix": "Icey identifies menu bar items on macOS 26 again, so the Menu Bar Layout pane shows them.",
+      "note": "Same as #891.",
+      "pr": 5
+    },
+    {
+      "number": 866,
+      "title": "[Bug]: How to uninstall Ice ?",
+      "headline": "How to uninstall Ice",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Ice wasn't in the Applications folder, so it couldn't be found to uninstall it.",
+      "fix": "The app had never been moved to Applications and was still in Downloads. Quit it and delete it from there.",
+      "note": "Same as #949.",
+      "pr": null
+    },
+    {
+      "number": 849,
+      "title": "[Bug]: Tahoe -Ice menubar items missing on laptop screen compared to external monitor",
+      "headline": "Some items are missing on the notched laptop screen",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "On a MacBook with a notch, several items shown on the external display were missing from the built-in display.",
+      "fix": "macOS drops items that don't fit beside the notch. Reduce item spacing, hide some items, or turn on Settings > General > Use Ice Bar for displays with a notch.",
+      "note": "Same cause as #589. The reporter fixed it by reducing item spacing.",
+      "pr": null
+    },
+    {
+      "number": 765,
+      "title": "[Question]: Project abandoned?",
+      "headline": "Is Ice abandoned?",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Users asked whether Ice is still maintained and whether a stable macOS 26 release is coming.",
+      "fix": "Ice is no longer maintained. Icey continues it with releases for macOS 26 and 27.",
+      "note": "Same as #939.",
+      "pr": null
+    },
+    {
+      "number": 749,
+      "title": "[Bug]: Keeps quitting on 26.0.1, menu bar layout sections black.",
+      "headline": "Ice quits when clicking its icon and the layout is black on macOS 26",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26.0.1, Ice quit when its icon was clicked, the hidden items came back, and the Menu Bar Layout sections were black.",
+      "fix": "Icey is built on Ice's Tahoe rewrite and identifies menu bar items on macOS 26 again, so it no longer quits and the layout shows your items.",
+      "note": "Same as #684 and #743.",
+      "pr": 5
+    },
+    {
+      "number": 738,
+      "title": "[Bug]: Support for Tahoe?",
+      "headline": "Ice doesn't work properly on macOS 26 Tahoe",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26 with Ice 0.11.12, Menu Bar Layout showed empty sections, and clicking the Ice icon put the menu bar back to normal.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "note": "Same as #973.",
+      "pr": 5
+    },
+    {
+      "number": 692,
+      "title": "[Bug]: <Not support macOS Tahoe>",
+      "headline": "Ice crashes and items can't be dragged on macOS 26 Tahoe",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26, Ice 0.11.12 crashed when clicked, and items couldn't be dragged.",
+      "fix": "Same as #877. Icey is built on the macOS 26 code and fixes the crashes, so items can be arranged again.",
+      "pr": 5
+    },
+    {
+      "number": 680,
+      "title": "[Bug]: Scrolling on macOS Tahoe very slow with Ice running",
+      "headline": "Scrolling is slow on macOS 26 while Ice runs",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "On macOS 26.0 with Ice 0.11.12, scrolling in every app was slow, and normal again without Ice.",
+      "fix": "Icey listens to scroll events only while Show on scroll is on. Ice listened to every scroll in the system all the time.",
+      "note": "Not confirmed by the reporter. macOS 26.0 also slowed scrolling in some Electron apps without Ice.",
+      "pr": 1
+    },
+    {
+      "number": 678,
+      "title": "[Bug]: Ice Bar Not working properly",
+      "headline": "Ice crashes when the Ice Bar is turned on in macOS 26 Tahoe",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26, Ice 0.11.12 crashed when the menu bar was clicked with the Ice Bar turned on.",
+      "fix": "Same as #840. Icey is built on the macOS 26 code, and the conversion that crashed is gone.",
+      "pr": 5
+    },
+    {
+      "number": 670,
+      "title": "[Bug]: Black window popup on Tahoe with beta 0.11.13-dev.1 with Reduce Transparency turned on",
+      "headline": "The Ice Bar is solid black with Reduce Transparency on macOS 26",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With Reduce Transparency on, the Ice Bar in Ice 0.11.13-dev.1 was solid black and its icons couldn't be seen.",
+      "fix": "Fixed in Ice 0.11.13-dev.2, which Icey is built on.",
+      "note": "The reporter couldn't confirm the fix. A custom Icey icon only follows light and dark mode if the option below the icon picker is on.",
+      "pr": null
+    },
+    {
+      "number": 637,
+      "title": "[Bug]: Empty menu bar layout sections (MacOS 26 dev beta 5)",
+      "headline": "Menu Bar Layout shows empty sections on a macOS 26 beta",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On a macOS 26 beta, the three sections in Menu Bar Layout were empty, though Command-drag still worked.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items now connects reliably, so the layout shows your items.",
+      "note": "Same as #973.",
+      "pr": 5
+    },
+    {
+      "number": 598,
+      "title": "[Feature Request]: Provide basic functionality without screen recording",
+      "headline": "Use Ice without the Screen Recording permission",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "A request to use Ice without granting Screen Recording, and to explain why it is needed.",
+      "fix": "Screen Recording is already optional. Skip it during setup. Hiding, showing and Command-dragging items still work, but the Ice Bar, Menu Bar Layout images, search images and the menu bar appearance need it.",
+      "pr": null
+    },
+    {
+      "number": 581,
+      "title": "[Bug]: macOS 26 doesn't show anything in \"Menu Bar Layout\"",
+      "headline": "Menu Bar Layout is blank on macOS 26",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "On macOS 26, the Menu Bar Layout pane showed three white bars instead of the menu bar items.",
+      "fix": "Icey is built on Ice's Tahoe rewrite, and its helper for identifying menu bar items connects reliably, so the layout shows your items.",
+      "note": "Same as #973.",
+      "pr": 5
+    },
+    {
+      "number": 502,
+      "title": "[Bug]: No Always Hidden Section in Ice Settings",
+      "headline": "The always-hidden section is missing from Menu Bar Layout",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Menu Bar Layout had no always-hidden section, so some items could only be reached through search.",
+      "fix": "The always-hidden section is off by default. Turn it on in Settings > Advanced.",
+      "pr": null
+    },
+    {
+      "number": 492,
+      "title": "[Bug]: macOS is constantly telling me \"Ice is Accessing Your Screen\"",
+      "headline": "macOS keeps saying Ice is accessing your screen",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "On macOS 15.2, the \"Ice is accessing your screen\" reminder appeared almost every time a menu bar item was clicked.",
+      "fix": "This is a macOS bug that also hits other screen capture apps. Install the app in Applications, not from the download folder, and if it continues, remove the quarantine flag with `xattr -d com.apple.quarantine` on the app.",
+      "note": "Screen Recording is optional. Without it, only the Ice Bar, the Menu Bar Layout images, search images and the menu bar appearance are lost.",
+      "pr": null
+    },
+    {
+      "number": 421,
+      "title": "[Bug]: Menu Bar items automatically show/hide when click on Application Menu Items",
+      "headline": "Clicking app menus shows and hides menu bar items",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "symptom": "Clicking an app's menus, except Finder's, showed and hid the hidden items.",
+      "fix": "Show on click and show on hover now do nothing while an app's menu is open, so moving between its menus no longer shows the hidden items.",
+      "note": "Same as #567. The reporter later said it no longer happened.",
+      "pr": 17
+    },
+    {
+      "number": 410,
+      "title": "[Bug]: Can't move menu items in Menu Bar Layout in Settings",
+      "headline": "\"Do not press keys while moving menu bar items\" when dragging in Menu Bar Layout",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Dragging items in Menu Bar Layout failed with \"Do not press keys while moving menu bar items\", though no key was pressed.",
+      "fix": "Fixed in Ice before Icey, which made the key check less strict in 0.11.12. Icey also no longer counts Caps Lock as a held key.",
+      "note": "The Caps Lock change shipped in v0.11.13-dev.2-icey.3 (#17).",
+      "pr": null
+    },
+    {
+      "number": 408,
+      "title": "[Bug]: Segmentation Fault",
+      "headline": "Ice crashes at launch on a macOS 15 beta",
+      "status": "closed",
+      "fixed_in": null,
+      "symptom": "Ice 0.11.10 crashed with a segmentation fault at launch on a macOS 15 beta.",
+      "fix": "Closed: no cause found in Icey's code, and not reproduced. Open an issue in Icey if it still happens, and it will be reopened.",
+      "note": "Ice 0.11.11 fixed the panel style the log warned about, and the crash that remained was inside macOS preferences code on a beta. No later reports.",
+      "pr": null
+    },
+    {
+      "number": 381,
+      "title": "[Feature Request]: Hotkey for toggling Ice Bar",
+      "headline": "Keyboard shortcut to turn the Ice Bar on and off",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "A request for a shortcut to switch the Ice Bar on and off without opening settings.",
+      "fix": "Fixed in Ice before Icey. Set a shortcut for \"Enable the Ice Bar\" in Settings > Hotkeys.",
+      "pr": null
+    },
+    {
+      "number": 379,
+      "title": "[Bug]: Hidden menu bar is exceedingly wide",
+      "headline": "The Ice Bar is wider than the screen",
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
+      "symptom": "The Ice Bar filled the whole screen width and scrolled, because another app's very wide hiding item was in the hidden section.",
+      "fix": "Icey draws any item at most 300 points wide in the Ice Bar and Menu Bar Layout, so another app's hiding item no longer stretches them.",
+      "note": "Not reproduced with BetterTouchTool.",
+      "pr": 81
+    },
+    {
+      "number": 371,
+      "title": "[Bug]: Unable to open Ice settings panel",
+      "headline": "Settings window doesn't open",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Choosing Ice Settings from the menu did nothing after a restart, until Ice was relaunched.",
+      "fix": "Fixed in Ice before Icey. Settings opens from the Icey menu and the app icon.",
+      "note": "Same as #375.",
+      "pr": null
+    },
+    {
+      "number": 369,
+      "title": "[Feature Request]: Removing Gradient Stops",
+      "headline": "Remove a color stop from the gradient tint",
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
+      "symptom": "There was no visible way to remove a color stop from the menu bar gradient.",
+      "fix": "Right-click a color stop and choose Remove Color Stop, or select it and press Delete.",
+      "pr": 78
+    },
+    {
+      "number": 364,
+      "title": "[Bug]: Ice Freezing After a reinstall (Built-in upgrade, manually upgrade, downgrade...)",
+      "headline": "Ice freezes after updating or reinstalling",
+      "status": "closed",
+      "fixed_in": null,
+      "symptom": "After an update, downgrade or reinstall, Ice opened its settings and permissions windows but stopped responding. Relaunching didn't help.",
+      "fix": "Closed: no cause found, and upstream couldn't reproduce it. Reporters fixed it by removing the app's settings, for example with AppCleaner, and installing again.",
+      "pr": null
+    },
+    {
+      "number": 328,
+      "title": "[Bug]: Operation timed out for \"Sound\"",
+      "headline": "\"Operation timed out\" when moving the Sound item",
+      "status": "closed",
+      "fixed_in": null,
+      "symptom": "Moving an item in Menu Bar Layout failed with \"Operation timed out\", and the item disappeared until Ice was restarted.",
+      "fix": "Closed: no cause found in Icey's code, and not reproduced. Open an issue in Icey if it still happens, and it will be reopened.",
+      "note": "Similar to #746. Apps that filter mouse events can block moves, and a restart cleared it for both reporters. Icey's move code retries up to 8 times with growing timeouts.",
+      "pr": null
+    },
+    {
+      "number": 327,
+      "title": "[Bug]: ICE Bar flashes by upon click and disappears quickly ",
+      "headline": "The Ice Bar flashes and disappears",
+      "status": "closed",
+      "fixed_in": null,
+      "symptom": "The Ice Bar appeared for a moment and closed when opened by click, hover or the menu.",
+      "fix": "Closed: the reporter said it went away on its own. Open an issue in Icey if it still happens, and it will be reopened.",
+      "note": "Icey keeps the Ice Bar open while the pointer moves to it (#813).",
+      "pr": null
+    },
+    {
+      "number": 313,
+      "title": "[Bug]: Invisible large items in menu bar cause it to overflow and become scrollable",
+      "headline": "Invisible wide items make Menu Bar Layout scroll",
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
+      "symptom": "Menu Bar Layout showed very wide invisible items, so the sections overflowed and scrolled.",
+      "fix": "Menu Bar Layout draws any item at most 300 points wide, so another app's hiding item no longer makes it scroll.",
+      "note": "Same as #379. Not reproduced with BetterTouchTool.",
+      "pr": 79
+    },
+    {
+      "number": 311,
+      "title": "[Bug]: Can't hide Spotlight icon?",
+      "headline": "Spotlight item can't be hidden",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Moving the Spotlight item to the hidden section failed with \"Could not complete\" and left two Spotlight items.",
+      "fix": "Fixed in Ice before Icey, which reworked how items are moved. The reporter confirmed it on Ice 0.11.5.",
+      "pr": null
+    },
+    {
+      "number": 288,
+      "title": "[Feature Request]: Remove 1px padding around menu bar when using any menu bar shape",
+      "headline": "Thin gap above the menu bar with a menu bar shape",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With the full or split shape, a 1-pixel gap showed between the shape and the top of the screen.",
+      "fix": "Fixed in Ice before Icey. Ice removed the gap on displays with a notch, and kept it on other displays, where the shape looked cut off without it.",
+      "pr": null
+    },
+    {
+      "number": 285,
+      "title": "[Feature Request]: Update Notes",
+      "headline": "Show release notes in the update window",
+      "status": "fixed",
+      "fixed_in": "v0.14.2",
+      "symptom": "A request to see what changed in a new version before updating.",
+      "fix": "The update window lists the release notes of the new version, with its highlights, fixes and anything to do.",
+      "pr": 68
+    },
+    {
+      "number": 276,
+      "title": "Issue withdrawn",
+      "headline": "Right-click opens Ice's menu in fullscreen games",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "Right-clicking at the top of the screen, in fullscreen games or on the Dock, opened Ice's \"Edit Menu Bar Appearance\" menu.",
+      "fix": "Same as #892. Turn off the right-click menu in Settings > Advanced. Icey also ignores clicks at the top of a fullscreen app when the menu bar is out of sight.",
+      "note": "The original report was withdrawn. This entry covers the comments.",
+      "pr": 5
+    },
+    {
+      "number": 275,
+      "title": "[Feature Request]: Ability to add custom icons - for both light and dark mode",
+      "headline": "Custom Ice icon for light and dark mode",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "A custom icon looked the same in light and dark mode, so it was hard to see on a dark menu bar.",
+      "fix": "Turn on Settings > General > Custom icon uses dynamic appearance. The icon then follows the menu bar's light or dark look.",
+      "pr": null
+    },
+    {
+      "number": 269,
+      "title": "[Bug]: XXX is unresponsive (yellow exclamation) until Ice is quit and relaunched",
+      "headline": "A menu bar item shows as unresponsive until Ice restarts",
+      "status": "closed",
+      "fixed_in": null,
+      "symptom": "Menu Bar Layout showed a yellow warning and refused to move an item, saying its app was unresponsive, even though the app worked. It happened after the app was relaunched or rebuilt.",
+      "fix": "Closed: no cause found in Icey's code, and not reproduced. Open an issue in Icey if it still happens, and it will be reopened.",
+      "note": "Icey asks the window server whether the app is unresponsive each time it draws the item, with the same check Activity Monitor uses. Please retest.",
+      "pr": null
+    },
+    {
+      "number": 259,
+      "title": "[Bug]: On a MacBook with a notch, items on Ice Bar are unclickable if menu bar is full",
+      "headline": "Ice Bar items can't be clicked when the menu bar is full on a notched MacBook",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "On a MacBook with a notch, clicking an Ice Bar item did nothing when the right side of the notch was full, because the item was moved behind the notch.",
+      "fix": "Fixed in Ice before Icey. The clicked item is placed to the right of the notch, and if there is no room, a \"Not enough room\" alert says so.",
+      "pr": null
+    },
+    {
+      "number": 258,
+      "title": "[Feature Request]: Replace some visible items to show selected ice bar item",
+      "headline": "A wide item from the Ice Bar doesn't open when the menu bar is full",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Clicking a wide item, such as Stats, in the Ice Bar did nothing when the menu bar had no room for it.",
+      "fix": "Fixed in Ice before Icey. The item is placed far enough right to clear the app menus and the notch, pushing visible items aside, and Icey says so when there is still no room.",
+      "note": "The notch case was upstream #259.",
+      "pr": null
+    },
+    {
+      "number": 236,
+      "title": "[Bug]: clicking on icon in (floating) Ice Bar triggers app menu",
+      "headline": "Clicking an item in the Ice Bar opens the app's menus instead",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Clicking an item in the Ice Bar clicked a menu of the frontmost app, because the item was moved behind the app's menus.",
+      "fix": "Fixed in Ice before Icey. Icey moves the clicked item to a spot right of the application menus and the notch before clicking it, and says so if there is not enough room.",
+      "pr": null
+    },
+    {
+      "number": 226,
+      "title": "[Bug]: Ice 0.10.1 release regression crash (Solution: BTT conflict)",
+      "headline": "Ice crashes when clicked with BetterTouchTool's menu bar hiding on",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice 0.10.1 crashed when its icon was clicked while BetterTouchTool was hiding menu bar items.",
+      "fix": "Fixed in Ice before Icey, in the release after 0.10.1.",
+      "pr": null
+    },
+    {
+      "number": 225,
+      "title": "[Bug]: Missing and duplicate items in Menu Bar Items settings",
+      "headline": "Items are missing or duplicated in Menu Bar Layout",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "On macOS 14, the Menu Bar Layout pane left out some items and showed others twice. Items moved to the always-hidden section also vanished.",
+      "fix": "Fixed in Ice before Icey. The reporter confirmed it was gone after later Ice releases.",
+      "note": "The crash in the same report came from OnlySwitch's \"Hide Menu Bar Icons\" option. For duplicates on macOS 26, see #854.",
+      "pr": null
+    },
+    {
+      "number": 224,
+      "title": "[Bug]: \"The \"visible\" section in settings \"Menu Bar Items\" is only available if Ice icon is activated in \"General\"",
+      "headline": "The visible section is missing in Menu Bar Layout when the Ice icon is off",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With the Ice icon turned off, the visible section disappeared from the Menu Bar Layout pane.",
+      "fix": "Fixed in Ice before Icey. Icey splits the sections by the hidden divider, which is always in the menu bar, so the visible section shows with or without the Icey icon.",
+      "pr": null
+    },
+    {
+      "number": 207,
+      "title": "[Feature Request]: is there a way to stop OBS from getting moved to the always hidden section? i've moved it to hidden many times and it still puts itself in always hidden",
+      "headline": "OBS keeps moving back to the always-hidden section",
+      "status": "fixed",
+      "fixed_in": "v0.14.2",
+      "symptom": "OBS's item went back to the always-hidden section every time OBS started, however often it was moved to the hidden section.",
+      "fix": "Icey remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "note": "Same as #6 and #732. Applies to macOS 14 to 26. Icey learns the section from v0.14.2 on, so move the item once after updating.",
+      "pr": 70
+    },
+    {
+      "number": 200,
+      "title": "[Feature Request]: <Margin with customization of the menu bar appearance>",
+      "headline": "More space between the menu bar shape and the screen edge",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "A request for a larger margin around the rounded menu bar shape on a MacBook.",
+      "fix": "Fixed in Ice before Icey. Turn on \"Use inset shape on screens with notch\" in the menu bar appearance editor.",
+      "pr": null
+    },
+    {
+      "number": 199,
+      "title": "[Feature Request]: <Secondary menu bar>",
+      "headline": "Show hidden items in a second bar below the menu bar",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "A request for a second bar under the menu bar for hidden items, as in Bartender.",
+      "fix": "Fixed in Ice before Icey. Turn on Settings > General > Use Ice Bar.",
+      "pr": null
+    },
+    {
+      "number": 190,
+      "title": "[Bug]: Missing \"Menu Bar Items\" submenu",
+      "headline": "No pane to arrange menu bar items in Settings",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "The settings pane for arranging items was missing from Ice 0.9.",
+      "fix": "The pane was still in beta at the time. Icey has it as Settings > Menu Bar Layout.",
+      "note": "Same as #167.",
+      "pr": null
+    },
+    {
+      "number": 184,
+      "title": "[Bug]: Ice icon remains visible in task switcher after interacting with Ice menu item",
+      "headline": "Ice's icon stays in the app switcher after hiding items",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "After showing and hiding the hidden and always-hidden sections, Ice's icon stayed in the Dock and the app switcher. It happened when the smart rehide hid the items.",
+      "fix": "Fixed in Ice before Icey. Icey gives the application menus back and leaves the Dock as soon as no section is shown, however the section was hidden.",
+      "pr": null
+    },
+    {
+      "number": 181,
+      "title": "[Bug]: CPU spike every 1m20s",
+      "headline": "CPU spikes every minute or so",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice's CPU use jumped for about 12 seconds every 1 minute 20 seconds.",
+      "fix": "Ice reduced the spikes before Icey. Icey also stops the periodic menu bar captures and polling that kept running in the background.",
+      "note": "Same as #479.",
+      "pr": 1
+    },
+    {
+      "number": 179,
+      "title": "[Bug]: Hidden items are treated as Always hidden?",
+      "headline": "Hidden items only show with Option-click",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Hidden items only appeared with Option-click, as if they were always-hidden.",
+      "fix": "Fixed in Ice before Icey. The hidden section's divider had been dragged left of the always-hidden one. Icey keeps the dividers in the right order.",
+      "pr": null
+    },
+    {
+      "number": 177,
+      "title": "[Bug]: cannot get screen recording permission in Sequoia",
+      "headline": "Screen Recording permission can't be granted on macOS 15",
+      "status": "fixed",
+      "fixed_in": "v0.14.1",
+      "symptom": "On macOS 15, clicking to grant Screen Recording did nothing, and later Ice still couldn't get the permission after it was added in System Settings.",
+      "fix": "Ice fixed the missing system prompt before Icey. For an old entry that blocks the permission, click Reset and Ask Again in Icey's permissions window, then allow Icey when macOS asks.",
+      "note": "The later reports on Ice 0.11.12 match #1004.",
+      "pr": 58
+    },
+    {
+      "number": 174,
+      "title": "[Bug]: Ice bar drawn under menu bar, under as in 'z-order' under, not below.",
+      "headline": "The Ice Bar is drawn behind an auto-hiding menu bar",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With the menu bar set to hide automatically, the Ice Bar opened partly behind the menu bar.",
+      "fix": "Fixed in Ice before Icey. Ice 0.10.0 places the Ice Bar below the menu bar, and the reporter confirmed it.",
+      "pr": null
+    },
+    {
+      "number": 169,
+      "title": "[Bug]: Dato menu loads in far left corner instead of being anchored to icon in far right corner",
+      "headline": "Dato's menu opens at the far left of the screen",
+      "status": "closed",
+      "fixed_in": null,
+      "symptom": "Opening Dato's menu bar item showed its menu in the far left corner instead of under the item.",
+      "fix": "Closed: no cause found in Icey's code, and a later reporter said it no longer happens. Open an issue in Icey if it still happens, and it will be reopened.",
+      "note": "Icey doesn't choose where an app's menu opens. Dato's upcoming event item moving to the hidden sections is #119.",
+      "pr": null
+    },
+    {
+      "number": 167,
+      "title": "[Bug]: No Menu Bar Items settings section",
+      "headline": "No pane to arrange menu bar items in Settings",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "The settings pane for arranging items, shown in the README, was missing from Ice 0.9.",
+      "fix": "The pane was still in beta at the time. Icey has it as Settings > Menu Bar Layout.",
+      "pr": null
+    },
+    {
+      "number": 163,
+      "title": "Coming from Bartender problems",
+      "headline": "Hidden items can't be found after switching from Bartender",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "After moving from Bartender to Ice on a MacBook with a notch, the hidden items couldn't be found.",
+      "fix": "Click the Icey icon to show hidden items, and turn on Settings > General > Use Ice Bar so they show below the notch. Settings > Menu Bar Layout sets each item's section.",
+      "pr": null
+    },
+    {
+      "number": 162,
+      "title": "[Bug]: Simulated Input Ignored -Little Snitch GUI Scripting access required",
+      "headline": "Little Snitch blocks Ice from moving its item",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Moving the Little Snitch item failed with \"Operation timed out\", and Little Snitch warned that it ignored simulated input from Ice.",
+      "fix": "Fixed in Ice before Icey. If an app that filters simulated mouse input still blocks a move, allow Icey in that app's settings, or quit it while you arrange items.",
+      "note": "Icey still moves items with simulated mouse events, so security tools that block them can still interfere.",
+      "pr": null
+    },
+    {
+      "number": 145,
+      "title": "[Bug]: Ice cannot be configured to allow Little Snitch Mini connection status to be visible in menu bar",
+      "headline": "Little Snitch Mini's item is always hidden",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Little Snitch Mini's status item never showed while Ice was running, even with all sections shown.",
+      "fix": "The item fell behind the notch, where macOS hides items. Hide some items, or turn on Settings > General > Use Ice Bar.",
+      "note": "Same as #158.",
+      "pr": null
+    },
+    {
+      "number": 140,
+      "title": "[Bug]: Menu bar appearance showing in fullscreen",
+      "headline": "Menu bar appearance shows in fullscreen",
+      "status": "partial",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "The menu bar appearance stayed on screen over apps with their own fullscreen mode, such as VLC, and over Keynote presentations.",
+      "fix": "Icey no longer draws appearance overlays on fullscreen spaces, and hides them while the frontmost app hides the menu bar.",
+      "note": "Same as #63. VLC's own fullscreen is covered when it hides the menu bar, which is not tested. Turning on VLC's native fullscreen mode avoids it.",
+      "pr": 5
+    },
+    {
+      "number": 139,
+      "title": "[Feature Request]: Hide icon from dock",
+      "headline": "Hide the Ice icon from the Dock",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "symptom": "Ice's icon appeared in the recent apps part of the Dock after every login.",
+      "fix": "Icey has no Dock icon, except while Settings is open or while it hides the app menus. Turn off Settings > Advanced > Show Icey in the Dock while Settings is open to remove it there too.",
+      "note": "Same as #161.",
+      "pr": 19
+    },
+    {
+      "number": 121,
+      "title": "Update Error: Ice can’t be updated if it’s running from the location it was downloaded to.",
+      "headline": "\"Ice can't be updated if it's running from the location it was downloaded to\"",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Checking for updates showed an error saying the app was running from its download location.",
+      "fix": "Move the app to Applications with Finder and open it from there. If the error stays, delete the app and install it again from the downloaded disk image.",
+      "note": "macOS runs a quarantined app from a temporary location, and the updater can't replace it there. Updating with a third-party tool such as CleanMyMac can cause the same error.",
+      "pr": null
+    },
+    {
+      "number": 115,
+      "title": "[Bug]: Unable to click or scroll on menu bar for full screen applications on secondary displays",
+      "headline": "Click and scroll don't show hidden items on a second display",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Show on click and show on scroll did nothing in the menu bar of a second display, in fullscreen apps and on the desktop.",
+      "fix": "Fixed in Ice before Icey. Icey also uses the display under the pointer for click, scroll and hover.",
+      "pr": null
+    },
+    {
+      "number": 105,
+      "title": "[Bug]: Screen Flicker",
+      "headline": "Streaming video flickers every few seconds while Ice runs",
+      "status": "partial",
+      "fixed_in": "v0.14.3",
+      "symptom": "Video in Apple TV, Netflix, Hulu and other streaming services flickered or went black about every 5 seconds with a menu bar shape set, and stopped when Ice quit.",
+      "fix": "Icey now captures the wallpaper only when it changes, or once a minute, instead of every 5 seconds. Setting Menu Bar Appearance > Shape to None stops the captures entirely.",
+      "note": "Not reproduced with protected video. A capture can still cause a flicker, at most once a minute.",
+      "pr": 77
+    },
+    {
+      "number": 103,
+      "title": "[Bug]: Invisible app menu items when using split menu bar shape",
+      "headline": "App menus right of the notch are invisible with the split shape",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With the split shape, app menus that spilled to the right of the notch were invisible but still clickable.",
+      "fix": "Fixed in Ice before Icey. The reporter confirmed it in Ice 0.10.",
+      "pr": null
+    },
+    {
+      "number": 100,
+      "title": "[Feature Request to the Community]: You came here from Bartender? Reroute your money as well.",
+      "headline": "Support the developer after leaving Bartender",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "A post asking users who switched from Bartender to sponsor Ice's developer.",
+      "fix": "Concerns upstream's donations. Nothing to fix.",
+      "pr": null
+    },
+    {
+      "number": 98,
+      "title": "[Bug]: hides everything, including itself regardless of settings",
+      "headline": "Ice hides every item, including its own icon",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "After the Ice icon was dragged into the hidden section on a second display, all items disappeared and show on click did nothing.",
+      "fix": "Fixed in Ice before Icey. Later Ice releases made show on click work on every display. To get a hidden Ice icon back, click an empty part of the menu bar, then Command-drag the icon right of the chevron.",
+      "note": "The report mixes two causes: a second-display bug in Ice 0.8.0, and the Ice icon moved into the hidden section.",
+      "pr": null
+    },
+    {
+      "number": 97,
+      "title": "[Bug]: Menu bar appearance displaying incorrectly on external displays when main display has notch",
+      "headline": "Menu bar appearance is drawn wrong on an external display when the Mac has a notch",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With a notched built-in display, the split shape and shadow on the other display used the notched menu bar's size, so windows showed through or under it.",
+      "fix": "Fixed in Ice before Icey. Each display now gets its own appearance overlay, sized to that display's menu bar.",
+      "note": "The split shape glitch on an external display is #102.",
+      "pr": null
+    },
+    {
+      "number": 88,
+      "title": "[Bug]: Show on hover setting does not work",
+      "headline": "Show on hover does nothing with external displays",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With external displays connected, hovering over the menu bar didn't show the hidden items.",
+      "fix": "Fixed in Ice before Icey. Icey checks the menu bar of the display under the pointer.",
+      "pr": null
+    },
+    {
+      "number": 80,
+      "title": "[Bug]: Hide the Hidden Section does nothing....",
+      "headline": "Hiding the hidden section does nothing",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "Items next to the Ice icon stayed visible when the hidden section was hidden.",
+      "fix": "Items right of the first divider are always visible. The hidden section starts left of that divider, not at the Icey icon. Settings > Menu Bar Layout shows which items are in which section.",
+      "pr": null
+    },
+    {
+      "number": 78,
+      "title": "[Feature Request]: Explain how to move the icons in the README.md",
+      "headline": "How to move icons between sections",
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
+      "symptom": "Nothing explained that items are moved by Command-dragging them, so new users couldn't arrange them.",
+      "fix": "The README's Using Icey section explains the sections, Menu Bar Layout and Command-drag. Settings > Menu Bar Layout explains it too.",
+      "pr": 80
+    },
+    {
+      "number": 77,
+      "title": "[Bug]: mouse getting captured and moved",
+      "headline": "The pointer jumps to the top right corner",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "The pointer moved to the top right corner of the main display at random while Ice was running.",
+      "fix": "Caused by another app, Sidebar. Restarting it stopped the problem.",
+      "pr": null
+    },
+    {
+      "number": 76,
+      "title": "[Feature Request]: Select items on each sections",
+      "headline": "Choose which section an item belongs to",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "The reporter couldn't find how to put an item in the visible, hidden or always-hidden section.",
+      "fix": "Drag items between sections in Settings > Menu Bar Layout, or hold Command and drag them in the menu bar.",
+      "pr": null
+    },
+    {
+      "number": 75,
+      "title": "[Feature Request]: Make the Screen Recording permission optional",
+      "headline": "Make the Screen Recording permission optional",
+      "status": "feature",
+      "fixed_in": null,
+      "symptom": "Ice wouldn't open without the Screen Recording permission, even for users who only wanted to hide items.",
+      "fix": "Available: Screen Recording is optional. Icey hides and shows items with Accessibility alone, and needs Screen Recording only for the menu bar appearance and images of items.",
+      "note": "Built in Ice before Icey. #415, #270 and #248 point here.",
+      "pr": null
+    },
+    {
+      "number": 72,
+      "title": "[Bug]: Cannot toggle menubar or access Ice menu on non-main display",
+      "headline": "Clicking the menu bar does nothing on a second display",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With several displays, clicking or right-clicking an empty part of the menu bar only worked on the main display.",
+      "fix": "Fixed in Ice before Icey. Icey checks the menu bar of the display under the pointer.",
+      "pr": null
+    },
+    {
+      "number": 69,
+      "title": "[Feature Request]: Always Show option",
+      "headline": "Keep some items always visible",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "A request for a way to keep some items always shown.",
+      "fix": "This is the visible section. Command-drag an item to the right of the Ice icon, or drag it to the Visible section in Settings > Menu Bar Layout.",
+      "pr": null
+    },
+    {
+      "number": 68,
+      "title": "[Feature Request]: Clicking on an empty space replaces all current menu bar items with the hidden ones",
+      "headline": "Showing hidden items replaces visible ones",
+      "status": "feature",
+      "fixed_in": null,
+      "symptom": "A request to swap the visible items for the hidden ones on a click, as Bartender does, instead of adding the hidden ones next to them.",
+      "fix": "Not started. Pull requests welcome.",
+      "note": "Same as #240.",
+      "pr": null
+    },
+    {
+      "number": 67,
+      "title": "[Feature Request]: custom spacing between icons",
+      "headline": "Adjust the spacing between menu bar items",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "A request to change the spacing between menu bar items, as Bartender can.",
+      "fix": "Fixed in Ice before Icey. Use Settings > General > Menu bar item spacing, then click Apply.",
+      "note": "Same as #304.",
+      "pr": null
+    },
+    {
+      "number": 64,
+      "title": "[Bug]: Show ice icon not working",
+      "headline": "The Ice icon is gone but its empty space can still be clicked",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "After reinstalling, the Ice icon didn't show, though an empty space in the menu bar still responded to clicks.",
+      "fix": "The Ice icon had been moved into the hidden section. Drag it back to the visible section in Settings > Menu Bar Layout, or Command-drag it right of the hidden section's divider.",
+      "note": "Icey also saves the icon's position so it no longer lands in the hidden section after a restart (#769).",
+      "pr": null
+    },
+    {
+      "number": 60,
+      "title": "[Bug]: \"Hide application menus when showing menu bar items\" option doesn't work in some apps.",
+      "headline": "\"Hide application menus\" doesn't hide the menus in some apps",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "symptom": "With \"Hide application menus when showing menu bar items\" on, the menus of some apps, such as Arc, stayed and covered the shown items.",
+      "fix": "Same as #879. If macOS refuses Icey's request to become the active app, Icey now activates anyway, so the menus hide.",
+      "note": "Not tested with Arc.",
+      "pr": 17
+    },
+    {
+      "number": 54,
+      "title": "Rename Brew cask formula to `ice`",
+      "headline": "Rename the Homebrew cask to ice",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "A request to rename Ice's Homebrew cask from jordanbaird-ice to ice.",
+      "fix": "Ice's Homebrew cask is maintained upstream. Icey has no Homebrew cask yet, so install it from its releases page.",
+      "note": "Related to #862.",
+      "pr": null
+    },
+    {
+      "number": 47,
+      "title": "[Bug]: Menu bar shapes didn't appear to work",
+      "headline": "Menu bar shapes don't work when the menu bar hides automatically",
+      "status": "partial",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With the macOS setting that hides the menu bar automatically, the menu bar shape was not drawn correctly.",
+      "fix": "Fixed in Ice before Icey: the appearance is no longer drawn while macOS hides the menu bar, so it isn't drawn in the wrong place. Shapes and tint are not shown on a menu bar that hides automatically.",
+      "note": "Not yet tested with a menu bar that hides automatically. A shape lost until restart after an update is like #409 and #53.",
+      "pr": null
+    },
+    {
+      "number": 45,
+      "title": "[Feature Request]: Swipe to see different menu bar areas",
+      "headline": "Swipe to see menu bar items that don't fit",
+      "status": "feature",
+      "fixed_in": null,
+      "symptom": "A request to swipe between menu bar areas to reach items that don't fit in the menu bar.",
+      "fix": "Not started. The Ice Bar, in Settings > General > Use Ice Bar, shows hidden items below the menu bar so they don't need room there.",
+      "note": "Same as #240.",
+      "pr": null
+    },
+    {
+      "number": 44,
+      "title": "[Bug]: Ice settings window opens on startup",
+      "headline": "Settings window opens at startup",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice's settings window opened every time Ice started.",
+      "fix": "Fixed in Ice before Icey. The reporter confirmed it in Ice 0.10.2.",
+      "note": "A later macOS 26 case is #695.",
+      "pr": null
+    },
+    {
+      "number": 41,
+      "title": "High CPU, memory, and energy usage",
+      "headline": "Ice uses a lot of CPU, memory and energy",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice showed high CPU, memory and energy use in Activity Monitor, more so with show on hover turned on.",
+      "fix": "Same as #479. Icey only listens to mouse events while a setting needs them, polls less and prunes its image cache, so it stays near zero energy impact while idle.",
+      "pr": 1
+    },
+    {
+      "number": 40,
+      "title": "Menu bar appearance overlay is displayed when Firefox is fullscreen",
+      "headline": "Menu bar tint shows over a fullscreen Firefox video",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "The menu bar appearance overlay stayed on screen while Firefox, Safari or OneNote was fullscreen.",
+      "fix": "Fixed in Ice before Icey. Ice reworked its fullscreen check, and the reporter confirmed the overlay no longer shows.",
+      "note": "Icey hides each display's overlay while that display is fullscreen. See also #468 and #544.",
+      "pr": null
+    },
+    {
+      "number": 39,
+      "title": "About \"Menu bar items are rehidden after a fixed time of 30 seconds.\"",
+      "headline": "Rehide items after more than 30 seconds",
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
+      "symptom": "The timed rehide setting stops at 30 seconds, and a request asked for up to 5 minutes.",
+      "fix": "Settings > General > Automatically rehide, with the Timed strategy, now goes up to five minutes.",
+      "pr": 75
+    },
+    {
+      "number": 34,
+      "title": "menu bar appearance changes back to standard design after using full screen app",
+      "headline": "Menu bar appearance resets after using a fullscreen app",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "After leaving a fullscreen app, the menu bar went back to the standard look until Ice restarted.",
+      "fix": "Fixed in Ice before Icey, which reworked its fullscreen check. Icey also fixed how it detects fullscreen spaces.",
+      "pr": null
+    },
+    {
+      "number": 31,
+      "title": "Multi-monitor support",
+      "headline": "Menu bar shape only shows on the main display",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "The split or rounded menu bar shape appeared on the main display but not on a second display.",
+      "fix": "Fixed in Ice before Icey. Ice 0.8.0 draws the appearance on every display, and the reporter confirmed it.",
+      "pr": null
+    },
+    {
+      "number": 30,
+      "title": "[Feature Request] Use modifier key + click on empty area to show \"always hidden\" section ",
+      "headline": "Option-click an empty menu bar area to show always-hidden items",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "A request to show the always-hidden section by Option-clicking an empty part of the menu bar.",
+      "fix": "Fixed in Ice before Icey. With show on click on, Option-click an empty part of the menu bar.",
+      "pr": null
+    },
+    {
+      "number": 29,
+      "title": "apps are moved to always hidden section",
+      "headline": "Some apps move to the always-hidden section after every restart",
+      "status": "fixed",
+      "fixed_in": "v0.14.2",
+      "symptom": "After every restart, 1Password, Dropbox, MEGA and Hammerspoon items were in the always-hidden section, even after being moved back.",
+      "fix": "Same as #732. Icey remembers each item's section, so an item an app puts back at the far left is moved back to where it was.",
+      "note": "Applies to macOS 14 to 26. Upstream closed this in favor of jordanbaird/Ice#6.",
+      "pr": 70
+    },
+    {
+      "number": 28,
+      "title": "App doesn't show all the icons when another app is in focus.",
+      "headline": "App menus cover menu bar items",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "When another app was active, its menus overlapped the menu bar items and some couldn't be reached.",
+      "fix": "Fixed in Ice before Icey. Turn on Settings > Advanced > Hide app menus when showing menu bar items, which hides the app menus only when they are in the way.",
+      "note": "Same cause as #416.",
+      "pr": null
+    },
+    {
+      "number": 25,
+      "title": "Showing the Ice Icon and the hidden indicators together isn't nessecary",
+      "headline": "Section arrows show next to the Ice icon",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "When hidden items were shown, an arrow for each section appeared next to the Ice icon and took up space.",
+      "fix": "Fixed in Ice before Icey. Settings > Advanced > Section divider style can be set to None, which is the default.",
+      "pr": null
+    },
+    {
+      "number": 24,
+      "title": "Automatically rehide on \"focused app\" an multiple displays collide",
+      "headline": "\"Focused app\" rehide hides items when you click the menu bar on another display",
+      "status": "fixed",
+      "fixed_in": "v0.11.13-dev.2-icey.1",
+      "symptom": "With the \"Focused app\" rehide setting and two displays, clicking the menu bar of the inactive display showed the items for a moment, then hid them again.",
+      "fix": "Icey checks the menu bar of the display under the pointer, not only the active one, before it rehides on an app switch.",
+      "note": "Not yet tested on two displays. The redrawing in the reporter's video is #241.",
+      "pr": 5
+    },
+    {
+      "number": 23,
+      "title": "[Bug]: The app doesn't start unless permissions are manually granted",
+      "headline": "Ice quits at launch until permissions are granted by hand",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice closed after its update prompt and never asked for permissions. It only worked after Accessibility and Screen Recording were granted by hand in System Settings.",
+      "fix": "Fixed in Ice before Icey. Icey opens its permissions window at launch when a permission is missing.",
+      "note": "If macOS says a permission is on but Icey still asks, see #1004.",
+      "pr": null
+    },
+    {
+      "number": 22,
+      "title": "Ice causing DRM media playback to flicker",
+      "headline": "Streaming video flickers while Ice runs",
+      "status": "partial",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Apple TV and Prime Video flickered, and Prime Video said the Mac didn't meet content protection standards, until Ice quit.",
+      "fix": "Fixed in Ice before Icey for the reported case: Icey only captures the screen when a menu bar shape needs the wallpaper. With the full or split shape, see #105.",
+      "pr": null
+    },
+    {
+      "number": 20,
+      "title": "Launch at Login does not work (Ice 0.5.0, Sonoma 14.3.1)",
+      "headline": "Launch at login doesn't start Ice",
+      "status": "not-a-bug",
+      "fixed_in": null,
+      "symptom": "With Launch at Login turned on, Ice didn't start after a restart.",
+      "fix": "macOS had lost track of the app's location. Reinstalling it in Applications and turning Launch at Login on again fixed it.",
+      "pr": null
+    },
+    {
+      "number": 18,
+      "title": "[Feature Request] configurable automatically hide time",
+      "headline": "Choose how long before items hide again",
+      "status": "fixed",
+      "fixed_in": "v0.14.3",
+      "symptom": "A request to set the time before hidden items hide again, and a shortcut to pause automatic hiding.",
+      "fix": "Turn on Settings > General > Automatically rehide, choose the Timed strategy and set the interval. Settings > Hotkeys > Toggle automatic rehiding, or the icey://toggle-auto-rehide link, pauses it.",
+      "pr": 76
+    },
+    {
+      "number": 13,
+      "title": "Hidden Menu disappears when you click to make it re-appear in Dark Mode / Sonoma 14.3.1",
+      "headline": "Hidden items disappear when you click the Ice icon with the split shape",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With the split menu bar shape on, clicking the Ice icon hid the menu bar items instead of showing them, mostly in dark mode.",
+      "fix": "Fixed in Ice before Icey. Ice 0.6.2 changed how the split shape is drawn, and the reporter confirmed the fix.",
+      "pr": null
+    },
+    {
+      "number": 9,
+      "title": "Hovering menubar keeps showing icons",
+      "headline": "Show on hover keeps items shown with two displays",
+      "status": "partial",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "With two displays, items stayed shown after the pointer left the menu bar for the other display, and hovering an inactive display's menu bar showed them.",
+      "fix": "Fixed in Ice before Icey: items hide when the pointer leaves the menu bar on any display. Icey shows hidden items on hover over any display's menu bar, including an inactive one, on purpose.",
+      "note": "Limiting hover to the active display is not planned. macOS shows the same items on every display (#683).",
+      "pr": null
+    },
+    {
+      "number": 8,
+      "title": "Spiking CPU usage",
+      "headline": "Ice uses a lot of CPU",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "Ice used about 6% CPU while idle and up to 20% when the pointer was over the menu bar.",
+      "fix": "Ice lowered its CPU use before Icey. Icey also stops listening to mouse events it doesn't need and removes background polling, so it stays near zero while idle.",
+      "note": "Same as #479.",
+      "pr": 1
+    },
+    {
+      "number": 7,
+      "title": "[Bug Report] Gradient Borders showing up in Full Screen.",
+      "headline": "Menu bar tint shows in fullscreen apps",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "The menu bar tint and gradient showed over fullscreen apps.",
+      "fix": "Fixed in Ice before Icey. Icey hides its menu bar styling in fullscreen spaces.",
+      "pr": null
+    },
+    {
+      "number": 5,
+      "title": "[Feature Request] Search Menu Bar Items",
+      "headline": "Search menu bar items",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "A request for a search panel that finds a menu bar item and opens it, like Bartender's.",
+      "fix": "Fixed in Ice before Icey. Open the search panel from Icey's menu or with its hotkey in Settings > Hotkeys.",
+      "pr": null
+    },
+    {
+      "number": 1,
+      "title": "[Feature Request] notch macbook support.",
+      "headline": "Hidden items are lost behind the notch on a MacBook",
+      "status": "fixed",
+      "fixed_in": "v0.11.12-icey.1",
+      "symptom": "On a MacBook with a notch, items that didn't fit next to the notch could not be seen, even when shown.",
+      "fix": "Fixed in Ice before Icey. Turn on Settings > General > Use Ice Bar to show hidden items in a bar below the menu bar. Icey can also use the Ice Bar only on displays with a notch.",
+      "pr": null
     }
   ],
   "upstream_prs": [

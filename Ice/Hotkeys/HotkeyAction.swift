@@ -14,6 +14,7 @@ enum HotkeyAction: String, Codable, CaseIterable {
     // Other
     case enableIceBar = "EnableIceBar"
     case toggleApplicationMenus = "ToggleApplicationMenus"
+    case toggleAutoRehide = "ToggleAutoRehide"
 
     @MainActor
     func perform(appState: AppState) {
@@ -42,6 +43,9 @@ enum HotkeyAction: String, Codable, CaseIterable {
             appState.settings.general.useIceBar.toggle()
         case .toggleApplicationMenus:
             appState.menuBarManager.toggleApplicationMenus()
+        case .toggleAutoRehide:
+            // Keeps shown items in view while they are in use (jordanbaird/Ice#18).
+            appState.settings.general.autoRehide.toggle()
         }
     }
 }

@@ -14,6 +14,12 @@ final class IceBarColorManager: ObservableObject {
 
     private var windowImage: CGImage?
 
+    /// The display that ``windowImage`` was captured on.
+    ///
+    /// The color is sampled on whichever display the Ice Bar is on, so an
+    /// image of another display's menu bar is never used for it.
+    private var windowImageDisplayID: CGDirectDisplayID?
+
     /// The number of window image captures started so far.
     ///
     /// The captures run off the main thread. Each one is numbered when it
@@ -46,7 +52,7 @@ final class IceBarColorManager: ObservableObject {
                         // captures a fresh image itself right before it is shown.
                         iceBarPanel.isVisible,
                         let screen,
-                        screen == .main
+                        Self.followsChanges(on: screen)
                     else {
                         return
                     }
@@ -62,7 +68,7 @@ final class IceBarColorManager: ObservableObject {
                         let iceBarPanel,
                         let screen = iceBarPanel.screen,
                         isVisible,
-                        screen == .main
+                        Self.followsChanges(on: screen)
                     else {
                         return
                     }
@@ -78,7 +84,7 @@ final class IceBarColorManager: ObservableObject {
                         let iceBarPanel,
                         let screen = iceBarPanel.screen,
                         iceBarPanel.isVisible,
-                        screen == .main
+                        Self.followsChanges(on: screen)
                     else {
                         return
                     }
@@ -127,7 +133,7 @@ final class IceBarColorManager: ObservableObject {
                     // itself right before it is shown.
                     iceBarPanel.isVisible,
                     let screen = iceBarPanel.screen,
-                    screen == .main
+                    Self.followsChanges(on: screen)
                 else {
                     return
                 }
@@ -153,6 +159,20 @@ final class IceBarColorManager: ObservableObject {
         cancellables = c
     }
 
+    /// Returns a Boolean value that indicates whether the color follows
+    /// changes while the Ice Bar is open on the given screen.
+    ///
+    /// The color used to follow them on the main screen only, so on another
+    /// display it kept the color from when the Ice Bar opened, through a
+    /// change of space, appearance or the windows under the menu bar. On
+    /// macOS 27, which uses a flat color, nothing changes.
+    private static func followsChanges(on screen: NSScreen) -> Bool {
+        if #available(macOS 27.0, *) {
+            return screen == .main
+        }
+        return true
+    }
+
     /// Captures the menu bar on the given screen off the main thread, and
     /// stores the image.
     ///
@@ -165,17 +185,18 @@ final class IceBarColorManager: ObservableObject {
         let displayID = screen.displayID
         return Task {
             let image = await ScreenCapture.menuBarStrip(for: displayID)
-            storeWindowImage(image, request: request)
+            storeWindowImage(image, request: request, displayID: displayID)
         }
     }
 
     /// Stores the image of the given capture, unless it failed or a later
     /// capture stored its image first.
-    private func storeWindowImage(_ image: CGImage?, request: Int) {
+    private func storeWindowImage(_ image: CGImage?, request: Int, displayID: CGDirectDisplayID) {
         guard let image, request > windowImageRequest else {
             return
         }
         windowImage = image
+        windowImageDisplayID = displayID
         windowImageRequest = request
     }
 
@@ -192,6 +213,15 @@ final class IceBarColorManager: ObservableObject {
 
     private func updateColorInfo(with frame: CGRect, screen: NSScreen) {
         guard let image = windowImage else {
+            return
+        }
+        guard windowImageDisplayID == screen.displayID else {
+            // The image shows another display's menu bar, so its color would
+            // be wrong here. The Ice Bar uses its default background instead,
+            // except on macOS 27, which keeps its flat color.
+            if #unavailable(macOS 27.0), colorInfo != nil {
+                colorInfo = nil
+            }
             return
         }
 
@@ -233,7 +263,7 @@ final class IceBarColorManager: ObservableObject {
     /// `nil` to keep the previous image, as a failed capture does.
     func updateAllProperties(with frame: CGRect, screen: NSScreen, windowImage image: CGImage?) {
         windowImageRequestCount += 1
-        storeWindowImage(image, request: windowImageRequestCount)
+        storeWindowImage(image, request: windowImageRequestCount, displayID: screen.displayID)
         updateColorInfo(with: frame, screen: screen)
     }
 

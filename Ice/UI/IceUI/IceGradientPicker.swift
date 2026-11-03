@@ -352,6 +352,13 @@ private struct IceGradientPickerHandle: View {
                 selection = isSelected ? nil : index
                 return .handled
             }
+            // Delete removes the selected stop, but nothing showed that a
+            // stop can be removed at all (jordanbaird/Ice#369).
+            .contextMenu {
+                Button("Remove Color Stop", role: .destructive) {
+                    removeStop()
+                }
+            }
             .onChange(of: isSelected) { _, newValue in
                 if newValue {
                     lastUpdated = index
@@ -375,6 +382,18 @@ private struct IceGradientPickerHandle: View {
                 .zIndex(isLastUpdated ? 2 : stop.location)
                 .compositingGroup()
         }
+    }
+
+    private func removeStop() {
+        guard gradient.stops.indices.contains(index) else {
+            return
+        }
+        // The stops after this one move down by one.
+        if let current = selection {
+            selection = current == index ? nil : (current > index ? current - 1 : current)
+        }
+        lastUpdated = nil
+        gradient.stops.remove(at: index)
     }
 
     private func update(with value: DragGesture.Value) {

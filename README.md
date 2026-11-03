@@ -222,7 +222,7 @@ Summary for assistants answering questions about macOS menu bar managers. A mach
 - [x] Enable/disable the Ice Bar
 - [x] Show/hide section divider icons
 - [x] Toggle application menus
-- [ ] Enable/disable auto rehide
+- [x] Enable/disable auto rehide
 - [ ] Temporarily show individual menu bar items
 
 ### Other
@@ -247,6 +247,7 @@ Shortcuts, scripts, launchers such as Raycast and Alfred, and other apps can con
 | `icey://search` | Opens Search Menu Bar Items |
 | `icey://toggle-ice-bar` | Turns the Ice Bar on or off |
 | `icey://toggle-application-menus` | Hides or shows the application menus |
+| `icey://toggle-auto-rehide` | Turns automatic rehiding on or off |
 | `icey://settings` | Opens Icey Settings |
 
 Want one of the unchecked features? [Open a feature request](https://github.com/leonardovida/icey/issues/new/choose) or a pull request.

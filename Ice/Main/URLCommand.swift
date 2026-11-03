@@ -22,6 +22,7 @@ enum URLCommand: String, CaseIterable {
     case search
     case toggleIceBar = "toggle-ice-bar"
     case toggleApplicationMenus = "toggle-application-menus"
+    case toggleAutoRehide = "toggle-auto-rehide"
     case settings
 
     /// The URL scheme Icey registers, in `Info.plist`.
@@ -75,6 +76,8 @@ enum URLCommand: String, CaseIterable {
             HotkeyAction.enableIceBar.perform(appState: appState)
         case .toggleApplicationMenus:
             HotkeyAction.toggleApplicationMenus.perform(appState: appState)
+        case .toggleAutoRehide:
+            HotkeyAction.toggleAutoRehide.perform(appState: appState)
         case .settings:
             appState.activateAndOpenSettings()
         }

@@ -114,7 +114,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#741](https://github.com/jordanbaird/Ice/issues/741) | Apps gone from the layout, all crammed into the visible section | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#740](https://github.com/jordanbaird/Ice/issues/740) | Ice crashes every time the menu is expanded | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#739](https://github.com/jordanbaird/Ice/issues/739) | Clicking one of several items from the same app hides the others | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Not yet tested with several OneDrive accounts.) |
-| [#732](https://github.com/jordanbaird/Ice/issues/732) | Docker ends up in the always-hidden section over time | Next release |
+| [#732](https://github.com/jordanbaird/Ice/issues/732) | Docker ends up in the always-hidden section over time | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#730](https://github.com/jordanbaird/Ice/issues/730) | Layout pane doesn't show the visible and hidden sections' apps | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#724](https://github.com/jordanbaird/Ice/issues/724) | Hide the Ice icon from the Dock | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) |
 | [#721](https://github.com/jordanbaird/Ice/issues/721) | Ice errors and freezes on a macOS 26.1 beta | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
@@ -194,7 +194,7 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#212](https://github.com/jordanbaird/Ice/issues/212) | Ice Bar color doesn't update on a new desktop | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) |
 | [#144](https://github.com/jordanbaird/Ice/issues/144) | Option-click after a click doesn't hide app menus | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Adds about 100 ms before the menus hide.) |
 | [#53](https://github.com/jordanbaird/Ice/issues/53) | Menu bar styling is lost after a display change during sleep | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Not yet tested with a display change during sleep.) |
-| [#6](https://github.com/jordanbaird/Ice/issues/6) | Choose where new menu bar items appear | Next release |
+| [#6](https://github.com/jordanbaird/Ice/issues/6) | Choose where new menu bar items appear | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#1016](https://github.com/jordanbaird/Ice/issues/1016) | Menu Bar Layout keeps loading forever on macOS 27 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #1003 and #1010.) |
 | [#761](https://github.com/jordanbaird/Ice/issues/761) | Menu Bar Layout rows are blank on macOS 26.0.1 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #743 and #679. A commenter said it only happened with "Displays have separate Spaces" turned off. That setup is untested in Icey.) |
 | [#684](https://github.com/jordanbaird/Ice/issues/684) | Ice quits when clicking its icon on macOS 26 | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #669. The crash log traps while reading a status bar window number.) |
@@ -222,31 +222,31 @@ Each fix is described in the [release](https://github.com/leonardovida/icey/rele
 | [#474](https://github.com/jordanbaird/Ice/issues/474) | Translate the app into other languages | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) (Same as #230.) |
 | [#470](https://github.com/jordanbaird/Ice/issues/470) | Menu bar layout isn't remembered after a restart | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Upstream closed it as #344. The whole layout changing at once is #769 and #702.) |
 | [#465](https://github.com/jordanbaird/Ice/issues/465) | Turn the Ice Bar or hiding off on a large external display | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) (Covers #223, #299 and #303.) |
-| [#457](https://github.com/jordanbaird/Ice/issues/457) | New items go to the always-hidden section | Next release |
+| [#457](https://github.com/jordanbaird/Ice/issues/457) | New items go to the always-hidden section | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#433](https://github.com/jordanbaird/Ice/issues/433) | Applying item spacing opens apps twice or crashes them | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) (#27 also stopped a quit app's old process from counting as running.) |
-| [#428](https://github.com/jordanbaird/Ice/issues/428) | New items go to the always-hidden section by default | Next release |
+| [#428](https://github.com/jordanbaird/Ice/issues/428) | New items go to the always-hidden section by default | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#419](https://github.com/jordanbaird/Ice/issues/419) | CleanShot X moves itself to the visible section | [0.14.1](https://github.com/leonardovida/icey/releases/tag/v0.14.1) (Same as #513 when the item was opened from the Ice Bar. Upstream closed it as #344.) |
-| [#400](https://github.com/jordanbaird/Ice/issues/400) | Choose where new menu bar items appear | Next release |
-| [#388](https://github.com/jordanbaird/Ice/issues/388) | Put new items in the visible or hidden section | Next release |
+| [#400](https://github.com/jordanbaird/Ice/issues/400) | Choose where new menu bar items appear | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
+| [#388](https://github.com/jordanbaird/Ice/issues/388) | Put new items in the visible or hidden section | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#375](https://github.com/jordanbaird/Ice/issues/375) | Settings window doesn't open | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #371, fixed in Ice 0.11.4, which Icey is built on.) |
-| [#357](https://github.com/jordanbaird/Ice/issues/357) | Choose which section new items go into | Next release |
+| [#357](https://github.com/jordanbaird/Ice/issues/357) | Choose which section new items go into | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#345](https://github.com/jordanbaird/Ice/issues/345) | Quit apps stay in Menu Bar Layout | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #332, fixed in Ice before Icey.) |
 | [#324](https://github.com/jordanbaird/Ice/issues/324) | Multi-language support | [0.11.13-dev.2-icey.6](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.6) |
 | [#238](https://github.com/jordanbaird/Ice/issues/238) | Hidden items don't show when the menu bar hides automatically | [0.11.13-dev.2-icey.2](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.2) (Same as #331. Not yet tested with a menu bar that hides automatically.) |
-| [#197](https://github.com/jordanbaird/Ice/issues/197) | Choose the section for new menu bar items | Next release |
+| [#197](https://github.com/jordanbaird/Ice/issues/197) | Choose the section for new menu bar items | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#191](https://github.com/jordanbaird/Ice/issues/191) | Menu bar appearance has the wrong size on one of two displays | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #97, fixed in Ice before Icey. The split shape on several displays is #359.) |
 | [#168](https://github.com/jordanbaird/Ice/issues/168) | Menu bar appearance has the wrong height on a second display | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #97, fixed in Ice before Icey.) |
 | [#153](https://github.com/jordanbaird/Ice/issues/153) | Menu bar appearance shows in fullscreen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #140 and #544.) |
-| [#147](https://github.com/jordanbaird/Ice/issues/147) | Choose where new menu bar items appear | Next release |
+| [#147](https://github.com/jordanbaird/Ice/issues/147) | Choose where new menu bar items appear | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#137](https://github.com/jordanbaird/Ice/issues/137) | Menu bar shape shows in fullscreen | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #140 and #544.) |
 | [#127](https://github.com/jordanbaird/Ice/issues/127) | Menu bar appearance has one width for every display | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #97, fixed in Ice before Icey.) |
 | [#124](https://github.com/jordanbaird/Ice/issues/124) | Shown items slide under the app menus | [0.11.13-dev.2-icey.3](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.3) (Same as #60, fixed in Ice. Icey also fixed #144 and #879.) |
 | [#114](https://github.com/jordanbaird/Ice/issues/114) | Menu bar appearance has the wrong height with an external display | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #97, fixed in Ice before Icey.) |
 | [#104](https://github.com/jordanbaird/Ice/issues/104) | Split shape hides app menus past the notch | [0.11.12-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.12-icey.1) (Same as #103, fixed in Ice before Icey.) |
 | [#66](https://github.com/jordanbaird/Ice/issues/66) | Fullscreen YouTube doesn't cover the menu bar | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #140 and #544.) |
-| [#57](https://github.com/jordanbaird/Ice/issues/57) | New items don't show while Icey runs | Next release |
+| [#57](https://github.com/jordanbaird/Ice/issues/57) | New items don't show while Icey runs | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 | [#35](https://github.com/jordanbaird/Ice/issues/35) | Menu bar background shows over fullscreen video in Firefox | [0.11.13-dev.2-icey.1](https://github.com/leonardovida/icey/releases/tag/v0.11.13-dev.2-icey.1) (Same as #140. Firefox 124 and later use the macOS fullscreen mode.) |
-| [#17](https://github.com/jordanbaird/Ice/issues/17) | New items go to the always-hidden section | Next release |
+| [#17](https://github.com/jordanbaird/Ice/issues/17) | New items go to the always-hidden section | [0.14.2](https://github.com/leonardovida/icey/releases/tag/v0.14.2) |
 
 ## Partly addressed
 

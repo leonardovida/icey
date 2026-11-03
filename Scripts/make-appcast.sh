@@ -8,6 +8,9 @@
 #
 # Usage: Scripts/make-appcast.sh <path/to/Icey-<version>.zip> <tag> [output]
 #
+# The release notes in release-notes/<tag>.md are embedded as HTML, so the
+# update window shows them. Without that file, it shows a link to the release.
+#
 # Signs the zip with the EdDSA key stored in the login keychain under the
 # Sparkle account "icey" (created with `generate_keys --account icey`).
 # The public half of that key is SUPublicEDKey in Ice/Resources/Info.plist.
@@ -18,6 +21,8 @@ ZIP="${1:?usage: make-appcast.sh <zip> <tag> [output]}"
 TAG="${2:?usage: make-appcast.sh <zip> <tag> [output]}"
 OUT="${3:-appcast.xml}"
 REPO="leonardovida/icey"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+NOTES="$ROOT/release-notes/$TAG.md"
 
 SIGN_UPDATE="${SIGN_UPDATE:-$(find "${DERIVED:-/tmp/ice-build}" "$HOME/Library/Developer/Xcode/DerivedData" \
     -path '*artifacts/sparkle/Sparkle/bin/sign_update' -type f 2>/dev/null | head -1)}"
@@ -35,6 +40,13 @@ PLIST="$APP/Contents/Info.plist"
 SHORT_VERSION="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$PLIST")"
 BUILD="$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$PLIST")"
 MIN_OS="$(/usr/libexec/PlistBuddy -c 'Print LSMinimumSystemVersion' "$PLIST")"
+
+if [ -f "$NOTES" ]; then
+    DESCRIPTION="$(python3 -I "$ROOT/Scripts/release-notes-html.py" "$NOTES")"
+else
+    echo "No $NOTES, so the update window will only link to the release notes." >&2
+    DESCRIPTION="<p>See the <a href=\"https://github.com/$REPO/releases/tag/$TAG\">release notes</a> on GitHub.</p>"
+fi
 
 # Prints: sparkle:edSignature="..." length="..."
 SIGNATURE="$("$SIGN_UPDATE" --account icey "$ZIP")"
@@ -54,7 +66,7 @@ cat > "$OUT" <<EOF
       <sparkle:shortVersionString>$SHORT_VERSION</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>$MIN_OS</sparkle:minimumSystemVersion>
       <sparkle:fullReleaseNotesLink>https://github.com/$REPO/releases/tag/$TAG</sparkle:fullReleaseNotesLink>
-      <description><![CDATA[<p>See the <a href="https://github.com/$REPO/releases/tag/$TAG">release notes</a> on GitHub.</p>]]></description>
+      <description><![CDATA[$DESCRIPTION]]></description>
       <enclosure url="https://github.com/$REPO/releases/download/$TAG/$(basename "$ZIP")" type="application/octet-stream" $SIGNATURE />
     </item>
   </channel>

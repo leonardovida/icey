@@ -168,6 +168,10 @@ extension MenuBarItemService {
             private let queue: DispatchQueue
             private let logger: Logger
 
+            /// Whether the current session was cancelled, as when macOS ends
+            /// the service. Each session gets its own flag.
+            private var sessionWasCancelled: OSAllocatedUnfairLock<Bool>?
+
             init(queue: DispatchQueue, logger: Logger) {
                 self.queue = queue
                 self.logger = logger
@@ -175,14 +179,27 @@ extension MenuBarItemService {
 
             private func getOrCreateSession() throws -> XPCSession {
                 if let session {
-                    return session
+                    guard sessionWasCancelled?.withLock({ $0 }) == true else {
+                        return session
+                    }
+                    // macOS ends the service from time to time (several times
+                    // an hour, measured on macOS 26.5). The first request after
+                    // that used to fail. When it was a request for several
+                    // windows, the connection took the service for an old
+                    // version and asked for one window at a time for a minute.
+                    logger.debug("Session was cancelled, creating a new one")
+                    self.session = nil
+                    sessionWasCancelled = nil
                 }
                 // The cancellation handler runs on the target queue, outside
                 // the lock that protects this storage, so it must not clear
-                // `session`: that raced with a request in flight. A request
-                // on a cancelled session fails, and `send(request:)` drops
-                // the session then, so the next request creates a new one.
+                // `session`: that raced with a request in flight. It sets the
+                // session's own flag instead, and the next request creates a
+                // new session. A request on a cancelled session fails, and
+                // `send(request:)` drops the session then too.
+                let wasCancelled = OSAllocatedUnfairLock(initialState: false)
                 let session = try XPCSession(xpcService: name, options: .inactive) { [logger] error in
+                    wasCancelled.withLock { $0 = true }
                     logger.warning("Session was cancelled with error \(error.localizedDescription)")
                 }
                 // The service's signing identifier is its bundle identifier,
@@ -191,10 +208,12 @@ extension MenuBarItemService {
                 session.setTargetQueue(queue)
                 try session.activate()
                 self.session = session
+                sessionWasCancelled = wasCancelled
                 return session
             }
 
             func cancel(reason: String) {
+                sessionWasCancelled = nil
                 guard let session = session.take() else {
                     return
                 }

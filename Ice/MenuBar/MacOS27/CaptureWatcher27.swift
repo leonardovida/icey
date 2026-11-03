@@ -18,6 +18,9 @@ import Foundation
 /// It asks rather than subscribes, and only while Ice is hiding something. Two local queries
 /// every couple of seconds cost nothing worth measuring, and when nothing is concealed macOS
 /// draws its own indicator and there is nothing for Ice to do.
+///
+/// The queries go to the audio and camera daemons, which can be slow to answer while a device
+/// connects, so they run on a queue of their own rather than on the main thread.
 @MainActor
 final class CaptureWatcher27: ObservableObject {
     /// What is in use right now, as far as the last reading goes.
@@ -25,8 +28,18 @@ final class CaptureWatcher27: ObservableObject {
 
     private var timer: Timer?
 
+    /// Whether a reading is under way. A slow reading is not queued behind.
+    private var isReading = false
+
+    /// Counts the times watching started, so that a reading that finishes
+    /// after watching stopped is dropped.
+    private var generation = 0
+
     /// How often the devices are asked while Ice is hiding something.
     private static let interval: TimeInterval = 2
+
+    /// The queue the device queries run on.
+    private static let queue = DispatchQueue(label: "com.jordanbaird.Ice.CaptureWatcher", qos: .utility)
 
     /// Starts or stops watching. Stopping clears what was last seen.
     func setWatching(_ watching: Bool) {
@@ -36,6 +49,7 @@ final class CaptureWatcher27: ObservableObject {
         guard watching else {
             timer?.invalidate()
             timer = nil
+            generation += 1
             kind = nil
             return
         }
@@ -53,15 +67,34 @@ final class CaptureWatcher27: ObservableObject {
     }
 
     private func read() {
-        kind = CaptureIndicator27.kind(
-            cameraInUse: Self.isCameraInUse(),
-            microphoneInUse: Self.isMicrophoneInUse()
-        )
+        guard !isReading else {
+            return
+        }
+        isReading = true
+        let generation = generation
+        Self.queue.async { [weak self] in
+            let kind = CaptureIndicator27.kind(
+                cameraInUse: Self.isCameraInUse(),
+                microphoneInUse: Self.isMicrophoneInUse()
+            )
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self else {
+                        return
+                    }
+                    self.isReading = false
+                    guard self.generation == generation, self.timer != nil else {
+                        return
+                    }
+                    self.kind = kind
+                }
+            }
+        }
     }
 
     // MARK: Devices
 
-    private static func isCameraInUse() -> Bool {
+    private nonisolated static func isCameraInUse() -> Bool {
         var address = CMIOObjectPropertyAddress(
             mSelector: CMIOObjectPropertySelector(kCMIOHardwarePropertyDevices),
             mScope: CMIOObjectPropertyScope(kCMIOObjectPropertyScopeGlobal),
@@ -95,7 +128,7 @@ final class CaptureWatcher27: ObservableObject {
     }
 
     /// How many channels a device can record on. None means it cannot record at all.
-    private static func inputChannels(of device: AudioObjectID) -> Int {
+    private nonisolated static func inputChannels(of device: AudioObjectID) -> Int {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyStreamConfiguration,
             mScope: kAudioDevicePropertyScopeInput,
@@ -120,7 +153,7 @@ final class CaptureWatcher27: ObservableObject {
         return list.reduce(0) { $0 + Int($1.mNumberChannels) }
     }
 
-    private static func isMicrophoneInUse() -> Bool {
+    private nonisolated static func isMicrophoneInUse() -> Bool {
         var address = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDevices,
             mScope: kAudioObjectPropertyScopeGlobal,

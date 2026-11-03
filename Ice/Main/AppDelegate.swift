@@ -21,6 +21,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Initial chore work.
         NSSplitViewItem.swizzle()
         MigrationManager(appState: appState).migrateAll()
+
+        installURLHandler()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -29,6 +31,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         for item in NSApp.mainMenu?.items ?? [] {
             item.isHidden = true
         }
+
+        // Installed again, in case setting up the app's scenes replaced it.
+        installURLHandler()
 
         // Allow hiding the mouse while the app is in the background
         // to make menu bar item movement less jarring.
@@ -103,6 +108,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        URLCommand.handle(urls, appState: appState)
+    }
+
+    // MARK: URL Commands
+
+    /// Handles `icey://` URLs itself, so that SwiftUI doesn't treat them as
+    /// a request to open a window.
+    private func installURLHandler() {
+        NSAppleEventManager.shared().setEventHandler(
+            self,
+            andSelector: #selector(handleGetURLEvent(_:withReplyEvent:)),
+            forEventClass: AEEventClass(kInternetEventClass),
+            andEventID: AEEventID(kAEGetURL)
+        )
+    }
+
+    /// Performs the command named by the URL of a "get URL" Apple event.
+    @objc private func handleGetURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
+        guard
+            let string = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue,
+            let url = URL(string: string)
+        else {
+            return
+        }
+        URLCommand.handle([url], appState: appState)
     }
 
     // MARK: Other Methods

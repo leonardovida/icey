@@ -1772,12 +1772,11 @@
       "number": 732,
       "title": "[Bug]: Docker for Mac ends up in \"Always-Hidden Section\" over time",
       "headline": "Docker ends up in the always-hidden section over time",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "Docker for Mac's item, and in the comments other hidden items, moved into the always-hidden section over time.",
-      "fix": "Same fixes as #702: the dividers keep their places across restarts, and fixing their order no longer empties the hidden section.",
-      "note": "An app that recreates its item while Icey runs uses its own saved position, which Icey doesn't control.",
-      "pr": 20
+      "fix": "Same fixes as #702: the dividers keep their places across restarts, and fixing their order no longer empties the hidden section. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 731,
@@ -4146,12 +4145,11 @@
       "number": 6,
       "title": "[Feature Request] Change the location where new menu bar icons come up.",
       "headline": "Choose where new menu bar items appear",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "A request to change the location where new menu bar icons show up, instead of the far left.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "note": "An app that forgets its item's position comes back at the far left each launch; Icey only moves it the first time.",
-      "pr": 19
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 1018,
@@ -5017,12 +5015,11 @@
       "number": 457,
       "title": "[Feature Request]: <Newly installed apps should have their icon put into the \"Always visible\" group, not into \"always hidden\">",
       "headline": "New items go to the always-hidden section",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "Newly installed apps put their item in the always-hidden section, where it was hard to find.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 455,
@@ -5223,12 +5220,11 @@
       "number": 428,
       "title": "[Feature Request]: Do not Put New Apps to the Always-Hidden Section by Default",
       "headline": "New items go to the always-hidden section by default",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "Every newly launched app's item appeared in the always-hidden section.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 427,
@@ -5342,12 +5338,11 @@
       "number": 400,
       "title": "[Feature Request]: Add a way to control where new menu bar items show up",
       "headline": "Choose where new menu bar items appear",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "A request for a marker, like Bartender's, that sets where new items appear.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 398,
@@ -5419,12 +5414,11 @@
       "number": 388,
       "title": "[Feature Request]: Option to allow new icons to be placed in visible/hidden section by default",
       "headline": "Put new items in the visible or hidden section",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "A request for a setting that puts new items in the visible or hidden section instead of the always-hidden one.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 387,
@@ -5559,12 +5553,11 @@
       "number": 357,
       "title": "[Feature Request]: Preference for which section to place new menu bar items into",
       "headline": "Choose which section new items go into",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "A request for a setting that picks the section for new menu bar items.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 356,
@@ -6035,12 +6028,11 @@
       "number": 197,
       "title": "[Feature Request]: Option to automatically add new menu bar items to \"always hidden\", \"hidden\", or \"visible\" section ",
       "headline": "Choose the section for new menu bar items",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "The reporter asked for new items to go to a chosen section automatically.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 191,
@@ -6220,12 +6212,11 @@
       "number": 147,
       "title": "[Feature Request]: Default behavior of new items",
       "headline": "Choose where new menu bar items appear",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "New items always went to the always-hidden section, with no setting to change it.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 138,
@@ -6545,12 +6536,11 @@
       "number": 57,
       "title": "[Bug]: Newly started applications are not discovered",
       "headline": "New items don't show while Icey runs",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "A newly started app's item didn't appear until Ice quit.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 51,
@@ -6661,12 +6651,11 @@
       "number": 17,
       "title": "New apps come in Always Hidden section",
       "headline": "New items go to the always-hidden section",
-      "status": "partial",
-      "fixed_in": "v0.11.13-dev.2-icey.3",
+      "status": "fixed",
+      "fixed_in": null,
       "symptom": "With the always-hidden section on, new items appeared in it.",
-      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that.",
-      "pr": 19,
-      "note": "Same as #6. An app that forgets its item's position comes back at the far left each launch, and Icey only moves it the first time."
+      "fix": "Settings > General > New items appear in: choose Visible, Hidden or Always-Hidden. Icey moves items from an app it hasn't seen before to that section once, and leaves them alone after that. Icey also remembers each item's section, so an item an app creates again at the far left is moved back to where it was.",
+      "pr": 70
     },
     {
       "number": 16,

@@ -179,6 +179,7 @@ extension Defaults {
 
         // MARK: Menu Bar Items
         case knownMenuBarItems = "KnownMenuBarItems"
+        case menuBarItemSections = "MenuBarItemSections"
 
         // MARK: Appearance Settings
         case menuBarAppearanceConfigurationV2 = "MenuBarAppearanceConfigurationV2"

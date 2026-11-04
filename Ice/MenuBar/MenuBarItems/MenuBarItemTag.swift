@@ -159,15 +159,6 @@ extension MenuBarItemTag {
 
     /// The tag for the system "Siri" item.
     static let siri = MenuBarItemTag(namespace: .systemUIServer, title: "Siri")
-
-    /// The tag for the system "Time Machine" item.
-    static let timeMachine = if #available(macOS 26.0, *) {
-        MenuBarItemTag(namespace: .systemUIServer, title: "com.apple.menuextra.TimeMachine")
-    } else if #available(macOS 15.0, *) {
-        MenuBarItemTag(namespace: .systemUIServer, title: "TimeMachineMenuExtra.TMMenuExtraHost")
-    } else {
-        MenuBarItemTag(namespace: .systemUIServer, title: "TimeMachine.TMMenuExtraHost")
-    }
 }
 
 // MARK: - MenuBarItemTag.Namespace
@@ -188,15 +179,6 @@ extension MenuBarItemTag {
             case .null: "null"
             case .string(let string): string
             case .uuid(let uuid): uuid.uuidString
-            }
-        }
-
-        /// A Boolean value that indicates whether this namespace is
-        /// the `null` namespace.
-        var isNull: Bool {
-            switch self {
-            case .null: true
-            case .string, .uuid: false
             }
         }
 

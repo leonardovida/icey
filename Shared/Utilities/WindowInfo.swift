@@ -149,11 +149,6 @@ extension WindowInfo {
         return candidates.first
     }
 
-    /// Creates and returns the wallpaper window for the given display.
-    static func wallpaperWindow(for display: CGDirectDisplayID) -> WindowInfo? {
-        wallpaperWindow(from: createWindows(option: .onScreen), for: display)
-    }
-
     /// Returns the window that darkens the top of the wallpaper behind the
     /// menu bar on the given display, from the given list of windows.
     ///

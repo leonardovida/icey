@@ -266,9 +266,11 @@ Want one of the unchecked features? [Open a feature request](https://github.com/
 
 ### Languages
 
-Icey is available in English, German, Spanish, French, Italian, Japanese, Korean, Brazilian Portuguese, Simplified Chinese and Traditional Chinese. It uses the language you choose in System Settings > General > Language & Region. To run Icey in a different language from the rest of your Mac, add it to the Applications list in that pane and pick a language for it.
+Icey is available in 20 languages: English, Czech, Dutch, French, German, Indonesian, Italian, Japanese, Korean, Polish, Brazilian Portuguese, Russian, Simplified Chinese, Spanish, Swedish, Thai, Traditional Chinese, Turkish, Ukrainian and Vietnamese. It uses the language you choose in System Settings > General > Language & Region. To run Icey in a different language from the rest of your Mac, add it to the Applications list in that pane and pick a language for it.
 
-The translations were made with the help of machine translation, starting from community translations for Ice. If you spot a mistake, open a pull request that edits [Ice/Localizable.xcstrings](Ice/Localizable.xcstrings).
+Search Menu Bar Items ignores accents and character width, so `cafe` finds Café and full-width letters typed with a Japanese input method find Latin names. Items named in another script can also be found by their Latin spelling, such as `weixin` for 微信 or `kakaotog` for 카카오톡.
+
+The translations were made with the help of machine translation, starting from community translations for Ice. Czech, Dutch, Indonesian, Polish, Russian, Swedish, Thai, Turkish, Ukrainian and Vietnamese are the newest and have not yet been reviewed by native speakers. If you spot a mistake, open a pull request that edits [Ice/Localizable.xcstrings](Ice/Localizable.xcstrings).
 
 ## Why does Icey only support macOS 14 and later?
 

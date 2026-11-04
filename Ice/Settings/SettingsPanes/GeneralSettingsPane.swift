@@ -74,7 +74,10 @@ struct GeneralSettingsPane: View {
 
     @ViewBuilder
     private var appOptions: some View {
-        LaunchAtLogin.Toggle()
+        // The package's own label isn't localized.
+        LaunchAtLogin.Toggle {
+            Text("Launch at login")
+        }
     }
 
     // MARK: Ice Icon Options

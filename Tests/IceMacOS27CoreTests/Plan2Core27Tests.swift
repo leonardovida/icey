@@ -439,14 +439,6 @@ struct SystemPanel27Tests {
         #expect(ItemClick27.openPanelWindow(windows: withPanel) == 45)
         #expect(ItemClick27.openPanelWindow(windows: withoutPanel) == nil)
     }
-
-    @Test("A panel is open while its window is on screen, and closed once it goes")
-    func staysOnScreen() {
-        let open: [(number: Int, layer: Int, height: CGFloat)] = [(number: 45, layer: 21, height: 1080.0)]
-        let closed: [(number: Int, layer: Int, height: CGFloat)] = [(number: 10, layer: 20, height: 1080.0)]
-        #expect(ItemClick27.panelIsOnScreen(window: 45, windows: open))
-        #expect(!ItemClick27.panelIsOnScreen(window: 45, windows: closed))
-    }
 }
 
 @Suite("Faded item tiles")

@@ -18,15 +18,6 @@ import CoreGraphics
 ///
 /// What carries across displays is how far the menus reach from their own display's left edge.
 enum ApplicationMenuArea27 {
-    /// The menus' stretch of the given display's bar.
-    ///
-    /// - Parameters:
-    ///   - menuFrame: The union of the application's menus, as Accessibility reports it.
-    ///   - ownerDisplay: The bounds of the display the menus are drawn on.
-    ///   - display: The bounds of the display being asked about.
-    ///   - notchGap: How much of the measurement is the owning display's notch rather than menus.
-    ///     A long menu bar carries on past a notch and the gap goes into the measurement with it;
-    ///     no other display has that gap, so the caller passes it when asking about another one.
     /// How far an application's menus reach, out of what has been measured of them.
     ///
     /// The same display is the exact answer: the same menus, the same bar, the same width. Another
@@ -40,7 +31,16 @@ enum ApplicationMenuArea27 {
         return onOtherDisplays.max()
     }
 
+    /// The menus' stretch of the given display's bar.
+    ///
+    /// - Parameters:
+    ///   - menuFrame: The union of the application's menus, as Accessibility reports it.
+    ///   - ownerDisplay: The bounds of the display the menus are drawn on.
+    ///   - display: The bounds of the display being asked about.
     ///   - barHeight: How tall that display's menu bar is.
+    ///   - notchGap: How much of the measurement is the owning display's notch rather than menus.
+    ///     A long menu bar carries on past a notch and the gap goes into the measurement with it;
+    ///     no other display has that gap, so the caller passes it when asking about another one.
     ///   - itemsLeftEdge: The left edge of the leftmost item drawn on that display, when the
     ///     display is not the one the menus were measured on.
     ///   - rememberedReach: How far the menus of the application frontmost on that display reached

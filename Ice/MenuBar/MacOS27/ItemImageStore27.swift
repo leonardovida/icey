@@ -39,7 +39,7 @@ final class ItemImageStore27 {
     /// The margin left on each side of a glyph, in points, so items are spaced evenly and
     /// with the menu bar's own rhythm: its glyphs sit 18 to 29 points apart, median 22
     /// (measured on macOS 27.0), which is twice this margin.
-    private static let glyphMargin: CGFloat = 11
+    private nonisolated static let glyphMargin: CGFloat = 11
 
     private let logger = Logger(category: "ItemImageStore27")
     private let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -87,8 +87,12 @@ final class ItemImageStore27 {
         }
     }
 
+    /// Counts the times every image was dropped, so glyphs cut before a drop are not stored.
+    private var discardCount = 0
+
     /// Drops every stored image, so they are captured again.
     private func discardImages() {
+        discardCount += 1
         loaded.removeAll()
         index.removeAll()
         photoSchedule = PhotoSchedule27()
@@ -111,7 +115,7 @@ final class ItemImageStore27 {
         else {
             return nil
         }
-        guard isUsable(cgImage, key: key) else {
+        guard Self.isUsable(cgImage, key: key) else {
             // Stored before this check existed, or stored against a wallpaper that defeated it.
             // Forgetting it is what lets `photographMissing` take the item again.
             index[key] = nil
@@ -193,42 +197,89 @@ final class ItemImageStore27 {
         }
         let settled = ItemImages27.settledTags(before: frames(items), after: frames(await MenuBarItemProvider27.items()))
         var skipped = 0
-        var stored = 0
-        // MenuBarAgent draws every glyph on a bar in one colour, white or black. Deciding which
-        // for the whole strip, rather than tile by tile, keeps a dark patch of wallpaper behind
-        // one item from passing for its glyph (see `ItemImages27.toneVotes`).
-        var votes = (light: 0, dark: 0)
-        for item in items where item.isOnScreen && !item.isControlItem && !concealedPIDs.contains(item.ownerPID) {
-            guard
-                settled.contains(item.tag.description),
-                let rect = ItemImages27.cropRect(itemFrame: item.bounds, stripFrame: stripFrame, scale: scale),
-                let crop = strip.cropping(to: rect),
-                let pixels = Self.pixels(of: crop)
-            else {
-                continue
-            }
-            let tileVotes = ItemImages27.toneVotes(pixels: pixels, width: crop.width, height: crop.height)
-            votes.light += tileVotes.light
-            votes.dark += tileVotes.dark
-        }
-        let tone: ItemImages27.GlyphTone? = votes.light + votes.dark == 0 ? nil : (votes.light >= votes.dark ? .light : .dark)
+        var tiles = [(key: String, rect: CGRect)]()
         for item in items where item.isOnScreen && !item.isControlItem && !concealedPIDs.contains(item.ownerPID) {
             guard settled.contains(item.tag.description) else {
                 skipped += 1
                 continue
             }
-            guard
-                let rect = ItemImages27.cropRect(itemFrame: item.bounds, stripFrame: stripFrame, scale: scale),
-                let image = strip.cropping(to: rect),
-                let glyph = withoutBackground(image, scale: scale, tone: tone)
-            else {
+            guard let rect = ItemImages27.cropRect(itemFrame: item.bounds, stripFrame: stripFrame, scale: scale) else {
                 continue
             }
-            store(glyph, scale: scale, key: item.tag.description)
-            stored += 1
+            tiles.append((item.tag.description, rect))
+        }
+        // Cutting the glyphs out is pure pixel work, a few milliseconds a tile, so it runs off the
+        // main thread: there it held up the panels, and on macOS 27 every click on the Mac waits
+        // for the main thread while the click tap runs. The colour is read here, as AppKit wants.
+        let colour = Self.glyphColor()
+        let discardsBefore = discardCount
+        let glyphs = await Task.detached(priority: .userInitiated) {
+            Self.cutGlyphs(from: strip, tiles: tiles, scale: scale, colour: colour)
+        }.value
+        // The appearance changed while the glyphs were cut, so they have the old colour.
+        guard discardCount == discardsBefore else {
+            return
+        }
+        for glyph in glyphs {
+            store(glyph, scale: scale)
         }
         writeIndex()
-        logger.debug("Stored \(stored, privacy: .public) item images from display \(displayID, privacy: .public), skipped \(skipped, privacy: .public) that moved")
+        logger.debug("Stored \(glyphs.count, privacy: .public) item images from display \(displayID, privacy: .public), skipped \(skipped, privacy: .public) that moved")
+    }
+
+    /// A glyph cut from a capture, with its PNG encoding, ready to store.
+    ///
+    /// `@unchecked Sendable` so it can come back from the task that cut it: a `CGImage` is
+    /// immutable once made.
+    private struct CutGlyph: @unchecked Sendable {
+        let key: String
+        let image: CGImage
+        let png: Data?
+    }
+
+    /// Cuts every tile out of a capture of the bar and keeps the usable glyphs. Runs off the main
+    /// thread.
+    private nonisolated static func cutGlyphs(
+        from strip: CGImage,
+        tiles: [(key: String, rect: CGRect)],
+        scale: CGFloat,
+        colour: (r: UInt8, g: UInt8, b: UInt8)
+    ) -> [CutGlyph] {
+        let crops = tiles.compactMap { tile in
+            strip.cropping(to: tile.rect).map { (key: tile.key, image: $0) }
+        }
+        // MenuBarAgent draws every glyph on a bar in one colour, white or black. Deciding which
+        // for the whole strip, rather than tile by tile, keeps a dark patch of wallpaper behind
+        // one item from passing for its glyph (see `ItemImages27.toneVotes`).
+        var votes = (light: 0, dark: 0)
+        for crop in crops {
+            guard let pixels = pixels(of: crop.image) else {
+                continue
+            }
+            let tileVotes = ItemImages27.toneVotes(pixels: pixels, width: crop.image.width, height: crop.image.height)
+            votes.light += tileVotes.light
+            votes.dark += tileVotes.dark
+        }
+        let tone: ItemImages27.GlyphTone? = votes.light + votes.dark == 0 ? nil : (votes.light >= votes.dark ? .light : .dark)
+        return crops.compactMap { crop in
+            guard
+                let glyph = withoutBackground(crop.image, scale: scale, tone: tone, colour: colour),
+                isUsable(glyph, key: crop.key)
+            else {
+                return nil
+            }
+            return CutGlyph(key: crop.key, image: glyph, png: pngData(of: glyph))
+        }
+    }
+
+    /// The image encoded as PNG, with ImageIO, which may be used off the main thread.
+    private nonisolated static func pngData(of image: CGImage) -> Data? {
+        let data = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil) else {
+            return nil
+        }
+        CGImageDestinationAddImage(destination, image, nil)
+        return CGImageDestinationFinalize(destination) ? data as Data : nil
     }
 
     /// Whether a capture of the active menu bar could photograph any of the given items.
@@ -324,7 +375,7 @@ final class ItemImageStore27 {
     }
 
     /// The image's pixels, four bytes each, as the image rules expect them.
-    private static func pixels(of image: CGImage) -> [UInt8]? {
+    private nonisolated static func pixels(of image: CGImage) -> [UInt8]? {
         var data = [UInt8](repeating: 0, count: image.width * image.height * 4)
         let drawn = data.withUnsafeMutableBytes { buffer -> Bool in
             guard let context = CGContext(
@@ -346,7 +397,12 @@ final class ItemImageStore27 {
 
     /// The image with the menu bar behind the glyph made transparent, the glyph recoloured
     /// for the panel, and the bar's own padding replaced by an even margin.
-    private func withoutBackground(_ image: CGImage, scale: CGFloat, tone: ItemImages27.GlyphTone?) -> CGImage? {
+    private nonisolated static func withoutBackground(
+        _ image: CGImage,
+        scale: CGFloat,
+        tone: ItemImages27.GlyphTone?,
+        colour: (r: UInt8, g: UInt8, b: UInt8)
+    ) -> CGImage? {
         let width = image.width
         let height = image.height
         let count = width * height * 4
@@ -375,14 +431,14 @@ final class ItemImageStore27 {
         // later, standing still. This comes before faint marks are dropped, or a faded glyph
         // would be dropped whole and stored as an empty tile.
         if ItemImages27.isFaded(pixels: removed, width: width, height: height) {
-            logger.debug("Refusing a tile of an item caught mid-fade")
+            cutLogger.debug("Refusing a tile of an item caught mid-fade")
             return nil
         }
         // Wallpaper detail in the glyph's own colour survives the colour test; marks that
         // never reach solid are dropped whole, so the trim below does not keep them either.
         var keyed = ItemImages27.tinted(
             pixels: ItemImages27.droppingFaintMarks(pixels: removed, width: width, height: height),
-            colour: Self.glyphColor()
+            colour: colour
         )
         // The bitmap holds premultiplied colours, so each channel follows the new opacity.
         for index in stride(from: 0, to: count, by: 4) {
@@ -439,25 +495,27 @@ final class ItemImageStore27 {
     /// image at all, so nothing ever replaced it, and on a notched Mac opening the layout window
     /// does not help either — macOS folds most items away and they cannot be photographed there.
     /// Three such tiles stood for a week on @jasonsmithio's machine (jordanbaird/Ice#995).
-    private func isUsable(_ image: CGImage, key: String) -> Bool {
-        guard let pixels = Self.pixels(of: image) else {
+    private nonisolated static func isUsable(_ image: CGImage, key: String) -> Bool {
+        guard let pixels = pixels(of: image) else {
             return true
         }
         guard ItemImages27.keepsTheBar(pixels: pixels, width: image.width, height: image.height) else {
             return true
         }
-        logger.notice("Refusing a tile of \(key, privacy: .public): the bar is still behind the glyph")
+        cutLogger.notice("Refusing a tile of \(key, privacy: .public): the bar is still behind the glyph")
         return false
     }
 
-    private func store(_ image: CGImage, scale: CGFloat, key: String) {
-        guard isUsable(image, key: key) else {
-            return
-        }
+    /// The logger for the work that runs off the main thread, under the same category.
+    private nonisolated static let cutLogger = Logger(category: "ItemImageStore27")
+
+    /// Keeps a glyph that ``cutGlyphs(from:tiles:scale:colour:)`` found usable.
+    private func store(_ glyph: CutGlyph, scale: CGFloat) {
+        let key = glyph.key
         let fileName = ItemImages27.fileName(forTag: key)
-        loaded[key] = CapturedImage(cgImage: image, scale: scale)
+        loaded[key] = CapturedImage(cgImage: glyph.image, scale: scale)
         index[key] = IndexEntry(fileName: fileName, scale: scale)
-        guard let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else {
+        guard let data = glyph.png else {
             return
         }
         let directory = directory

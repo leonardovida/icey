@@ -29,9 +29,12 @@ jobs:
           set -u
           fail() { echo "::error::$1"; echo "reason=$1" >> "$GITHUB_OUTPUT"; exit 1; }
 
-          # Assets can still be uploading right after publishing.
-          for attempt in 1 2 3 4 5 6; do
-            assets="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
+          # Assets can still be uploading right after publishing. A failed
+          # request is retried too: under `bash -e` it ended the step, which
+          # turned a valid release into a draft.
+          assets=""
+          for _ in 1 2 3 4 5 6; do
+            assets="$(gh release view "$TAG" --json assets --jq '.assets[].name' || true)"
             grep -qx 'appcast.xml' <<< "$assets" && break
             sleep 10
           done

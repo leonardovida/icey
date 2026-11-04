@@ -386,7 +386,6 @@ private struct MenuBarSearchContentView: View {
 
     private func updateDisplayedItems() {
         typealias SearchItem = (listItem: ListItem, title: String)
-        typealias ScoredItem = (listItem: ListItem, score: Double)
 
         var listedItems = [MenuBarItem]()
 
@@ -424,36 +423,61 @@ private struct MenuBarSearchContentView: View {
 
         if model.searchText.isEmpty {
             model.displayedItems = searchItems.map { $0.listItem }
-        } else {
-            let selectableItems = searchItems.filter { $0.listItem.isSelectable }
-            let fuseResults = model.fuse.searchSync(
-                model.searchText,
-                in: selectableItems.map { $0.title }
-            )
+            return
+        }
+
+        let selectableItems = searchItems.filter { $0.listItem.isSelectable }
+        let cache = model.searchTextCache
+        cache.removeEntries(notIn: Set(selectableItems.map { $0.title }))
+
+        // Each name is matched in each of its forms (see MenuBarSearchText),
+        // and keeps the score of its best match. A transliterated form counts
+        // only when it contains the query's letters in order, since a loose
+        // fuzzy match against it listed unrelated items.
+        let candidates: [(itemIndex: Int, text: String, isTransliteration: Bool)] =
+            selectableItems.enumerated().flatMap { index, item in
+                cache.forms(of: item.title).enumerated().map { formIndex, text in
+                    (index, text, formIndex > 0)
+                }
+            }
+        let candidateTexts = candidates.map { $0.text }
+        var bestScores = [Int: Double]()
+
+        for query in MenuBarSearchText.forms(of: model.searchText) {
+            let fuseResults = model.fuse.searchSync(query, in: candidateTexts)
             let maxFuseScore = Double(fuseResults.count)
 
-            model.displayedItems = fuseResults.enumerated()
-                .map { index, result in
-                    let fuseScore = maxFuseScore - Double(index)
-                    let (listItem, title) = selectableItems[result.index]
+            for (rank, result) in fuseResults.enumerated() {
+                let fuseScore = maxFuseScore - Double(rank)
+                let candidate = candidates[result.index]
 
-                    guard let match = bestMatch(
-                        query: model.searchText,
-                        input: title,
-                        boundaryBonus: 16,
-                        camelCaseBonus: 16
-                    ) else {
-                        return ScoredItem(listItem, fuseScore)
-                    }
-
-                    let matchScore = Double(match.score.value)
-                    let averageScore = (matchScore + fuseScore) / 2
-
-                    return ScoredItem(listItem, averageScore)
+                let match = bestMatch(
+                    query: query,
+                    input: candidate.text,
+                    boundaryBonus: 16,
+                    camelCaseBonus: 16
+                )
+                let score: Double
+                if let match {
+                    score = (Double(match.score.value) + fuseScore) / 2
+                } else if candidate.isTransliteration {
+                    continue
+                } else {
+                    score = fuseScore
                 }
-                .sorted { $0.score > $1.score }
-                .map { $0.listItem }
+
+                if score > bestScores[candidate.itemIndex, default: -.infinity] {
+                    bestScores[candidate.itemIndex] = score
+                }
+            }
         }
+
+        model.displayedItems = bestScores
+            .sorted { lhs, rhs in
+                // Equal scores keep the order of the items in the menu bar.
+                lhs.value == rhs.value ? lhs.key < rhs.key : lhs.value > rhs.value
+            }
+            .map { selectableItems[$0.key].listItem }
     }
 
     private func menuBarItem(for selection: MenuBarSearchModel.ItemID) -> MenuBarItem? {

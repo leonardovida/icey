@@ -41,6 +41,9 @@ final class MenuBarSearchModel: ObservableObject {
 
     let fuse = Fuse(threshold: 0.5)
 
+    /// The forms of the item names that a search matches.
+    let searchTextCache = MenuBarSearchText.Cache()
+
     func performSetup(with panel: MenuBarSearchPanel) {
         configureCancellables(with: panel)
     }

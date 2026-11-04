@@ -30,23 +30,23 @@ final class HotkeyRegistry {
     /// An object that stores the information needed to cancel a registration.
     private final class Registration {
         let eventKind: EventKind
-        let key: KeyCode
-        let modifiers: Modifiers
+        let keyCode: UInt32
+        let carbonFlags: UInt32
         let hotKeyID: EventHotKeyID
         var hotKeyRef: EventHotKeyRef?
         let handler: () -> Void
 
         init(
             eventKind: EventKind,
-            key: KeyCode,
-            modifiers: Modifiers,
+            keyCode: UInt32,
+            carbonFlags: UInt32,
             hotKeyID: EventHotKeyID,
             hotKeyRef: EventHotKeyRef,
             handler: @escaping () -> Void
         ) {
             self.eventKind = eventKind
-            self.key = key
-            self.modifiers = modifiers
+            self.keyCode = keyCode
+            self.carbonFlags = carbonFlags
             self.hotKeyID = hotKeyID
             self.hotKeyRef = hotKeyRef
             self.handler = handler
@@ -182,8 +182,8 @@ final class HotkeyRegistry {
 
         let registration = Registration(
             eventKind: eventKind,
-            key: keyCombination.key,
-            modifiers: keyCombination.modifiers,
+            keyCode: keyCode,
+            carbonFlags: carbonFlags,
             hotKeyID: hotKeyID,
             hotKeyRef: hotKeyRef,
             handler: handler
@@ -235,8 +235,8 @@ final class HotkeyRegistry {
 
             var hotKeyRef: EventHotKeyRef?
             let status = RegisterEventHotKey(
-                UInt32(registration.key.rawValue),
-                UInt32(registration.modifiers.carbonFlags),
+                registration.keyCode,
+                registration.carbonFlags,
                 registration.hotKeyID,
                 GetEventDispatcherTarget(),
                 0,

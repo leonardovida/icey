@@ -95,19 +95,26 @@ extension CGImage {
                 return nil
             }
             var data = [UInt32](repeating: 0, count: width * height)
-            guard let context = CGContext(
-                data: &data,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: width * 4,
-                space: colorSpace,
-                bitmapInfo: CGBitmapInfo(alpha: .premultipliedFirst, byteOrder: .order32Little)
-            ) else {
-                return nil
+            // The context draws into the buffer after it is created, so the
+            // buffer's address has to stay valid until the drawing is done.
+            // `&data` gave a pointer that is only valid during the call that
+            // creates the context.
+            let didDraw = data.withUnsafeMutableBytes { buffer in
+                guard let context = CGContext(
+                    data: buffer.baseAddress,
+                    width: width,
+                    height: height,
+                    bitsPerComponent: 8,
+                    bytesPerRow: width * 4,
+                    space: colorSpace,
+                    bitmapInfo: CGBitmapInfo(alpha: .premultipliedFirst, byteOrder: .order32Little)
+                ) else {
+                    return false
+                }
+                context.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
+                return true
             }
-            context.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
-            return data
+            return didDraw ? data : nil
         }
 
         func computeComponent(pixel: UInt32, shift: UInt32) -> UInt64 {
@@ -742,16 +749,6 @@ extension Publisher {
         flatMap { sequence in
             Publishers.MergeMany(sequence.map(transform))
         }
-    }
-}
-
-// MARK: - RangeReplaceableCollection where Element: Hashable
-
-extension RangeReplaceableCollection where Element: Hashable {
-    /// Returns a copy of the collection with duplicate values removed.
-    func removingDuplicates() -> Self {
-        var seen = Set<Element>()
-        return filter { seen.insert($0).inserted }
     }
 }
 

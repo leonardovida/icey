@@ -156,14 +156,6 @@ struct EventMonitor: Sendable {
         case global(GlobalMonitorState)
         case universal(UniversalMonitorState)
 
-        var scope: Scope {
-            switch self {
-            case .local: .local
-            case .global: .global
-            case .universal: .universal
-            }
-        }
-
         func start() {
             switch self {
             case .local(let state): state.start()
@@ -189,11 +181,6 @@ struct EventMonitor: Sendable {
     }
 
     private let state: OSAllocatedUnfairLock<State>
-
-    /// The scope where the monitor listens for events.
-    var scope: Scope {
-        state.withLock { $0.scope }
-    }
 
     private init(state: State) {
         self.state = OSAllocatedUnfairLock(initialState: state)
@@ -241,27 +228,6 @@ extension EventMonitor {
         return EventMonitor(state: .local(state))
     }
 
-    static func global(
-        for mask: NSEvent.EventTypeMask,
-        handler: @escaping (NSEvent) -> Void
-    ) -> EventMonitor {
-        let state = GlobalMonitorState(mask: mask, handler: handler)
-        return EventMonitor(state: .global(state))
-    }
-
-    static func universal(
-        for mask: NSEvent.EventTypeMask,
-        localHandler: @escaping (NSEvent) -> NSEvent?,
-        globalHandler: @escaping (NSEvent) -> Void
-    ) -> EventMonitor {
-        let state = UniversalMonitorState(
-            mask: mask,
-            localHandler: localHandler,
-            globalHandler: globalHandler
-        )
-        return EventMonitor(state: .universal(state))
-    }
-
     static func universal(
         for mask: NSEvent.EventTypeMask,
         handler: @escaping (NSEvent) -> NSEvent?
@@ -280,47 +246,6 @@ extension EventMonitor {
 }
 
 extension EventMonitor {
-    @discardableResult
-    static func startLocal(
-        for mask: NSEvent.EventTypeMask,
-        handler: @escaping (NSEvent) -> NSEvent?
-    ) -> EventMonitor {
-        let monitor = local(for: mask, handler: handler)
-        monitor.start()
-        return monitor
-    }
-
-    @discardableResult
-    static func startGlobal(
-        for mask: NSEvent.EventTypeMask,
-        handler: @escaping (NSEvent) -> Void
-    ) -> EventMonitor {
-        let monitor = global(for: mask, handler: handler)
-        monitor.start()
-        return monitor
-    }
-
-    @discardableResult
-    static func startUniversal(
-        for mask: NSEvent.EventTypeMask,
-        localHandler: @escaping (NSEvent) -> NSEvent?,
-        globalHandler: @escaping (NSEvent) -> Void
-    ) -> EventMonitor {
-        let monitor = universal(for: mask, localHandler: localHandler, globalHandler: globalHandler)
-        monitor.start()
-        return monitor
-    }
-
-    @discardableResult
-    static func startUniversal(
-        for mask: NSEvent.EventTypeMask,
-        handler: @escaping (NSEvent) -> NSEvent?
-    ) -> EventMonitor {
-        let monitor = universal(for: mask, handler: handler)
-        monitor.start()
-        return monitor
-    }
-
     @discardableResult
     static func startPassive(
         for mask: NSEvent.EventTypeMask,

@@ -51,17 +51,6 @@ enum MouseHelpers {
         }
     }
 
-    /// Connects or disconnects the positions of the mouse and cursor.
-    ///
-    /// - Parameter connected: A Boolean value that determines whether
-    ///   to connect or disconnect the positions.
-    static func associateMouseAndCursor(_ connected: Bool) {
-        let result = CGAssociateMouseAndMouseCursorPosition(connected ? 1 : 0)
-        if result != .success {
-            Logger.default.error("CGAssociateMouseAndMouseCursorPosition failed with error \(result.logString, privacy: .public)")
-        }
-    }
-
     /// Returns a Boolean value that indicates whether a mouse button
     /// is pressed.
     ///

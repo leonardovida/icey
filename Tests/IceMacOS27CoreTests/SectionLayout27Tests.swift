@@ -120,6 +120,27 @@ struct SeededLayout27Tests {
         #expect(layout == ["eu.exelban.Stats": .visible])
     }
 
+    @Test("An item touching a divider belongs to the side it is on")
+    func touchingDividers() {
+        // Hidden divider at 1200...1202, always-hidden divider at 1000...1002; items are 30 wide.
+        let layout = SectionLayout27.seededLayout(
+            items: [
+                item("com.caldis.Mos", x: 970),
+                item("ru.keepcoder.Telegram", x: 1002),
+                item("com.example.Hidden", x: 1170),
+                item("eu.exelban.Stats", x: 1202),
+            ],
+            hiddenControlItem: hiddenDivider,
+            alwaysHiddenControlItem: alwaysHiddenDivider
+        )
+        #expect(layout == [
+            "com.caldis.Mos": .alwaysHidden,
+            "ru.keepcoder.Telegram": .hidden,
+            "com.example.Hidden": .hidden,
+            "eu.exelban.Stats": .visible,
+        ])
+    }
+
     @Test("An empty bar is not read")
     func empty() {
         #expect(SectionLayout27.seededLayout(items: [], hiddenControlItem: hiddenDivider, alwaysHiddenControlItem: nil) == nil)

@@ -13,6 +13,8 @@ final class FakeConcealmentBackend: ConcealmentBackend27 {
 
     var universe: Set<String>
     var rejectNextActivation = false
+    /// Rejects an activation once this many more have succeeded.
+    var rejectAfter: Int?
     private(set) var liveTokens = [Token]()
     private(set) var activationCount = 0
     /// What the bar conceals after every activation and invalidation.
@@ -32,6 +34,13 @@ final class FakeConcealmentBackend: ConcealmentBackend27 {
         if rejectNextActivation {
             rejectNextActivation = false
             throw Rejected()
+        }
+        if let remaining = rejectAfter {
+            guard remaining > 0 else {
+                rejectAfter = nil
+                throw Rejected()
+            }
+            rejectAfter = remaining - 1
         }
         activationCount += 1
         let token = Token(allowed: Set(allowedBundleIDs))
@@ -114,6 +123,35 @@ struct ConcealmentController27Tests {
         }
         #expect(backend.concealed == ["hidden.app", "always.app"])
         #expect(backend.liveTokens.count == 1)
+    }
+
+    @Test("A rejection part way through releases what the same apply had activated")
+    func rejectedPartWay() async throws {
+        let backend = FakeConcealmentBackend(universe: running)
+        let controller = ConcealmentController27(backend: backend)
+        try await controller.apply(target: allHidden, running: running)
+        backend.rejectAfter = 1
+        await #expect(throws: FakeConcealmentBackend.Rejected.self) {
+            try await controller.apply(target: [["always.app"], ["hidden.app"]], running: running)
+        }
+        #expect(backend.activationCount == 2)
+        #expect(backend.liveTokens.count == 1)
+        #expect(backend.concealed == ["hidden.app", "always.app"])
+        // The controller still knows what is live: the same target again changes nothing.
+        try await controller.apply(target: allHidden, running: running)
+        #expect(backend.activationCount == 2)
+    }
+
+    @Test("An assertion that stays in the target is kept, and only the new one is activated")
+    func keepsWhatStays() async throws {
+        let backend = FakeConcealmentBackend(universe: running)
+        let controller = ConcealmentController27(backend: backend)
+        try await controller.apply(target: [["always.app"], ["hidden.app"]], running: running)
+        let kept = backend.liveTokens[0]
+        try await controller.apply(target: [["always.app"], ["visible.app"]], running: running)
+        #expect(backend.activationCount == 3)
+        #expect(backend.liveTokens.count == 2)
+        #expect(backend.liveTokens.contains { $0 === kept })
     }
 
     @Test("Releasing restores every item")

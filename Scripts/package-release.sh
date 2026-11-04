@@ -40,6 +40,11 @@ elif [ "$STATUS" != 404 ]; then
   fail "Couldn't download the published appcast (HTTP $STATUS), so the build number can't be checked. Try again."
 fi
 rm -f "$OUT.live-appcast.xml"
+# The release leaves out Sparkle's XPC services (see below), which Sparkle only
+# uses when Info.plist sets SUEnableInstallerLauncherService or SUEnableDownloaderService.
+if grep -q "<key>SUEnable[A-Za-z]*Service</key>" Ice/Resources/Info.plist; then
+  fail "Info.plist enables a Sparkle XPC service, but this script removes them from the release."
+fi
 [ -f "release-notes/$TAG.md" ] || fail "release-notes/$TAG.md is missing. Copy release-notes/TEMPLATE.md and fill it in."
 # Untracked files count too: Xcode compiles every file in the synchronized
 # Ice/, Shared/ and MenuBarItemService/ folders, committed or not.
@@ -62,8 +67,9 @@ APP="$DD/Build/Products/Release/Icey.app"
 ID="Developer ID Application"
 sign() { codesign --force --options runtime --timestamp --preserve-metadata=entitlements,requirements,flags --sign "$ID" "$@"; }
 SP="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
-sign "$SP/XPCServices/Installer.xpc"
-sign "$SP/XPCServices/Downloader.xpc"
+# Icey isn't sandboxed, so Sparkle installs updates without its XPC services
+# (https://sparkle-project.org/documentation/sandboxing/). Leave them out.
+rm -rf "$SP/XPCServices" "$APP/Contents/Frameworks/Sparkle.framework/XPCServices"
 sign "$SP/Autoupdate"
 sign "$SP/Updater.app"
 sign "$APP/Contents/Frameworks/Sparkle.framework"

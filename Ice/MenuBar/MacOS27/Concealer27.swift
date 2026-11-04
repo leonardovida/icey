@@ -385,24 +385,6 @@ final class Concealer27: ObservableObject {
         }
     }
 
-    /// Releases every assertion for a moment, so a click can reach a system item.
-    func suspend(for duration: Duration) {
-        lastChangeAt = .now
-        suspendedUntil = .now + duration
-        isConcealing = false
-        concealedPIDs.removeAll()
-        let previous = applyTask
-        applyTask = Task { [controller] in
-            await previous?.value
-            controller.releaseAll()
-        }
-        Task { [weak self] in
-            try? await Task.sleep(for: duration)
-            self?.suspendedUntil = nil
-            self?.update()
-        }
-    }
-
     /// Ends a suspension before its time, so the items are hidden again as soon as whatever
     /// needed them shown is done. The flash of revealed items is all the user sees of a lift, so
     /// the less of it there is, the better.
@@ -422,7 +404,8 @@ final class Concealer27: ObservableObject {
     /// did nothing and worked on the second try.
     func suspendReleased(for duration: Duration) async {
         lastChangeAt = .now
-        suspendedUntil = .now + duration
+        let requested = ContinuousClock.now + duration
+        suspendedUntil = requested
         isConcealing = false
         concealedPIDs.removeAll()
         let previous = applyTask
@@ -432,20 +415,28 @@ final class Concealer27: ObservableObject {
         }
         applyTask = release
         await release.value
-        Task { [weak self] in
-            try? await Task.sleep(for: duration)
-            self?.suspendedUntil = nil
-            self?.update()
-        }
-    }
-
-    /// Puts concealment back before the suspension would have run out.
-    func endSuspension() {
-        guard suspendedUntil != nil else {
+        // An early resume, or a later suspension, has taken over while the release queued.
+        guard suspendedUntil == requested else {
             return
         }
-        suspendedUntil = nil
-        update()
+        // The lift runs for its duration from the moment the assertion is gone, as the timer
+        // below does. Timed from the request, it could run out while the release still queued
+        // behind an apply, and any update after that put concealment back right behind the
+        // replayed click.
+        let until = ContinuousClock.now + duration
+        suspendedUntil = until
+        Task { [weak self] in
+            try? await Task.sleep(for: duration)
+            // Only the suspension this timer belongs to is ended. Once the capture indicator had
+            // ended its lift early, a click that lifted concealment again was cut short by the
+            // first lift's timer; and a lift already ended was followed by an update, with its
+            // read of every item, for nothing.
+            guard let self, suspendedUntil == until else {
+                return
+            }
+            suspendedUntil = nil
+            update()
+        }
     }
 
     /// How much of the bar's movement is still to come after the last concealment change.

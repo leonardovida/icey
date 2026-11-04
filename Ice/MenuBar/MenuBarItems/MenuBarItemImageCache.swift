@@ -490,7 +490,12 @@ final class MenuBarItemImageCache: ObservableObject {
                 items += await appState.itemManager.itemCache.managedItems(for: section)
             }
             let store = await appState.itemImageStore27
-            await store.captureActiveMenuBar(appState: appState)
+            // A capture of the display costs 260–290 ms of the window server's time (measured
+            // 2026-09-16), and one that cannot hold any of these items is wasted. Items that
+            // have no image yet are shown and captured below.
+            if await store.mayPhotograph(anyOf: items, appState: appState) {
+                await store.captureActiveMenuBar(appState: appState)
+            }
             await store.photographMissing(items: items, appState: appState)
             var newImages = [MenuBarItemTag: CapturedImage]()
             for item in items {

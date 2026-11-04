@@ -231,6 +231,16 @@ final class ItemImageStore27 {
         logger.debug("Stored \(stored, privacy: .public) item images from display \(displayID, privacy: .public), skipped \(skipped, privacy: .public) that moved")
     }
 
+    /// Whether a capture of the active menu bar could photograph any of the given items.
+    ///
+    /// A concealed application's items are not drawn, and ``captureActiveMenuBar(appState:force:)``
+    /// skips them. While the Ice Bar is open every item it shows is concealed, so the capture
+    /// it asked for every 3 seconds stored only the visible items, which it does not show.
+    func mayPhotograph(anyOf items: [MenuBarItem], appState: AppState) -> Bool {
+        let concealedPIDs = appState.concealer27.concealedPIDs
+        return items.contains { !$0.isControlItem && !concealedPIDs.contains($0.ownerPID) }
+    }
+
     /// Shows the applications of items that have no image for a moment, and captures them.
     func photographMissing(items: [MenuBarItem], appState: AppState) async {
         let now = ProcessInfo.processInfo.systemUptime

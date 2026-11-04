@@ -31,6 +31,31 @@ enum ApplicationMenuArea27 {
         return onOtherDisplays.max()
     }
 
+    /// The most applications whose reach is remembered for one display.
+    static let maximumRememberedApplications = 64
+
+    /// The most displays whose menus are remembered.
+    static let maximumRememberedDisplays = 8
+
+    /// The keys to forget from a remembered table that has grown past its limit.
+    ///
+    /// The reach of every application ever frontmost on every display ever connected was kept for
+    /// good, and the whole table is written back to the defaults whenever one entry changes. Keys
+    /// still in use, such as running applications and connected displays, are kept; the others go,
+    /// in a stable order, until the table is back within the limit. If the keys in use alone
+    /// exceed it, they are all kept.
+    static func keysToForget<Key: Comparable & Hashable>(
+        _ keys: some Collection<Key>,
+        inUse: Set<Key>,
+        limit: Int
+    ) -> [Key] {
+        let excess = keys.count - max(limit, 0)
+        guard excess > 0 else {
+            return []
+        }
+        return Array(keys.filter { !inUse.contains($0) }.sorted().prefix(excess))
+    }
+
     /// The menus' stretch of the given display's bar.
     ///
     /// - Parameters:

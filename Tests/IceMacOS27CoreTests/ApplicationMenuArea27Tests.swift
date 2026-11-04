@@ -195,4 +195,38 @@ struct ApplicationMenuAreaReach27Tests {
     func nothing() {
         #expect(ApplicationMenuArea27.reach(onThisDisplay: nil, onOtherDisplays: []) == nil)
     }
+
+    @Test("A remembered table within its limit forgets nothing")
+    func withinLimit() {
+        let keys = ["a", "b", "c"]
+        #expect(ApplicationMenuArea27.keysToForget(keys, inUse: [], limit: 3).isEmpty)
+        #expect(ApplicationMenuArea27.keysToForget([String](), inUse: [], limit: 0).isEmpty)
+    }
+
+    @Test("Past its limit, a table forgets keys not in use, in a stable order, down to the limit")
+    func pastLimit() {
+        let keys = ["e", "a", "d", "b", "c"]
+        let forgotten = ApplicationMenuArea27.keysToForget(keys, inUse: ["a", "c"], limit: 3)
+        #expect(forgotten == ["b", "d"])
+        #expect(Set(keys).subtracting(forgotten) == ["a", "c", "e"])
+    }
+
+    @Test("Keys in use are kept even when they alone exceed the limit")
+    func inUseExceedsLimit() {
+        let forgotten = ApplicationMenuArea27.keysToForget(["a", "b", "c", "d"], inUse: ["a", "b", "c"], limit: 2)
+        #expect(forgotten == ["d"])
+        #expect(ApplicationMenuArea27.keysToForget(["a", "b"], inUse: ["a", "b"], limit: 1).isEmpty)
+    }
+
+    @Test("Displays are forgotten by identifier, never a connected one")
+    func displays() {
+        let displays: Set<UInt32> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        let forgotten = ApplicationMenuArea27.keysToForget(displays, inUse: [1, 10], limit: 8)
+        #expect(forgotten == [2, 3])
+    }
+
+    @Test("A negative limit forgets every key not in use")
+    func negativeLimit() {
+        #expect(ApplicationMenuArea27.keysToForget(["a", "b"], inUse: ["b"], limit: -1) == ["a"])
+    }
 }

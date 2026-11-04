@@ -78,7 +78,6 @@ final class Concealer27: ObservableObject {
             .prepend(runningBundleIDs())
             .removeDuplicates()
             .dropFirst()
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.update()

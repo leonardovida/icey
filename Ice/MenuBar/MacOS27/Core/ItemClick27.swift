@@ -50,11 +50,6 @@ enum ItemClick27 {
         panelWindow(before: [], windows: windows)
     }
 
-    /// Whether the panel that opened in the given window is still on screen.
-    static func panelIsOnScreen(window: Int, windows: [(number: Int, layer: Int, height: CGFloat)]) -> Bool {
-        windows.contains { $0.number == window }
-    }
-
     /// The level the panels stand at: the menu bar's own level and above.
     private static let panelLayer = 20
 

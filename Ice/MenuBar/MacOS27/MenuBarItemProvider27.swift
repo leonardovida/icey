@@ -48,10 +48,6 @@ enum MenuBarItemProvider27 {
     /// System item frames per display. MenuBarAgent describes the bars of both displays in its
     /// windows, unlike other applications, whose items only have frames on the active one.
     nonisolated(unsafe) private static var lastSystemFramesByDisplay = [CGDirectDisplayID: [CGRect]]()
-    /// Every frame in those windows, per display, system items included. A bar whose menu bar is
-    /// not the active one has no other account of what it draws: applications report frames for
-    /// the active bar alone.
-    nonisolated(unsafe) private static var lastBarFramesByDisplay = [CGDirectDisplayID: [CGRect]]()
     /// How many of each bar's entries belong to applications rather than the system group.
     nonisolated(unsafe) private static var lastApplicationEntriesByDisplay = [CGDirectDisplayID: Int]()
     /// How far left of the clock's own left edge the other system items reach (measured on
@@ -242,11 +238,6 @@ enum MenuBarItemProvider27 {
         lock.withLock { lastSystemFramesByDisplay[displayID] ?? [] }
     }
 
-    /// Frames of everything MenuBarAgent draws on the given display, from the last read.
-    static func barFrames(for displayID: CGDirectDisplayID) -> [CGRect] {
-        lock.withLock { lastBarFramesByDisplay[displayID] ?? [] }
-    }
-
     /// How many items of applications the given display's bar lists, from the last read, or `nil`
     /// if that bar was not read. Items folded away beside the notch are listed by neither display.
     static func applicationEntryCount(for displayID: CGDirectDisplayID) -> Int? {
@@ -398,7 +389,6 @@ enum MenuBarItemProvider27 {
                 }
                 lock.withLock {
                     lastSystemFramesByDisplay = perDisplay
-                    lastBarFramesByDisplay = framesByDisplay
                     lastApplicationEntriesByDisplay = entriesByDisplay
                 }
                 let systemFrames = rawItems

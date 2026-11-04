@@ -143,9 +143,9 @@ struct MenuBarItem: CustomStringConvertible {
         case .controlCenter:
             if let match = title.prefixMatch(of: /Hearing/) {
                 // Changed from "Hearing" to "Hearing_GlowE" in macOS 15.4
-                toTitleCase(match.output)
+                Self.systemItemName(forTitle: String(match.output)) ?? toTitleCase(match.output)
             } else {
-                toTitleCase(title)
+                Self.systemItemName(forTitle: title) ?? toTitleCase(title)
             }
         case .systemUIServer:
             if let match = title.firstMatch(of: /TimeMachine/) {
@@ -166,6 +166,31 @@ struct MenuBarItem: CustomStringConvertible {
         }
 
         return displayName
+    }
+
+    /// Returns the name, in the app's language, of the macOS item with the
+    /// given window title, or `nil` for a title that is not listed.
+    ///
+    /// macOS names its own items with fixed English identifiers, such as
+    /// "WiFi" or "FocusModes", which were shown as they are in every
+    /// language.
+    private static func systemItemName(forTitle title: String) -> String? {
+        switch title {
+        case "AccessibilityShortcuts": String(localized: "Accessibility Shortcuts")
+        case "Battery": String(localized: "Battery")
+        case "Clock": String(localized: "Clock")
+        case "Display": String(localized: "Display")
+        case "FocusModes": String(localized: "Focus")
+        case "Hearing": String(localized: "Hearing")
+        case "KeyboardBrightness": String(localized: "Keyboard Brightness")
+        case "NowPlaying": String(localized: "Now Playing")
+        case "ScreenMirroring": String(localized: "Screen Mirroring")
+        case "Sound": String(localized: "Sound")
+        case "StageManager": String(localized: "Stage Manager")
+        case "UserSwitcher": String(localized: "Fast User Switching")
+        case "WiFi": String(localized: "Wi-Fi")
+        default: nil
+        }
     }
 
     /// A textual representation of the item.

@@ -132,17 +132,20 @@ enum ItemImages27 {
             return (0..<3).map { left.colour[$0] + (right.colour[$0] - left.colour[$0]) * share }
         }
 
-        func distance(at index: Int) -> Double {
-            let local = blendedBackground(at: index)
+        // Every pass below needs each pixel's background and its distance from it, so both are
+        // worked out once, up front, rather than again in each pass.
+        let backgrounds = stride(from: 0, to: count, by: 4).map(blendedBackground(at:))
+        let distances = stride(from: 0, to: count, by: 4).map { index in
+            let local = backgrounds[index / 4]
             return (0..<3).reduce(0) { furthest, channel in
                 max(furthest, abs(Double(pixels[index + channel]) - local[channel]))
             }
         }
-
-        var glyphDistance = 0.0
-        for index in stride(from: 0, to: count, by: 4) {
-            glyphDistance = max(glyphDistance, distance(at: index))
+        func distance(at index: Int) -> Double {
+            distances[index / 4]
         }
+
+        let glyphDistance = distances.max() ?? 0
 
         var result = pixels
         guard glyphDistance > emptyTileDistance else {
@@ -186,7 +189,7 @@ enum ItemImages27 {
                 continue
             }
             result[index + 3] = UInt8((opacity * 255).rounded())
-            let local = blendedBackground(at: index)
+            let local = backgrounds[index / 4]
             for channel in 0..<3 {
                 let unblended = (Double(pixels[index + channel]) - local[channel] * (1 - opacity)) / opacity
                 result[index + channel] = UInt8(min(255, max(0, unblended.rounded())))

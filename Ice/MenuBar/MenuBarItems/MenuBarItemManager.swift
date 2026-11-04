@@ -2457,6 +2457,7 @@ extension MenuBarItemManager {
         for (item, section, key) in entries where keyCounts[key] == 1 {
             seenWindowIDs[key] = item.windowID
             let isNewWindow = lastSeenItemWindowIDs[key] != item.windowID
+            let isPending = pendingNewItems.contains { $0.item.windowID == item.windowID }
             if
                 isNewWindow,
                 section == leftmostSection,
@@ -2465,10 +2466,18 @@ extension MenuBarItemManager {
                 let target = MenuBarSection.Name.allCases.first(where: { Self.storageValue(for: $0) == saved }),
                 target != .alwaysHidden || controlItems.alwaysHidden != nil
             {
-                if !pendingNewItems.contains(where: { $0.item.windowID == item.windowID }) {
+                if !isPending {
                     logger.info("Found recreated menu bar item \(item.logString, privacy: .public), last seen in the \(target.logString, privacy: .public)")
                     pendingNewItems.append((item, target))
                 }
+                continue
+            }
+            // An item waiting to be moved is not in its section yet. Moves wait
+            // for the user to pause input, so the cache can update several times
+            // first. Remembering the leftmost section then lost the item's own,
+            // and if the app created the item again before the move, it stayed
+            // in the leftmost section for good.
+            if isPending {
                 continue
             }
             if remembered[key] != Self.storageValue(for: section) {
@@ -2499,6 +2508,9 @@ extension MenuBarItemManager {
 
     /// Moves the queued new items one at a time, unless that is already
     /// being done.
+    ///
+    /// An item stays in the queue until its move is over, so that the cache
+    /// updates in the meantime know that it is not in its section yet.
     private func placePendingNewItems() {
         guard newItemPlacementTask == nil, !pendingNewItems.isEmpty else {
             return
@@ -2507,12 +2519,14 @@ extension MenuBarItemManager {
             guard let self else {
                 return
             }
-            while !pendingNewItems.isEmpty {
+            while let pending = pendingNewItems.first {
                 while Self.isScreenZoomed {
                     try? await Task.sleep(for: .seconds(5))
                 }
-                let pending = pendingNewItems.removeFirst()
                 await placeNewItem(pending.item, in: pending.section)
+                if let index = pendingNewItems.firstIndex(where: { $0.item.windowID == pending.item.windowID }) {
+                    pendingNewItems.remove(at: index)
+                }
             }
             newItemPlacementTask = nil
         }

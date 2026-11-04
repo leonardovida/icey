@@ -38,6 +38,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "docs" / "issues.json"
 DOCS = ROOT / "docs" / "upstream-issues.md"
 I18N = ROOT / "docs" / "site-i18n.json"
+# The app's string catalog. The site quotes Icey's setting names from it.
+APP_STRINGS = ROOT / "Ice" / "Localizable.xcstrings"
 # PNG renders of Ice/Resources/AppIcon.icon (exported with Icon Composer's ictool).
 ICONS = ROOT / "Resources" / "AppIcon"
 
@@ -191,7 +193,10 @@ def build_docs(data):
 # MARK: - Translations
 
 
-# [text](name) links to the URL named `name`, and `text` is code. See docs/site-i18n.json.
+# [text](name) links to the URL named `name`, `text` is code, and [[Name]] is the
+# app's own translation of the string Name in Ice/Localizable.xcstrings, such as
+# [[Show on hover]]. See docs/site-i18n.json.
+APP_TERM_RE = re.compile(r"\[\[([^\]]+)\]\]")
 LINK_RE = re.compile(r"\[([^\]]+)\]\((\w+)\)")
 CODE_RE = re.compile(r"`([^`]+)`")
 PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
@@ -203,11 +208,16 @@ def string_shape(text):
         sorted(PLACEHOLDER_RE.findall(text)),
         sorted(name for _, name in LINK_RE.findall(text)),
         sorted(CODE_RE.findall(text)),
+        sorted(APP_TERM_RE.findall(text)),
     )
 
 
 def load_i18n():
-    """Reads docs/site-i18n.json and exits if a translation doesn't match English."""
+    """Reads docs/site-i18n.json and exits if a translation doesn't match English.
+
+    Returns the languages, the strings and, for each language, the app's
+    translations of the [[Name]] terms the strings use.
+    """
     data = json.loads(I18N.read_text())
     languages = data["languages"]
     strings = data["strings"]
@@ -231,13 +241,25 @@ def load_i18n():
             if not table[key].strip():
                 errors.append(f"{code}.{key}: empty")
             elif string_shape(table[key]) != string_shape(english[key]):
-                errors.append(f"{code}.{key}: its {{placeholders}}, [links](name) or `code` differ from English")
+                errors.append(
+                    f"{code}.{key}: its {{placeholders}}, [links](name), `code` or [[app terms]] differ from English"
+                )
+    catalog = json.loads(APP_STRINGS.read_text())["strings"]
+    terms = {code: {} for code in codes}
+    for term in sorted({t for text in english.values() for t in APP_TERM_RE.findall(text)}):
+        localizations = catalog.get(term, {}).get("localizations", {})
+        for code in codes:
+            unit = localizations.get(code, {}).get("stringUnit", {})
+            value = term if code == "en" and not unit else unit.get("value")
+            if not value:
+                errors.append(f"[[{term}]]: no {code} translation in {APP_STRINGS.relative_to(ROOT)}")
+            terms[code][term] = value
     if errors:
         sys.exit(f"{I18N.relative_to(ROOT)}:\n  " + "\n  ".join(errors))
     for lang in languages:
         # English stays at the site's root, so existing links keep working.
         lang["slug"] = "" if lang["code"] == "en" else lang["code"].lower()
-    return languages, strings
+    return languages, strings, terms
 
 
 # MARK: - Website
@@ -356,7 +378,7 @@ FAQ = ["maintained", "tahoe", "macos27", "settings", "permissions", "updates", "
 
 
 class Site:
-    def __init__(self, data, releases, base_url, languages, strings):
+    def __init__(self, data, releases, base_url, languages, strings, terms):
         self.data = data
         self.releases = releases
         self.published = {r["tag_name"] for r in releases or []}
@@ -366,6 +388,7 @@ class Site:
         self.languages = languages
         self.english = languages[0]
         self.strings = strings
+        self.terms = terms
         self.sitemap = []  # (path, alternates) for each indexable page
 
     # MARK: URLs
@@ -399,9 +422,14 @@ class Site:
 
     # MARK: Strings
 
+    def text(self, lang, key):
+        """A string with the app's names for its settings filled in."""
+        terms = self.terms[lang["code"]]
+        return APP_TERM_RE.sub(lambda m: terms[m.group(1)], self.strings[lang["code"]][key])
+
     def t(self, lang, key, **values):
         """A string as HTML, with its links and code rendered."""
-        text = html.escape(self.strings[lang["code"]][key], quote=False)
+        text = html.escape(self.text(lang, key), quote=False)
         for name, value in values.items():
             text = text.replace(f"{{{name}}}", html.escape(str(value)))
         text = CODE_RE.sub(r"<code>\1</code>", text)
@@ -410,7 +438,7 @@ class Site:
 
     def plain(self, lang, key, **values):
         """A string as plain text, for titles, attributes and structured data."""
-        text = self.strings[lang["code"]][key]
+        text = self.text(lang, key)
         for name, value in values.items():
             text = text.replace(f"{{{name}}}", str(value))
         return CODE_RE.sub(r"\1", LINK_RE.sub(r"\1", text))
@@ -776,7 +804,7 @@ def main():
         if missing or i["status"] not in statuses:
             sys.exit(f"docs/issues.json: issue {i.get('number')} is missing {sorted(missing)} or has an unknown status")
 
-    languages, strings = load_i18n()
+    languages, strings, terms = load_i18n()
 
     docs = build_docs(data)
     if args.check and DOCS.read_text() != docs:
@@ -785,7 +813,7 @@ def main():
         DOCS.write_text(docs)
         print(f"Wrote {DOCS.relative_to(ROOT)}")
     if args.out:
-        Site(data, fetch_releases(), args.base_url, languages, strings).build(args.out)
+        Site(data, fetch_releases(), args.base_url, languages, strings, terms).build(args.out)
 
 
 if __name__ == "__main__":

@@ -155,6 +155,9 @@ extension KeyCode {
     /// System representation.
     var keyEquivalent: String {
         guard
+            // UInt16(_:) traps on an out-of-range value, and the key code
+            // can come from stored settings.
+            let keyCode = UInt16(exactly: rawValue),
             let inputSource = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?.takeRetainedValue(),
             let layoutData = TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData)
         else {
@@ -172,7 +175,7 @@ extension KeyCode {
 
         let status = UCKeyTranslate(
             layoutPtr,
-            UInt16(rawValue),
+            keyCode,
             UInt16(kUCKeyActionDisplay),
             modifierKeyState,
             UInt32(LMGetKbdType()),

@@ -125,8 +125,6 @@ struct HotkeyRecorder<Label: View>: View {
 
 @MainActor
 private final class HotkeyRecorderModel: ObservableObject {
-    @EnvironmentObject private var appState: AppState
-
     @Published private(set) var isRecording = false
 
     @Published var isPresentingSystemReservedError = false

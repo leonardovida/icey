@@ -10,12 +10,19 @@ The website reads the published releases from the GitHub API (set GITHUB_TOKEN
 to avoid rate limits), so its download button always points at the latest
 release's DMG, and fixes only link to releases that exist. Without network
 access it falls back to the releases page. Uses only the Python standard library.
+
+The home and download pages are translated. Their text, in every language, is
+in docs/site-i18n.json: English stays at the site's root, and each other
+language gets its own folder, such as /de/ or /zh-hans/. Every run checks that
+each translation has the same keys, placeholders and links as English. The list
+of fixes is only in English, because it quotes the upstream issues.
 """
 
 import argparse
 import html
 import json
 import os
+import re
 import shutil
 import sys
 import urllib.request
@@ -30,6 +37,7 @@ SITE_URL = "https://leonardovida.github.io/icey"
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "docs" / "issues.json"
 DOCS = ROOT / "docs" / "upstream-issues.md"
+I18N = ROOT / "docs" / "site-i18n.json"
 # PNG renders of Ice/Resources/AppIcon.icon (exported with Icon Composer's ictool).
 ICONS = ROOT / "Resources" / "AppIcon"
 
@@ -180,6 +188,58 @@ def build_docs(data):
     return "\n".join(out) + "\n"
 
 
+# MARK: - Translations
+
+
+# [text](name) links to the URL named `name`, and `text` is code. See docs/site-i18n.json.
+LINK_RE = re.compile(r"\[([^\]]+)\]\((\w+)\)")
+CODE_RE = re.compile(r"`([^`]+)`")
+PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
+
+
+def string_shape(text):
+    """The parts of a string that every translation must keep."""
+    return (
+        sorted(PLACEHOLDER_RE.findall(text)),
+        sorted(name for _, name in LINK_RE.findall(text)),
+        sorted(CODE_RE.findall(text)),
+    )
+
+
+def load_i18n():
+    """Reads docs/site-i18n.json and exits if a translation doesn't match English."""
+    data = json.loads(I18N.read_text())
+    languages = data["languages"]
+    strings = data["strings"]
+    english = strings["en"]
+    codes = [lang["code"] for lang in languages]
+    errors = []
+    if codes[0] != "en":
+        errors.append("the first language must be en")
+    for code in codes:
+        if code not in strings:
+            errors.append(f"{code}: no strings")
+    for code, table in strings.items():
+        if code not in codes:
+            errors.append(f"{code}: not in the languages list")
+            continue
+        for key in english.keys() - table.keys():
+            errors.append(f"{code}.{key}: missing")
+        for key in table.keys() - english.keys():
+            errors.append(f"{code}.{key}: not an English key")
+        for key in english.keys() & table.keys():
+            if not table[key].strip():
+                errors.append(f"{code}.{key}: empty")
+            elif string_shape(table[key]) != string_shape(english[key]):
+                errors.append(f"{code}.{key}: its {{placeholders}}, [links](name) or `code` differ from English")
+    if errors:
+        sys.exit(f"{I18N.relative_to(ROOT)}:\n  " + "\n  ".join(errors))
+    for lang in languages:
+        # English stays at the site's root, so existing links keep working.
+        lang["slug"] = "" if lang["code"] == "en" else lang["code"].lower()
+    return languages, strings
+
+
 # MARK: - Website
 
 
@@ -187,36 +247,67 @@ CSS = """
 :root{--bg:#f7fbff;--fg:#0d1b2a;--muted:#4a5b6e;--card:#fff;--line:#d9e6f2;--accent:#1f7ae0;--accent-fg:#fff;--soft:#e8f2fd;--ok:#1a7f4b;--warn:#a15c00}
 @media (prefers-color-scheme:dark){:root{--bg:#0b131c;--fg:#e6eef7;--muted:#9fb1c4;--card:#121d29;--line:#1f2f40;--accent:#4c9dff;--accent-fg:#06121f;--soft:#13263a;--ok:#4cc38a;--warn:#f0a94b}}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;overflow-wrap:break-word}
+body:lang(ja){font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,"Noto Sans JP",sans-serif;line-height:1.75}
+body:lang(zh-Hans){font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC",sans-serif;line-height:1.75}
+body:lang(zh-Hant){font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Noto Sans TC","Noto Sans CJK TC",sans-serif;line-height:1.75}
+body:lang(ko){font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.75;word-break:keep-all}
+body:lang(th){font-family:-apple-system,BlinkMacSystemFont,Thonburi,"Leelawadee UI",Tahoma,"Noto Sans Thai",sans-serif;line-height:1.8}
+:lang(ja),:lang(zh){line-break:strict}
 a{color:var(--accent)}
 .wrap{max-width:960px;margin:0 auto;padding:0 16px}
 header.top{border-bottom:1px solid var(--line)}
-header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px}
-.brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--fg);text-decoration:none;font-size:18px}
+header.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding-top:12px;padding-bottom:12px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--fg);text-decoration:none;font-size:18px;margin-right:auto}
 .brand img{width:28px;height:28px}
-nav a{margin-left:16px;color:var(--muted);text-decoration:none;font-size:15px}
-nav a:hover{color:var(--fg)}
-.hero{text-align:center;padding:56px 0 32px}
-.hero img{width:128px;height:128px}
-h1{font-size:44px;line-height:1.1;margin:16px 0 8px;letter-spacing:-.02em}
-.lead{font-size:20px;color:var(--muted);max-width:640px;margin:0 auto 24px}
-.btn{display:inline-block;background:var(--accent);color:var(--accent-fg);padding:12px 22px;border-radius:10px;font-weight:600;text-decoration:none;font-size:17px}
+nav.links{display:flex;flex-wrap:wrap;gap:4px 16px}
+nav.links a{color:var(--muted);text-decoration:none;font-size:15px;white-space:nowrap}
+nav.links a:hover{color:var(--fg)}
+details.lang{position:relative;font-size:15px;background:none;border:0;padding:0;margin:0}
+.lang summary{list-style:none;display:flex;align-items:center;gap:6px;color:var(--muted);padding:4px 10px;border:1px solid var(--line);border-radius:8px;font-weight:400}
+.lang summary::-webkit-details-marker{display:none}
+.lang summary:hover,.lang[open] summary{color:var(--fg)}
+.lang summary svg{width:16px;height:16px;flex:none}
+.lang ul{position:absolute;right:0;top:calc(100% + 6px);z-index:10;margin:0;padding:8px;list-style:none;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);columns:2;column-gap:4px;width:max-content;max-width:calc(100vw - 32px)}
+.lang li{break-inside:avoid}
+.lang li a{display:block;padding:4px 10px;border-radius:6px;color:var(--fg);text-decoration:none;white-space:nowrap}
+.lang li a:hover{background:var(--soft)}
+.lang li a[aria-current]{font-weight:600;color:var(--accent)}
+.hero{text-align:center;padding:48px 0 24px}
+.hero>img{width:112px;height:112px}
+.kicker{margin:8px 0 0;color:var(--accent);font-weight:600;font-size:15px}
+h1,h2,h3{overflow-wrap:break-word;hyphens:auto;text-wrap:balance}
+h1{font-size:44px;line-height:1.12;margin:8px 0 12px;letter-spacing:-.02em}
+.lead{font-size:20px;color:var(--muted);max-width:680px;margin:0 auto 24px}
+.btn{display:inline-block;max-width:100%;background:var(--accent);color:var(--accent-fg);padding:12px 22px;border-radius:10px;font-weight:600;text-decoration:none;font-size:17px;text-align:center}
 .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--line)}
 .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.meta{color:var(--muted);font-size:14px;margin-top:12px}
-section{padding:32px 0}
-h2{font-size:28px;margin:0 0 16px;letter-spacing:-.01em}
-h3{font-size:18px;margin:0 0 6px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px}
+.meta{color:var(--muted);font-size:14px;margin:12px 0 0}
+.facts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;list-style:none;padding:0;margin:20px auto 0;max-width:760px}
+.facts li{background:var(--soft);border-radius:99px;padding:4px 12px;font-size:14px}
+.hero-shot{margin:32px auto 0;max-width:760px}
+.hero-shot img{width:100%;height:auto;border-radius:12px;border:1px solid var(--line)}
+.hero-shot figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+.callout{background:var(--soft);border-radius:12px;padding:14px 18px;margin:0 auto;max-width:760px;text-align:center}
+section{padding:32px 0;scroll-margin-top:8px}
+h2{font-size:28px;line-height:1.25;margin:0 0 16px;letter-spacing:-.01em}
+h3{font-size:18px;line-height:1.35;margin:0 0 6px}
+:lang(ja) :is(h1,h2),:lang(zh) :is(h1,h2),:lang(ko) :is(h1,h2),:lang(th) :is(h1,h2){letter-spacing:0}
+:lang(th) h1{line-height:1.35}
+:lang(ja) :is(h1,h2,h3){word-break:auto-phrase}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
 .card p{margin:0;color:var(--muted)}
-.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:20px}
+.card ul{margin:0;padding-left:20px;color:var(--muted)}
+.card ul li{margin-bottom:4px}
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}
 .shots figure{margin:0}
 .shots img{width:100%;height:auto;border-radius:10px;border:1px solid var(--line)}
 .shots figcaption{font-size:14px;color:var(--muted);margin-top:6px}
-ol.steps{padding-left:20px}
-ol.steps li{margin-bottom:8px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px;align-items:start}
+ol.steps{padding-left:22px;margin:0}
+ol.steps li{margin-bottom:10px}
 details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:600}
 details p{color:var(--muted);margin:8px 0 0}
@@ -229,71 +320,62 @@ details p{color:var(--muted);margin:8px 0 0}
 .tag.fixed{color:var(--ok)}
 .tag.partial{color:var(--warn)}
 .small{font-size:14px;color:var(--muted)}
-.cta{background:var(--soft);border-radius:14px;padding:24px;text-align:center;margin:24px 0}
+.toc{text-align:center;color:var(--muted);font-size:14px}
+.cta{background:var(--soft);border-radius:14px;padding:24px 16px;text-align:center;margin:24px 0}
 footer{border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:14px}
-code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.92em}
-@media (max-width:600px){h1{font-size:34px}.lead{font-size:18px}nav a{margin-left:10px;font-size:14px}.hero{padding-top:36px}}
+footer p{margin:0 0 6px}
+code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.92em;white-space:nowrap}
+@media (max-width:720px){nav.links{order:3;width:100%}}
+@media (max-width:600px){h1{font-size:32px}h2{font-size:24px}.lead{font-size:18px}nav.links a{font-size:14px}.hero{padding-top:32px}}
 """
 
-FEATURES = [
-    ("Hide menu bar icons", "Keep the icons you use and hide the rest, with an always-hidden section for the ones you rarely need."),
-    ("The Ice Bar", "Show hidden items in a bar below the menu bar. Made for MacBooks with a notch, where icons disappear behind it."),
-    ("Drag-and-drop layout", "Rearrange menu bar items in Settings by dragging them between the visible, hidden and always-hidden sections."),
-    ("Show on hover, click or scroll", "Reveal hidden items by hovering, clicking an empty area or scrolling in the menu bar, then hide them again automatically."),
-    ("Search", "Find and click any menu bar item, visible or hidden, from a search panel with a hotkey."),
-    ("Menu bar styling", "Tint, shadow, border and rounded or split shapes for the menu bar."),
-    ("Your displays, your rules", "Use the Ice Bar only on the built-in display or on displays with a notch, and choose where new menu bar items appear."),
-    ("Move your setup", "Export your settings to a file and import them on another Mac."),
-]
+GLOBE_SVG = (
+    '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3">'
+    '<circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.8 1.9 2.7 4 2.7 6.5S9.8 12.6 8 14.5'
+    'M8 1.5C6.2 3.4 5.3 5.5 5.3 8s.9 4.6 2.7 6.5"/></svg>'
+)
 
-WHY = [
-    ("Works on current macOS", "Supports macOS 14 Sonoma, 15 Sequoia, 26 Tahoe, and macOS 27 (early support). Ice doesn't work on macOS 27."),
-    ("Lighter than Ice", "Less CPU, energy and WindowServer memory: no always-on mouse monitors, no tight polling, far fewer screen captures."),
-    ("Ice's bugs fixed", "Crashes, the stuck update prompt, empty layout panes and multi-display glitches that are still open in Ice."),
-]
+WHY = ["macos", "light", "fixes"]
 
-# Fixes listed on the home page, the ones most people search for.
+# Ordered by how many people use each feature.
+FEATURES = ["rehide", "show", "icebar", "displays", "layout", "search", "hotkeys", "style", "login"]
+
+FACTS = ["fact_macos", "fact_chips", "fact_signed", "fact_updates", "fact_free"]
+
+# Fixes listed on the English home page, the ones most people search for.
 HIGHLIGHTED_FIXES = [954, 973, 947, 925, 969, 968, 986, 578]
 
+HERO_SHOT = ("https://github.com/user-attachments/assets/f1429589-6186-4e1b-8aef-592219d49b9b", "shot_icebar")
 GALLERY = [
-    ("https://github.com/user-attachments/assets/f1429589-6186-4e1b-8aef-592219d49b9b", "The Ice Bar shows hidden menu bar items below the menu bar"),
-    ("https://github.com/user-attachments/assets/095442ba-f2d0-4bb4-9632-91e26ef8d45b", "Drag and drop menu bar items to arrange them"),
-    ("https://github.com/user-attachments/assets/8c22c185-c3d2-49bb-971e-e1fc17df04b3", "Customize the menu bar's appearance"),
-    ("https://github.com/user-attachments/assets/d1a7df3a-4989-4077-a0b1-8e7d5a1ba5b8", "Search menu bar items"),
+    ("https://github.com/user-attachments/assets/095442ba-f2d0-4bb4-9632-91e26ef8d45b", "shot_layout"),
+    ("https://github.com/user-attachments/assets/8c22c185-c3d2-49bb-971e-e1fc17df04b3", "shot_appearance"),
+    ("https://github.com/user-attachments/assets/d1a7df3a-4989-4077-a0b1-8e7d5a1ba5b8", "shot_search"),
 ]
 
-FAQ = [
-    ("Is Ice still maintained?",
-     "Ice (jordanbaird/Ice) has had no code changes since 2025. Its last version was a prerelease, 0.11.13-dev.2. Icey continues development from that code, and fixes the bugs left open in Ice."),
-    ("Does Ice work on macOS 26 Tahoe?",
-     "Ice 0.11.12, the last stable release, doesn't support Tahoe: the layout settings, the Ice Bar and search show \"Unable to display menu bar items\". Ice 0.11.13-dev.2 improved Tahoe support but still has crashes and other bugs. Icey supports Tahoe and fixes those bugs."),
-    ("Does Ice work on macOS 27?",
-     "No. On macOS 27, Ice can't hide items anymore. Icey includes early macOS 27 support, built from community work for Ice that was never merged."),
-    ("Will I lose my Ice settings?",
-     "No. Icey is a drop-in replacement: it uses Ice's bundle identifier and reads Ice's settings, so your sections, layout and hotkeys carry over. Menu bar appearance settings reset once when you upgrade from Ice 0.11.12."),
-    ("Why does Icey ask for permissions again?",
-     "macOS ties Accessibility and Screen Recording to the app's signature, and Icey is signed with a different Developer ID than Ice. Grant them once. Later Icey releases keep them."),
-    ("How does Icey update?",
-     "Icey updates itself from its GitHub releases. Turn on \"Automatically check for updates\" in Settings > About. Every release is signed with a Developer ID and notarized by Apple."),
-    ("Is Icey a free Bartender alternative?",
-     "Yes. Icey is free and open source (GPL-3.0), with features close to Bartender's: hiding items, a separate bar for hidden items, drag-and-drop arrangement, search, hotkeys and menu bar styling."),
-    ("Where do I report a bug or request a feature?",
-     "Open an issue on github.com/leonardovida/icey. Bug reports, feature requests and pull requests are welcome, including ones written with AI coding agents."),
-]
+FAQ = ["maintained", "tahoe", "macos27", "settings", "permissions", "updates", "data", "bartender", "report"]
 
 
 class Site:
-    def __init__(self, data, releases, base_url):
+    def __init__(self, data, releases, base_url, languages, strings):
         self.data = data
         self.releases = releases
         self.published = {r["tag_name"] for r in releases or []}
         self.latest = latest_release(releases)
         self.base_url = base_url.rstrip("/")
         self.base = urlparse(self.base_url).path.rstrip("/")
-        self.pages = []
+        self.languages = languages
+        self.english = languages[0]
+        self.strings = strings
+        self.sitemap = []  # (path, alternates) for each indexable page
+
+    # MARK: URLs
 
     def href(self, path=""):
         return f"{self.base}/{path}"
+
+    def local(self, lang, path=""):
+        """A path inside the site in the given language, such as "de/download/"."""
+        return f"{lang['slug']}/{path}" if lang["slug"] else path
 
     def released(self, tag):
         return tag is not None and (self.releases is None or tag in self.published)
@@ -301,117 +383,219 @@ class Site:
     def download_url(self):
         return self.latest["dmg"] if self.latest else f"{GH}/releases/latest"
 
-    def page(self, path, title, description, body, json_ld=None):
-        """Wraps body in the shared layout and records it for the sitemap."""
+    def links(self, lang):
+        """The URLs that [text](name) links in the strings point at."""
+        home = self.href(self.local(lang))
+        return {
+            "download": self.download_url(),
+            "switch": f"{home}#switch",
+            "permissions": f"{home}#permissions",
+            "breaking": f"{GH}/blob/main/BREAKING_CHANGES.md",
+            "privacy": PRIVACY_URL,
+            "license": f"{GH}/blob/main/LICENSE",
+            "upstream": UPSTREAM,
+            "issues": f"{GH}/issues/new/choose",
+        }
+
+    # MARK: Strings
+
+    def t(self, lang, key, **values):
+        """A string as HTML, with its links and code rendered."""
+        text = html.escape(self.strings[lang["code"]][key], quote=False)
+        for name, value in values.items():
+            text = text.replace(f"{{{name}}}", html.escape(str(value)))
+        text = CODE_RE.sub(r"<code>\1</code>", text)
+        links = self.links(lang)
+        return LINK_RE.sub(lambda m: f'<a href="{html.escape(links[m.group(2)])}">{m.group(1)}</a>', text)
+
+    def plain(self, lang, key, **values):
+        """A string as plain text, for titles, attributes and structured data."""
+        text = self.strings[lang["code"]][key]
+        for name, value in values.items():
+            text = text.replace(f"{{{name}}}", str(value))
+        return CODE_RE.sub(r"\1", LINK_RE.sub(r"\1", text))
+
+    # MARK: Layout
+
+    def page(self, path, lang, title, description, body, json_ld=None, translated=True, sitemap=True, noindex=False):
+        """Wraps body in the shared layout.
+
+        translated pages exist in every language at local(lang, path). The
+        others exist only in English, and their language menu leads to each
+        language's home page. sitemap=False leaves a page out of sitemap.xml,
+        and noindex=True also asks search engines not to list it.
+        """
         e = html.escape
-        url = f"{self.base_url}/{path}"
+        url = f"{self.base_url}/{self.local(lang, path)}"
+        if translated:
+            alternates = [(other, self.local(other, path)) for other in self.languages]
+        else:
+            alternates = [(self.english, path)]
+        head_links = "".join(
+            f'<link rel="alternate" hreflang="{other["code"]}" href="{self.base_url}/{target}">\n'
+            for other, target in alternates
+        )
+        head_links += f'<link rel="alternate" hreflang="x-default" href="{self.base_url}/{alternates[0][1]}">\n'
+        if noindex:
+            head_links = '<meta name="robots" content="noindex">\n'
+        menu = "".join(
+            '<li><a href="{}" lang="{}" hreflang="{}"{}>{}</a></li>'.format(
+                self.href(self.local(other, path) if translated else self.local(other)),
+                other["code"],
+                other["code"],
+                ' aria-current="true"' if other is lang else "",
+                e(other["name"]),
+            )
+            for other in self.languages
+        )
+        home = self.href(self.local(lang))
         ld = "".join(
-            f'<script type="application/ld+json">{json.dumps(block, ensure_ascii=False)}</script>'
+            f'<script type="application/ld+json">{json.dumps(block, ensure_ascii=False)}</script>\n'
             for block in (json_ld or [])
         )
+        footer = "".join(f"<p>{self.t(lang, key)}</p>" for key in ("footer_license", "footer_report", "footer_privacy"))
         doc = f"""<!doctype html>
-<html lang="en">
+<html lang="{lang['code']}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)}</title>
 <meta name="description" content="{e(description)}">
 <link rel="canonical" href="{e(url)}">
-<link rel="icon" type="image/png" sizes="32x32" href="{self.href('icon-32.png')}">
+{head_links}<link rel="icon" type="image/png" sizes="32x32" href="{self.href('icon-32.png')}">
 <link rel="apple-touch-icon" href="{self.href('icon-256.png')}">
 <link rel="stylesheet" href="{self.href('style.css')}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Icey">
+<meta property="og:locale" content="{lang['locale']}">
 <meta property="og:title" content="{e(title)}">
 <meta property="og:description" content="{e(description)}">
 <meta property="og:url" content="{e(url)}">
 <meta property="og:image" content="{self.base_url}/icon-512.png">
 <meta name="twitter:card" content="summary">
-{ld}
-{COUNTER_SCRIPT}
+{ld}{COUNTER_SCRIPT}
 </head>
 <body>
 <header class="top"><div class="wrap">
-<a class="brand" href="{self.href()}"><img src="{self.href('icon-64.png')}" alt="" width="28" height="28">Icey</a>
-<nav><a href="{self.href('fixes/')}">Ice bugs fixed</a><a href="{GH}/releases">Releases</a><a href="{GH}">GitHub</a></nav>
+<a class="brand" href="{home}"><img src="{self.href('icon-64.png')}" alt="" width="28" height="28">Icey</a>
+<nav class="links"><a href="{home}#features">{self.t(lang, 'nav_features')}</a><a href="{home}#install">{self.t(lang, 'nav_install')}</a><a href="{home}#faq">{self.t(lang, 'nav_faq')}</a><a href="{self.href('fixes/')}" hreflang="en">{self.t(lang, 'nav_fixes')}</a><a href="{GH}">GitHub</a></nav>
+<details class="lang"><summary aria-label="{e(self.plain(lang, 'language'))}: {e(lang['name'])}">{GLOBE_SVG}<span>{e(lang['name'])}</span></summary><ul>{menu}</ul></details>
 </div></header>
 <main class="wrap">
 {body}
 </main>
 <footer><div class="wrap">
-Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 license</a>. It continues <a href="{UPSTREAM}">Ice</a> by Jordan Baird.
-<a href="{GH}/issues/new/choose">Report a bug or request a feature</a>.<br>
-<a href="{PRIVACY_URL}">Privacy</a>: this site counts page views and downloads without cookies, and honors Do Not Track.
+{footer}
 </div></footer>
 </body>
 </html>
 """
-        self.pages.append(path)
-        return path, doc
+        if sitemap and not noindex:
+            self.sitemap.append((self.local(lang, path), alternates if translated else []))
+        return self.local(lang, path), doc
 
-    def download_block(self):
+    def download_block(self, lang):
         e = html.escape
         if self.latest:
-            meta = f"Version {e(self.latest['version'])}"
-            if self.latest["date"]:
-                meta += f", released {e(self.latest['date'])}"
-            meta += f'. <a href="{e(self.latest["url"])}">Release notes</a>'
+            meta = self.t(lang, "release_meta", version=self.latest["version"], date=self.latest["date"] or "")
+            meta += f' <a href="{e(self.latest["url"])}">{self.t(lang, "release_notes")}</a>'
         else:
-            meta = f'<a href="{GH}/releases">All releases</a>'
-        return f"""<div class="btns"><a class="btn" href="{e(self.download_url())}">Download Icey for Mac</a><a class="btn secondary" href="{GH}">View on GitHub</a></div>
-<p class="meta">{meta}<br>Free and open source. macOS 14 or later, Apple silicon and Intel. Signed and notarized by Apple.</p>"""
+            meta = f'<a href="{GH}/releases">{self.t(lang, "all_releases")}</a>'
+        return f"""<div class="btns"><a class="btn" href="{e(self.download_url())}">{self.t(lang, 'download_button')}</a><a class="btn secondary" href="{GH}">{self.t(lang, 'github_button')}</a></div>
+<p class="meta">{meta}</p>"""
 
-    def index(self):
+    # MARK: Pages
+
+    def index(self, lang):
         e = html.escape
-        fixed = [i for i in self.data["issues"] if i["status"] in ("fixed", "partial")]
-        why = "".join(f'<div class="card"><h3>{e(t)}</h3><p>{e(d)}</p></div>' for t, d in WHY)
-        features = "".join(f'<div class="card"><h3>{e(t)}</h3><p>{e(d)}</p></div>' for t, d in FEATURES)
+        t = lambda key, **values: self.t(lang, key, **values)  # noqa: E731
+        issues = self.data["issues"]
+        fixed = [i for i in issues if i["status"] in ("fixed", "partial")]
+        count = len(fixed)
+        cards = lambda prefix, keys, **values: "".join(  # noqa: E731
+            f'<div class="card"><h3>{t(f"{prefix}_{k}_title")}</h3><p>{t(f"{prefix}_{k}", **values)}</p></div>'
+            for k in keys
+        )
+        facts = "".join(f"<li>{t(key)}</li>" for key in FACTS)
+        hero_src, hero_alt = HERO_SHOT
         shots = "".join(
-            f'<figure><img src="{e(src)}" alt="{e(alt)}" loading="lazy"><figcaption>{e(alt)}</figcaption></figure>'
+            f'<figure><img src="{e(src)}" alt="{e(self.plain(lang, alt))}" loading="lazy"><figcaption>{t(alt)}</figcaption></figure>'
             for src, alt in GALLERY
         )
-        faq = "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in FAQ)
-        by_number = {i["number"]: i for i in fixed}
-        top_fixes = "".join(
-            '<li><a href="{}">{}</a></li>'.format(self.href(f"fixes/#issue-{n}"), e(by_number[n]["headline"]))
-            for n in HIGHLIGHTED_FIXES
-            if n in by_number
+        install = "".join(
+            f"<li>{t(key)}</li>"
+            for key in ("install_step_download", "install_step_drag", "install_step_open", "install_step_updates")
         )
+        requirements = "".join(
+            f"<li>{t(key)}</li>"
+            for key in ("requirement_macos", "requirement_chips", "requirement_license", "requirement_brew")
+        )
+        switch = "".join(
+            f"<li>{t(key)}</li>" for key in ("switch_quit", "switch_permissions", "switch_login", "switch_appearance")
+        )
+        faq = "".join(f"<details><summary>{t(f'faq_{k}_q')}</summary><p>{t(f'faq_{k}_a')}</p></details>" for k in FAQ)
+        fixes_link = t("fixes_link")
+        if lang is self.english:
+            by_number = {i["number"]: i for i in fixed}
+            top = "".join(
+                '<li><a href="{}">{}</a></li>'.format(self.href(f"fixes/#issue-{n}"), e(by_number[n]["headline"]))
+                for n in HIGHLIGHTED_FIXES
+                if n in by_number
+            )
+            examples = f"<p>{t('fixes_examples')}</p><ul>{top}</ul>"
+        else:
+            examples = ""
+            fixes_link += f" ({t('in_english')})"
         body = f"""<section class="hero">
-<img src="{self.href('icon-256.png')}" alt="Icey app icon" width="128" height="128">
-<h1>Icey: the maintained replacement for Ice</h1>
-<p class="lead">Hide, show and rearrange macOS menu bar icons. Icey continues Ice, the free and open-source menu bar manager, with support for macOS 26 Tahoe and macOS 27, lower CPU use, and Ice's bugs fixed.</p>
-{self.download_block()}
+<img src="{self.href('icon-256.png')}" alt="{e(self.plain(lang, 'icon_alt'))}" width="112" height="112">
+<p class="kicker">{t('hero_kicker')}</p>
+<h1>{t('hero_title')}</h1>
+<p class="lead">{t('hero_lead')}</p>
+{self.download_block(lang)}
+<ul class="facts">{facts}</ul>
+<figure class="hero-shot"><img src="{e(hero_src)}" alt="{e(self.plain(lang, hero_alt))}"><figcaption>{t(hero_alt)}</figcaption></figure>
 </section>
-<section><h2>Why Icey</h2><div class="grid">{why}</div></section>
-<section><h2>Features</h2><div class="grid">{features}</div></section>
-<section><h2>Screenshots</h2><div class="shots">{shots}</div></section>
-<section id="install"><h2>Install</h2>
-<ol class="steps">
-<li><a href="{e(self.download_url())}">Download the DMG</a>, open it and drag <code>Icey.app</code> to Applications.</li>
-<li>If Ice is installed, quit it and move <code>Ice.app</code> to the Trash. Icey keeps your settings.</li>
-<li>Open Icey and grant Accessibility and Screen Recording when macOS asks.</li>
-<li>Optionally, turn on "Automatically check for updates" in Settings &gt; About.</li>
-</ol>
-<p class="small">Coming from Ice? Your sections, item layout and hotkeys carry over. Read the <a href="{GH}/blob/main/BREAKING_CHANGES.md">upgrade notes</a> for the few things that change.</p>
+<p class="callout">{t('switch_callout')}</p>
+<section id="why"><h2>{t('why_title')}</h2><div class="grid">{cards('why', WHY, count=count)}</div></section>
+<section id="features"><h2>{t('features_title')}</h2><div class="grid">{cards('feature', FEATURES)}</div></section>
+<section id="screenshots"><h2>{t('shots_title')}</h2><div class="shots">{shots}</div></section>
+<section id="install"><h2>{t('install_title')}</h2>
+<div class="two">
+<ol class="steps">{install}</ol>
+<div class="card"><h3>{t('requirements_title')}</h3><ul>{requirements}</ul></div>
+</div>
 </section>
-<section><h2>{len(fixed)} Ice bugs fixed</h2>
-<p>Icey fixes bugs that are still open in Ice, including:</p>
-<ul>{top_fixes}</ul>
-<p><a href="{self.href('fixes/')}">See every Ice bug fixed in Icey</a></p>
+<section id="permissions"><h2>{t('permissions_title')}</h2>
+<p>{t('permissions_intro')}</p>
+<div class="grid">
+<div class="card"><h3>{t('permission_ax_title')}</h3><p>{t('permission_ax')}</p></div>
+<div class="card"><h3>{t('permission_sr_title')}</h3><p>{t('permission_sr')}</p></div>
+</div>
+<p class="small">{t('permission_reset')}</p>
 </section>
-<section id="faq"><h2>FAQ</h2>{faq}</section>
-<div class="cta"><h2>Get Icey</h2>{self.download_block()}</div>
+<section id="switch"><h2>{t('switch_title')}</h2>
+<p>{t('switch_intro')}</p>
+<ol class="steps">{switch}</ol>
+<p class="small">{t('switch_more')}</p>
+</section>
+<section id="fixes"><h2>{t('fixes_title', count=count)}</h2>
+<p>{t('fixes_summary')}</p>
+{examples}
+<p><a href="{self.href('fixes/')}" hreflang="en">{fixes_link}</a></p>
+</section>
+<section id="faq"><h2>{t('faq_title')}</h2>{faq}</section>
+<div class="cta"><h2>{t('cta_title')}</h2>{self.download_block(lang)}</div>
 """
         app = {
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
             "name": "Icey",
             "alternateName": "Icey menu bar manager",
-            "description": "The maintained replacement for Ice, the free and open-source macOS menu bar manager.",
+            "description": self.plain(lang, "app_description"),
+            "inLanguage": lang["code"],
             "applicationCategory": "UtilitiesApplication",
             "operatingSystem": "macOS 14 or later",
-            "url": f"{self.base_url}/",
+            "url": f"{self.base_url}/{self.local(lang)}",
             "downloadUrl": self.download_url(),
             "license": "https://www.gnu.org/licenses/gpl-3.0.html",
             "isAccessibleForFree": True,
@@ -424,16 +608,18 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
         faq_ld = {
             "@context": "https://schema.org",
             "@type": "FAQPage",
+            "inLanguage": lang["code"],
             "mainEntity": [
-                {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in FAQ
+                {
+                    "@type": "Question",
+                    "name": self.plain(lang, f"faq_{k}_q"),
+                    "acceptedAnswer": {"@type": "Answer", "text": self.plain(lang, f"faq_{k}_a")},
+                }
+                for k in FAQ
             ],
         }
         return self.page(
-            "",
-            "Icey: free macOS menu bar manager, the maintained replacement for Ice",
-            "Icey hides and rearranges macOS menu bar icons. The maintained replacement for Ice, with macOS 26 Tahoe and macOS 27 support, lower CPU use and Ice's bugs fixed. Free Bartender alternative.",
-            body,
-            [app, faq_ld],
+            "", lang, self.plain(lang, "home_title"), self.plain(lang, "home_description"), body, [app, faq_ld]
         )
 
     def fixed_in_html(self, issue):
@@ -470,6 +656,7 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
 {note}</article>"""
 
     def fixes_index(self):
+        lang = self.english
         issues = self.data["issues"]
         groups = [
             ("fixed", "Fixed in Icey"),
@@ -481,66 +668,102 @@ Icey is free and open source under the <a href="{GH}/blob/main/LICENSE">GPL-3.0 
         ]
         fixed_count = sum(1 for i in issues if i["status"] in ("fixed", "partial"))
         parts = []
+        contents = []
         for status, heading in groups:
             rows = [i for i in issues if i["status"] == status]
             if rows:
-                parts.append(f"<section><h2>{heading} ({len(rows)})</h2>{''.join(self.issue_card(i) for i in rows)}</section>")
+                contents.append(f'<a href="#{status}">{heading} ({len(rows)})</a>')
+                parts.append(
+                    f'<section id="{status}"><h2>{heading} ({len(rows)})</h2>{"".join(self.issue_card(i) for i in rows)}</section>'
+                )
         body = f"""<section class="hero" style="padding-bottom:8px">
 <h1>Ice bugs fixed in Icey</h1>
 <p class="lead">{fixed_count} bugs reported against Ice (jordanbaird/Ice) are fixed or addressed in Icey, the maintained replacement for Ice. If you hit one of them in Ice, install Icey: it replaces Ice and keeps your settings.</p>
-{self.download_block()}
+{self.download_block(lang)}
 </section>
+<p class="toc">{" · ".join(contents)}</p>
 {''.join(parts)}
 <p class="small">Something missing? <a href="{GH}/issues/new/choose">Open an issue in Icey</a>. This list is generated from <a href="{GH}/blob/main/docs/issues.json">docs/issues.json</a>.</p>
 """
         return self.page(
             "fixes/",
+            lang,
             "Ice bugs fixed in Icey: crashes, macOS Tahoe and macOS 27 problems",
             f"{fixed_count} Ice menu bar manager bugs fixed in Icey: crashes, the stuck update prompt, empty Menu Bar Layout on macOS 26 Tahoe, macOS 27 support, high CPU and energy use.",
             body,
+            translated=False,
         )
 
-    def download_page(self):
-        e = html.escape
-        url = e(self.download_url())
-        body = f"""<section class="hero"><h1>Downloading Icey</h1>
-<p class="lead">Your download should start automatically. If it doesn't, <a href="{url}">download Icey here</a>.</p></section>
+    def download_page(self, lang):
+        steps = "".join(
+            f"<li>{self.t(lang, key)}</li>" for key in ("install_step_drag", "install_step_open", "install_step_updates")
+        )
+        body = f"""<section class="hero"><h1>{self.t(lang, 'download_heading')}</h1>
+<p class="lead">{self.t(lang, 'download_lead')}</p></section>
+<section><h2>{self.t(lang, 'download_next')}</h2><ol class="steps">{steps}</ol></section>
 <script>location.replace({json.dumps(self.download_url())})</script>"""
-        return self.page("download/", "Download Icey", "Download the latest version of Icey, the free macOS menu bar manager.", body)
+        return self.page(
+            "download/",
+            lang,
+            self.plain(lang, "download_title"),
+            self.plain(lang, "download_description"),
+            body,
+            sitemap=False,  # a redirect, not content
+        )
+
+    def not_found(self):
+        lang = self.english
+        body = f'<section class="hero"><h1>Page not found</h1><p class="lead"><a href="{self.href()}">Go to Icey\'s home page</a></p></section>'
+        _, doc = self.page("404", lang, "Page not found: Icey", "This page doesn't exist.", body, translated=False, noindex=True)
+        return "404.html", doc
 
     def build(self, out):
         out = Path(out)
         if out.exists():
             shutil.rmtree(out)
         out.mkdir(parents=True)
-        files = [self.index(), self.fixes_index(), self.download_page()]
+        files = []
+        for lang in self.languages:
+            files += [self.index(lang), self.download_page(lang)]
+        files.append(self.fixes_index())
         for path, doc in files:
-            target = out / path / "index.html" if path else out / "index.html"
+            target = out / path / "index.html"
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(doc)
+        name, doc = self.not_found()
+        (out / name).write_text(doc)
         (out / "style.css").write_text(CSS.strip() + "\n")
         for size in (32, 64, 256, 512):
             shutil.copy(ICONS / f"AppIcon-{size}.png", out / f"icon-{size}.png")
-        self.pages.remove("download/")  # a redirect, not content
         today = date.today().isoformat()
-        urls = "".join(f"<url><loc>{self.base_url}/{p}</loc><lastmod>{today}</lastmod></url>" for p in self.pages)
+        urls = []
+        for path, alternates in self.sitemap:
+            links = "".join(
+                f'<xhtml:link rel="alternate" hreflang="{lang["code"]}" href="{self.base_url}/{target}"/>'
+                for lang, target in alternates
+            )
+            urls.append(f"<url><loc>{self.base_url}/{path}</loc><lastmod>{today}</lastmod>{links}</url>")
         (out / "sitemap.xml").write_text(
-            f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n'
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'
+            + "".join(urls)
+            + "</urlset>\n"
         )
         (out / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {self.base_url}/sitemap.xml\n")
-        _, not_found = self.page("404", "Page not found: Icey", "This page doesn't exist.",
-                                 f'<section class="hero"><h1>Page not found</h1><p class="lead"><a href="{self.href()}">Go to Icey\'s home page</a></p></section>')
-        self.pages.remove("404")
-        (out / "404.html").write_text(not_found)
         (out / ".nojekyll").write_text("")
-        print(f"Wrote {len(files)} pages to {out} (latest release: {self.latest['tag'] if self.latest else 'unknown'})")
+        print(
+            f"Wrote {len(files)} pages in {len(self.languages)} languages to {out} "
+            f"(latest release: {self.latest['tag'] if self.latest else 'unknown'})"
+        )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", help="write the website to this folder")
     parser.add_argument("--docs", action="store_true", help="regenerate docs/upstream-issues.md")
-    parser.add_argument("--check", action="store_true", help="fail if docs/upstream-issues.md is out of date")
+    parser.add_argument(
+        "--check", action="store_true", help="fail if docs/upstream-issues.md is out of date or a translation is incomplete"
+    )
     parser.add_argument("--base-url", default=SITE_URL, help=f"the site's public URL (default {SITE_URL})")
     args = parser.parse_args()
     if not (args.out or args.docs or args.check):
@@ -553,6 +776,8 @@ def main():
         if missing or i["status"] not in statuses:
             sys.exit(f"docs/issues.json: issue {i.get('number')} is missing {sorted(missing)} or has an unknown status")
 
+    languages, strings = load_i18n()
+
     docs = build_docs(data)
     if args.check and DOCS.read_text() != docs:
         sys.exit("docs/upstream-issues.md is out of date. Run Scripts/build-site.py --docs and commit the result.")
@@ -560,7 +785,7 @@ def main():
         DOCS.write_text(docs)
         print(f"Wrote {DOCS.relative_to(ROOT)}")
     if args.out:
-        Site(data, fetch_releases(), args.base_url).build(args.out)
+        Site(data, fetch_releases(), args.base_url, languages, strings).build(args.out)
 
 
 if __name__ == "__main__":

@@ -202,7 +202,7 @@ struct GeneralSettingsPane: View {
     @ViewBuilder
     private var useIceBar: some View {
         Toggle("Use Ice Bar", isOn: $settings.useIceBar)
-            .annotation("Show hidden menu bar items in a separate bar below the menu bar.")
+            .annotation("Show hidden menu bar items in a separate bar below the menu bar, where the notch can't cover them.")
     }
 
     @ViewBuilder
@@ -290,6 +290,10 @@ struct GeneralSettingsPane: View {
             .annotation("Click inside an empty area of the menu bar to show hidden menu bar items.")
         Toggle("Show on hover", isOn: $settings.showOnHover)
             .annotation("Hover over an empty area of the menu bar to show hidden menu bar items.")
+        if settings.showOnHover {
+            // The delay only applies to show on hover, so it sits with it.
+            ShowOnHoverDelaySlider(settings: appState.settings.advanced)
+        }
         Toggle("Show on scroll", isOn: $settings.showOnScroll)
             .annotation("Scroll or swipe in the menu bar to show hidden menu bar items.")
     }
@@ -320,9 +324,9 @@ struct GeneralSettingsPane: View {
             .annotation {
                 switch settings.rehideStrategy {
                 case .smart:
-                    Text("Menu bar items are rehidden using a smart algorithm.")
+                    Text("Menu bar items are rehidden when you click in an app's window outside the menu bar.")
                 case .timed:
-                    Text("Menu bar items are rehidden after a fixed amount of time.")
+                    Text("Menu bar items are rehidden once the pointer has been away from the menu bar for the time below.")
                 case .focusedApp:
                     Text("Menu bar items are rehidden when the focused app changes.")
                 }
@@ -437,5 +441,38 @@ struct GeneralSettingsPane: View {
             }
             isApplyingItemSpacingOffset = false
         }
+    }
+}
+
+// MARK: - ShowOnHoverDelaySlider
+
+/// A slider for the delay before show on hover shows the hidden items.
+///
+/// The delay is stored with the advanced settings, so the slider observes
+/// them to stay current.
+private struct ShowOnHoverDelaySlider: View {
+    @ObservedObject var settings: AdvancedSettings
+
+    private var delayKey: LocalizedStringKey {
+        let formatted = settings.showOnHoverDelay.formatted()
+        return if settings.showOnHoverDelay == 1 {
+            "\(formatted) second"
+        } else {
+            "\(formatted) seconds"
+        }
+    }
+
+    var body: some View {
+        LabeledContent {
+            IceSlider(
+                delayKey,
+                value: $settings.showOnHoverDelay,
+                in: 0...1,
+                step: 0.1
+            )
+        } label: {
+            Text("Show on hover delay")
+        }
+        .annotation("The amount of time to wait before showing on hover.")
     }
 }

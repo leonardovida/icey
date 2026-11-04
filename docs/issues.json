@@ -8426,7 +8426,7 @@
       "status": "feature",
       "fixed_in": null,
       "symptom": "The reporter asked to make the delay before items show on hover shorter.",
-      "fix": "Available: Settings > Advanced > Show on hover delay.",
+      "fix": "Available: Settings > General > Show on hover delay, below Show on hover (Settings > Advanced in 0.14.5 and earlier).",
       "pr": null
     },
     {

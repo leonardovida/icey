@@ -89,7 +89,9 @@ struct AboutSettingsPane: View {
         }
         .padding(.top, 5)
         .padding([.horizontal, .bottom], 30)
-        .frame(maxHeight: 500)
+        // Leaves room for the explanations of the update settings, which
+        // take two lines in some languages.
+        .frame(maxHeight: 560)
         .background(.quinary, in: containerShape)
         .containerShape(containerShape)
     }
@@ -153,6 +155,7 @@ struct AboutSettingsPane: View {
             "Automatically check for updates",
             isOn: $updatesManager.automaticallyChecksForUpdates
         )
+        .annotation("Icey looks for a new version once a day and lets you know when one is available.")
     }
 
     @ViewBuilder
@@ -161,6 +164,9 @@ struct AboutSettingsPane: View {
             "Automatically download updates",
             isOn: $updatesManager.automaticallyDownloadsUpdates
         )
+        .annotation("New versions download in the background and install when Icey quits.")
+        // Sparkle only downloads updates that its automatic checks find.
+        .disabled(!updatesManager.automaticallyChecksForUpdates)
     }
 
     @ViewBuilder

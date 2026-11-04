@@ -61,6 +61,36 @@ struct ItemImages27Tests {
         #expect(rect == nil)
     }
 
+    @Test("An item mostly off the strip has no crop")
+    func mostlyOff() {
+        let rect = ItemImages27.cropRect(
+            itemFrame: CGRect(x: 1900, y: 2, width: 30, height: 24),
+            stripFrame: CGRect(x: 0, y: 0, width: 1920, height: 30),
+            scale: 2
+        )
+        #expect(rect == nil)
+    }
+
+    @Test("An item a sliver off the strip crops to the part on it")
+    func slightlyOff() {
+        let rect = ItemImages27.cropRect(
+            itemFrame: CGRect(x: 1892, y: 2, width: 30, height: 24),
+            stripFrame: CGRect(x: 0, y: 0, width: 1920, height: 30),
+            scale: 2
+        )
+        #expect(rect == CGRect(x: 3784, y: 4, width: 56, height: 48))
+    }
+
+    @Test("Fractional frames cover every pixel the item touches")
+    func fractional() {
+        let rect = ItemImages27.cropRect(
+            itemFrame: CGRect(x: 100.25, y: 2.25, width: 20.5, height: 22),
+            stripFrame: CGRect(x: 0, y: 0, width: 1920, height: 30),
+            scale: 2
+        )
+        #expect(rect == CGRect(x: 200, y: 4, width: 41, height: 44))
+    }
+
     @Test("File names are stable, distinct and safe")
     func fileNames() {
         let name = ItemImages27.fileName(forTag: "eu.exelban.Stats:Item-0")
@@ -593,6 +623,44 @@ struct ItemsZone27Tests {
             concealedPIDs: [],
             systemFrames: systemFrames,
             rememberedLeftEdge: 1200
+        ))
+    }
+
+    @Test("Concealed and undrawn items do not move the edge, so the room they free stays empty")
+    func concealedAndUndrawnIgnored() {
+        let concealed = ItemHitTest27.Item(frame: CGRect(x: 1000, y: 2, width: 30, height: 24), ownerPID: 13, isOnScreen: true)
+        let undrawn = ItemHitTest27.Item(frame: CGRect(x: 1100, y: 2, width: 30, height: 24), ownerPID: 14, isOnScreen: false)
+        #expect(!ItemHitTest27.isInsideItemsArea(
+            point: CGPoint(x: 1200, y: 12),
+            displayBounds: bounds,
+            items: items + [concealed, undrawn],
+            concealedPIDs: [13],
+            systemFrames: systemFrames,
+            rememberedLeftEdge: nil
+        ))
+    }
+
+    @Test("A pointer on another display is never in this display's items")
+    func pointerOnAnotherDisplay() {
+        #expect(!ItemHitTest27.isInsideItemsArea(
+            point: CGPoint(x: 2000, y: 12),
+            displayBounds: bounds,
+            items: items,
+            concealedPIDs: [],
+            systemFrames: systemFrames,
+            rememberedLeftEdge: nil
+        ))
+    }
+
+    @Test("An edge remembered somewhere off this display is ignored")
+    func rememberedEdgeOffTheDisplay() {
+        #expect(!ItemHitTest27.isInsideItemsArea(
+            point: CGPoint(x: 900, y: 12),
+            displayBounds: bounds,
+            items: items,
+            concealedPIDs: [],
+            systemFrames: systemFrames,
+            rememberedLeftEdge: -300
         ))
     }
 

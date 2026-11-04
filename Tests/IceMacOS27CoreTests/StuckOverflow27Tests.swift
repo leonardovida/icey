@@ -16,6 +16,20 @@ struct StuckOverflow27Tests {
         #expect(StuckOverflow27.notchSpan(displayBounds: display, leftAreaWidth: nil, rightAreaWidth: nil) == nil)
     }
 
+    @Test("Without both unobscured areas, or with areas that meet, there is no notch")
+    func noSpan() {
+        #expect(StuckOverflow27.notchSpan(displayBounds: display, leftAreaWidth: 790, rightAreaWidth: nil) == nil)
+        #expect(StuckOverflow27.notchSpan(displayBounds: display, leftAreaWidth: nil, rightAreaWidth: 790) == nil)
+        #expect(StuckOverflow27.notchSpan(displayBounds: display, leftAreaWidth: 900, rightAreaWidth: 900) == nil)
+        #expect(StuckOverflow27.notchSpan(displayBounds: display, leftAreaWidth: 1000, rightAreaWidth: 900) == nil)
+    }
+
+    @Test("The span is placed on the display, wherever it is")
+    func spanOffOrigin() {
+        let builtIn = CGRect(x: -1800, y: 98, width: 1800, height: 1169)
+        #expect(StuckOverflow27.notchSpan(displayBounds: builtIn, leftAreaWidth: 790, rightAreaWidth: 790) == -1010...(-790))
+    }
+
     @Test("Items laid out side by side are not stuck")
     func laidOut() {
         // Measured on macOS 27.0: neighbours overlap by 2 points.

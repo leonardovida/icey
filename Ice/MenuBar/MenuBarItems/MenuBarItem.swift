@@ -495,6 +495,13 @@ private extension MenuBarItemTag.Namespace {
     /// threads can corrupt it and crash.
     private static let uuidCache = OSAllocatedUnfairLock(initialState: [CGWindowID: UUID]())
 
+    /// The number of windows in ``uuidCache`` past which the windows that
+    /// no longer exist are forgotten.
+    ///
+    /// An app that creates its item again gives it a new window, so the
+    /// cache otherwise kept every window it had seen for as long as Icey ran.
+    private static let maxUUIDCacheCount = 256
+
     /// The window titles of Icey's control items.
     private static let controlItemTitles = Set(ControlItem.Identifier.allCases.map(\.rawValue))
 
@@ -541,6 +548,14 @@ private extension MenuBarItemTag.Namespace {
             let uuid = Self.uuidCache.withLock { cache in
                 if let uuid = cache[itemWindow.windowID] {
                     return uuid
+                }
+                if cache.count >= Self.maxUUIDCacheCount {
+                    // A window that still exists keeps its identifier, so its
+                    // item keeps its tag. An empty list means the call failed.
+                    let windowIDs = Set(Bridging.getMenuBarWindowList())
+                    if !windowIDs.isEmpty {
+                        cache = cache.filter { windowIDs.contains($0.key) }
+                    }
                 }
                 let uuid = UUID()
                 cache[itemWindow.windowID] = uuid

@@ -45,7 +45,18 @@ final class HIDEventManager: ObservableObject {
     /// Until when the release of a held-back click is held back as well (see
     /// `handleSystemItemClick27`). The deadline keeps a release that never comes from
     /// swallowing an unrelated one later.
-    private var heldBackReleaseUntil: ContinuousClock.Instant?
+    private var heldBackReleaseUntil: ContinuousClock.Instant? {
+        didSet {
+            guard heldBackReleaseUntil == nil, oldValue != nil else {
+                return
+            }
+            // The tap may have been kept running for this release alone. It is changed on a
+            // later turn, rather than from inside its own callback, which is where this is set.
+            Task { [weak self] in
+                self?.updateSystemItemClickTap()
+            }
+        }
+    }
 
     /// The pending show-on-hover check, if there is one.
     private var showOnHoverTask: Task<Void, any Error>?
@@ -271,13 +282,7 @@ final class HIDEventManager: ObservableObject {
                 monitor.stop()
             }
         }
-        if #available(macOS 27.0, *) {
-            if isEnabled {
-                systemItemClickTap.start()
-            } else {
-                systemItemClickTap.stop()
-            }
-        }
+        updateSystemItemClickTap()
 
         // Key changes made while the monitors were stopped weren't received.
         tracksMenuBarItemDrags = isEnabled && needsDragMonitors
@@ -290,6 +295,25 @@ final class HIDEventManager: ObservableObject {
         }
         if general?.showOnHover != true {
             cancelShowOnHoverTask()
+        }
+    }
+
+    /// Starts or stops the tap that bridges clicks on the system items on macOS 27.
+    ///
+    /// The tap is an active filter at the start of the HID event stream, and its callback runs
+    /// on the main thread, so while it runs every click on the Mac waits for Ice's main thread
+    /// before it goes anywhere. It only acts while items are concealed, and on the release of a
+    /// click it held back (see `handleSystemItemClick27`), so it runs only then. ``Concealer27``
+    /// calls this whenever it starts or stops concealing.
+    func updateSystemItemClickTap() {
+        guard #available(macOS 27.0, *) else {
+            return
+        }
+        let isConcealing = appState?.concealer27.isConcealing == true
+        if isEnabled && (isConcealing || heldBackReleaseUntil != nil) {
+            systemItemClickTap.start()
+        } else {
+            systemItemClickTap.stop()
         }
     }
 

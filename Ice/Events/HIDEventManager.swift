@@ -1243,21 +1243,63 @@ extension HIDEventManager {
     }()
 
     private static func rememberMenuReach(_ reach: CGFloat, forApplication bundleID: String, on displayID: CGDirectDisplayID) {
+        var ownersChanged = false
+        var reachesChanged = false
         if menuOwnerByDisplay[displayID] != bundleID {
             menuOwnerByDisplay[displayID] = bundleID
+            ownersChanged = true
+        }
+        if menuReachByDisplay[displayID]?[bundleID] != reach {
+            menuReachByDisplay[displayID, default: [:]][bundleID] = reach
+            reachesChanged = true
+            // Bounded, as it is kept across launches and written back whole: the applications
+            // that are not running are forgotten first (see `ApplicationMenuArea27.keysToForget`).
+            let applications = menuReachByDisplay[displayID].map { Array($0.keys) } ?? []
+            if applications.count > ApplicationMenuArea27.maximumRememberedApplications {
+                let running = Set(NSWorkspace.shared.runningApplications.compactMap(\.bundleIdentifier))
+                for forgotten in ApplicationMenuArea27.keysToForget(
+                    applications,
+                    inUse: running.union([bundleID]),
+                    limit: ApplicationMenuArea27.maximumRememberedApplications
+                ) {
+                    menuReachByDisplay[displayID]?[forgotten] = nil
+                }
+            }
+        }
+        // Called for every check of the pointer over the menus, so the rest waits for a change.
+        guard ownersChanged || reachesChanged else {
+            return
+        }
+        // And so are the displays: every external display ever connected has an identifier of its
+        // own. The ones connected now are kept.
+        let displays = Set(menuOwnerByDisplay.keys).union(menuReachByDisplay.keys)
+        if displays.count > ApplicationMenuArea27.maximumRememberedDisplays {
+            let connected = Set(NSScreen.screens.map(\.displayID)).union([displayID])
+            for forgotten in ApplicationMenuArea27.keysToForget(
+                displays,
+                inUse: connected,
+                limit: ApplicationMenuArea27.maximumRememberedDisplays
+            ) {
+                if menuOwnerByDisplay.removeValue(forKey: forgotten) != nil {
+                    ownersChanged = true
+                }
+                if menuReachByDisplay.removeValue(forKey: forgotten) != nil {
+                    reachesChanged = true
+                }
+            }
+        }
+        if ownersChanged {
             Defaults.set(
                 menuOwnerByDisplay.reduce(into: [String: String]()) { $0[String($1.key)] = $1.value },
                 forKey: .macOS27MenuOwner
             )
         }
-        guard menuReachByDisplay[displayID]?[bundleID] != reach else {
-            return
+        if reachesChanged {
+            let stored = menuReachByDisplay.reduce(into: [String: [String: Double]]()) { result, pair in
+                result[String(pair.key)] = pair.value.mapValues { Double($0) }
+            }
+            Defaults.set(stored, forKey: .macOS27MenuReach)
         }
-        menuReachByDisplay[displayID, default: [:]][bundleID] = reach
-        let stored = menuReachByDisplay.reduce(into: [String: [String: Double]]()) { result, pair in
-            result[String(pair.key)] = pair.value.mapValues { Double($0) }
-        }
-        Defaults.set(stored, forKey: .macOS27MenuReach)
     }
 
     /// The application frontmost on the given display, by its topmost ordinary window there.

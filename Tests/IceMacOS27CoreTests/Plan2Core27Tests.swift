@@ -295,6 +295,67 @@ struct ItemImageBackground27Tests {
         #expect(votes.light == 4)
     }
 
+    @Test("Each pixel is measured against the bar blended between its row's two edges")
+    func blendAcrossTheRow() {
+        // The left edge is 100, the right edge 130, so the bar at column 2 is 115 and at
+        // column 3 is 122.5. The glyph is white at column 2 of the middle row, and a pixel halfway
+        // to it sits beside it.
+        let width = 6
+        let height = 3
+        var pixels = [UInt8]()
+        for y in 0..<height {
+            for x in 0..<width {
+                let value: UInt8 = switch (x, y) {
+                case (2, 1): 255
+                case (3, 1): 189
+                case (0...1, _): 100
+                case (4...5, _): 130
+                case (2, _): 115
+                default: 123
+                }
+                pixels += [value, value, value, 255]
+            }
+        }
+        let result = ItemImages27.removingBackground(pixels: pixels, width: width, height: height, background: (100, 100, 100))
+        for y in 0..<height {
+            for x in 0..<width {
+                let index = (y * width + x) * 4
+                switch (x, y) {
+                case (2, 1):
+                    #expect(Array(result[index..<index + 4]) == [255, 255, 255, 255])
+                case (3, 1):
+                    // 66.5 of the glyph's 140 from the bar: 0.475 opaque.
+                    #expect(result[index + 3] == 121)
+                default:
+                    #expect(result[index + 3] == 0)
+                }
+            }
+        }
+    }
+
+    @Test("Tone votes count the near-white and near-black pixels far from the tile's colour")
+    func toneVoteCounts() {
+        let width = 5
+        let height = 5
+        var pixels = [UInt8]()
+        for y in 0..<height {
+            for x in 0..<width {
+                let colour: [UInt8] = switch (x, y) {
+                case (1, 1), (2, 2): [255, 250, 210]
+                case (3, 3): [0, 20, 55]
+                case (1, 3): [130, 30, 120]
+                case (3, 1): [190, 255, 255]
+                default: [100, 140, 170]
+                }
+                pixels += colour + [255]
+            }
+        }
+        // (1, 3) and (3, 1) are far from the tile's colour, but neither near white nor near black.
+        let votes = ItemImages27.toneVotes(pixels: pixels, width: width, height: height)
+        #expect(votes.light == 2)
+        #expect(votes.dark == 1)
+    }
+
     @Test("The glyph keeps its own colour")
     func glyphColourKept() {
         let pixels = ItemImages27.removingBackground(pixels: tile(background: (100, 140, 170), centre: (40, 200, 90)), width: 5, height: 5, background: (100, 140, 170))

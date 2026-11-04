@@ -119,27 +119,33 @@ enum ItemImages27 {
             rightBackgrounds.append(edgeBackground(row: y, columns: rightColumns))
         }
 
-        func blendedBackground(at index: Int) -> [Double] {
-            let pixel = index / 4
-            let row = pixel / width
-            guard row < leftBackgrounds.count else {
-                return backgroundChannels
-            }
-            let left = leftBackgrounds[row]
-            let right = rightBackgrounds[row]
-            let span = Double(right.column - left.column)
-            let share = span > 0 ? min(1, max(0, Double(pixel % width - left.column) / span)) : 0
-            return (0..<3).map { left.colour[$0] + (right.colour[$0] - left.colour[$0]) * share }
-        }
-
         // Every pass below needs each pixel's background and its distance from it, so both are
-        // worked out once, up front, rather than again in each pass.
-        let backgrounds = stride(from: 0, to: count, by: 4).map(blendedBackground(at:))
-        let distances = stride(from: 0, to: count, by: 4).map { index in
-            let local = backgrounds[index / 4]
-            return (0..<3).reduce(0) { furthest, channel in
-                max(furthest, abs(Double(pixels[index + channel]) - local[channel]))
+        // worked out once, up front, rather than again in each pass. The backgrounds are kept
+        // flat, three channels a pixel: an array for each pixel cost an allocation per pixel.
+        let pixelCount = (count + 3) / 4
+        var backgrounds = [Double](repeating: 0, count: pixelCount * 3)
+        var distances = [Double](repeating: 0, count: pixelCount)
+        for pixel in 0..<pixelCount {
+            let row = pixel / width
+            let base = pixel * 3
+            if row < leftBackgrounds.count {
+                let left = leftBackgrounds[row]
+                let right = rightBackgrounds[row]
+                let span = Double(right.column - left.column)
+                let share = span > 0 ? min(1, max(0, Double(pixel % width - left.column) / span)) : 0
+                for channel in 0..<3 {
+                    backgrounds[base + channel] = left.colour[channel] + (right.colour[channel] - left.colour[channel]) * share
+                }
+            } else {
+                for channel in 0..<3 {
+                    backgrounds[base + channel] = backgroundChannels[channel]
+                }
             }
+            var furthest = 0.0
+            for channel in 0..<3 {
+                furthest = max(furthest, abs(Double(pixels[pixel * 4 + channel]) - backgrounds[base + channel]))
+            }
+            distances[pixel] = furthest
         }
         func distance(at index: Int) -> Double {
             distances[index / 4]
@@ -189,9 +195,9 @@ enum ItemImages27 {
                 continue
             }
             result[index + 3] = UInt8((opacity * 255).rounded())
-            let local = backgrounds[index / 4]
+            let base = index / 4 * 3
             for channel in 0..<3 {
-                let unblended = (Double(pixels[index + channel]) - local[channel] * (1 - opacity)) / opacity
+                let unblended = (Double(pixels[index + channel]) - backgrounds[base + channel] * (1 - opacity)) / opacity
                 result[index + channel] = UInt8(min(255, max(0, unblended.rounded())))
             }
         }
@@ -283,17 +289,17 @@ enum ItemImages27 {
         var white = (count: 0, sum: [0.0, 0.0, 0.0])
         var black = (count: 0, sum: [0.0, 0.0, 0.0])
         for index in indices where index + 2 < pixels.count {
-            let channels = (0..<3).map { Int(pixels[index + $0]) }
-            if channels.allSatisfy({ $0 >= 255 - extremeMargin }) {
+            let (red, green, blue) = (Int(pixels[index]), Int(pixels[index + 1]), Int(pixels[index + 2]))
+            if min(red, green, blue) >= 255 - extremeMargin {
                 white.count += 1
-                for channel in 0..<3 {
-                    white.sum[channel] += Double(channels[channel])
-                }
-            } else if channels.allSatisfy({ $0 <= extremeMargin }) {
+                white.sum[0] += Double(red)
+                white.sum[1] += Double(green)
+                white.sum[2] += Double(blue)
+            } else if max(red, green, blue) <= extremeMargin {
                 black.count += 1
-                for channel in 0..<3 {
-                    black.sum[channel] += Double(channels[channel])
-                }
+                black.sum[0] += Double(red)
+                black.sum[1] += Double(green)
+                black.sum[2] += Double(blue)
             }
         }
         // A tone decided for the whole bar is trusted over the tile's own count, which a dark
@@ -330,18 +336,19 @@ enum ItemImages27 {
             return (0, 0)
         }
         let common = backgroundColor(pixels: pixels, width: width, height: height)
-        let base = [Int(common.r), Int(common.g), Int(common.b)]
+        let base = (r: Int(common.r), g: Int(common.g), b: Int(common.b))
         var light = 0
         var dark = 0
+        // Every pixel is looked at, so nothing here allocates per pixel.
         for index in stride(from: 0, to: count, by: 4) {
-            let channels = (0..<3).map { Int(pixels[index + $0]) }
-            let apart = (0..<3).reduce(0) { max($0, abs(channels[$1] - base[$1])) }
+            let (red, green, blue) = (Int(pixels[index]), Int(pixels[index + 1]), Int(pixels[index + 2]))
+            let apart = max(abs(red - base.r), abs(green - base.g), abs(blue - base.b))
             guard apart >= toneVoteDistance else {
                 continue
             }
-            if channels.allSatisfy({ $0 >= 255 - extremeMargin }) {
+            if min(red, green, blue) >= 255 - extremeMargin {
                 light += 1
-            } else if channels.allSatisfy({ $0 <= extremeMargin }) {
+            } else if max(red, green, blue) <= extremeMargin {
                 dark += 1
             }
         }

@@ -157,9 +157,7 @@ struct PermissionsView: View {
                     Button("Grant Permission") {
                         permission.performRequest()
                         Task {
-                            await permission.waitForPermission()
-                            appState.activate(withPolicy: .regular)
-                            appState.openWindow(.permissions)
+                            await returnToWindow(once: permission)
                         }
                     }
                 }
@@ -178,9 +176,7 @@ struct PermissionsView: View {
                         Task {
                             if await permission.resetAndRequest() {
                                 failedResets.remove(permission.title)
-                                await permission.waitForPermission()
-                                appState.activate(withPolicy: .regular)
-                                appState.openWindow(.permissions)
+                                await returnToWindow(once: permission)
                             } else {
                                 failedResets.insert(permission.title)
                             }
@@ -212,6 +208,27 @@ struct PermissionsView: View {
             .padding(10)
             .frame(maxWidth: .infinity)
         }
+    }
+
+    /// Brings the permissions window back to the front once the given
+    /// permission is granted, if the window is still open.
+    ///
+    /// The user can continue, which closes the window, while a permission
+    /// they asked for is still missing, and grant it later, such as Screen
+    /// Recording from Icey's settings. Bringing the window back then gave
+    /// Icey a Dock icon and showed the permissions window again, long after
+    /// setup had finished.
+    private func returnToWindow(once permission: Permission) async {
+        await permission.waitForPermission()
+        // The windows of a hidden app aren't visible, but stay open.
+        guard
+            NSApp.isHidden ||
+            NSApp.window(withIdentifier: IceWindowIdentifier.permissions.rawValue)?.isVisible == true
+        else {
+            return
+        }
+        appState.activate(withPolicy: .regular)
+        appState.openWindow(.permissions)
     }
 }
 

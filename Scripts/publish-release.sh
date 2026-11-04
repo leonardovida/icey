@@ -51,8 +51,11 @@ gh release create "$TAG" "$DIR/$NAME.dmg" "$DIR/$NAME.zip" "$DIR/SHA256SUMS.txt"
     --repo "$REPO" --target "$TARGET" --title "Icey ${TAG#v}" --notes-file "$NOTES" --latest
 
 echo "Published $TAG. Checking the update feed..."
-for attempt in 1 2 3 4 5 6; do
-    if curl -fsL "https://github.com/$REPO/releases/latest/download/appcast.xml" | grep -q "/download/$TAG/"; then
+for _ in 1 2 3 4 5 6; do
+    # Read the whole feed first. With pipefail, `curl | grep -q` fails when grep
+    # stops reading before curl has written everything, even on a match.
+    FEED="$(curl -fsL "https://github.com/$REPO/releases/latest/download/appcast.xml" || true)"
+    if grep -q "/download/$TAG/" <<< "$FEED"; then
         echo "The update feed serves $TAG."
         exit 0
     fi

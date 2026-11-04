@@ -24,8 +24,11 @@ REPO="leonardovida/icey"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NOTES="$ROOT/release-notes/$TAG.md"
 
-SIGN_UPDATE="${SIGN_UPDATE:-$(find "${DERIVED:-/tmp/ice-build}" "$HOME/Library/Developer/Xcode/DerivedData" \
-    -path '*artifacts/sparkle/Sparkle/bin/sign_update' -type f 2>/dev/null | head -1)}"
+# find fails when one of the folders doesn't exist, such as /tmp/ice-build before
+# Scripts/install.sh has run, even if it found the tool in the other. With
+# pipefail, that ended the script here without a message.
+SIGN_UPDATE="${SIGN_UPDATE:-$( { find "${DERIVED:-/tmp/ice-build}" "$HOME/Library/Developer/Xcode/DerivedData" \
+    -path '*artifacts/sparkle/Sparkle/bin/sign_update' -type f 2>/dev/null || true; } | head -1)}"
 if [ ! -x "$SIGN_UPDATE" ]; then
     echo "sign_update not found. Build the app once, or set SIGN_UPDATE to Sparkle's sign_update tool." >&2
     exit 1

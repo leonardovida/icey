@@ -2,6 +2,10 @@
 
 Full notes for every version are in [GitHub Releases](https://github.com/leonardovida/icey/releases), the main place for Icey updates. A copy of each release's notes is kept in [release-notes/](release-notes/). Changes that need you to do something are listed in [BREAKING_CHANGES.md](BREAKING_CHANGES.md).
 
+## [0.14.6](https://github.com/leonardovida/icey/releases/tag/v0.14.6)
+
+Adds ten languages, for 20 in total, makes search match accents, character width and other scripts, explains the most used settings more clearly, and fixes several bugs and sources of memory growth. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.14.6.md).
+
 ## [0.14.5](https://github.com/leonardovida/icey/releases/tag/v0.14.5)
 
 Detects the Screen Recording permission when a menu bar item has no title, keeps the Ice Bar's color current on every display, and reconnects to the item helper after macOS ends it. Installed copies of Icey 0.11.13-dev.2-icey.1 and later update automatically. See the [release notes](release-notes/v0.14.5.md).

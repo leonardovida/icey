@@ -24,10 +24,8 @@ final class UsageStatisticsManager: ObservableObject {
     /// A Boolean value that indicates whether Icey sends anonymous statistics.
     @Published var isEnabled = true
 
-    // swiftlint:disable force_unwrapping
     /// The endpoint the reports are sent to.
     static let endpoint = URL(string: "https://icey-stats.178-105-139-229.sslip.io/v1/report")!
-    // swiftlint:enable force_unwrapping
 
     /// How long after launch, or after the setting is turned on, the first
     /// report of the day is sent.

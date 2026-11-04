@@ -17,7 +17,6 @@ struct AboutSettingsPane: View {
     }
 
     private var repositoryURL: URL {
-        // swiftlint:disable:next force_unwrapping
         URL(string: "https://github.com/leonardovida/icey")!
     }
 
@@ -30,7 +29,6 @@ struct AboutSettingsPane: View {
     }
 
     private var privacyURL: URL {
-        // swiftlint:disable:next force_unwrapping
         URL(string: "https://github.com/leonardovida/icey#privacy-and-anonymous-statistics")!
     }
 
@@ -103,7 +101,7 @@ struct AboutSettingsPane: View {
                 if let nsImage = NSImage(named: NSImage.applicationIconName) {
                     Image(nsImage: nsImage)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(width: 230)
                 }
 

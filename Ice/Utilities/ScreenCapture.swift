@@ -19,13 +19,18 @@ enum ScreenCapture {
     /// with the permission. Any one titled menu bar item proves it. Only the
     /// first item used to be checked, so an item without a title reported the
     /// permission as missing although it was granted (jordanbaird/Ice#896).
+    ///
+    /// The permission check calls this every second for as long as the
+    /// permission is missing, so the items' descriptions are read with one
+    /// window server call, and Icey's own items are told apart by process
+    /// identifier, rather than with a call and an application lookup for
+    /// each item.
     static func checkPermissions() -> Bool {
+        let ownPID = ProcessInfo.processInfo.processIdentifier
         var sawOtherWindow = false
-        for windowID in Bridging.getMenuBarWindowList(option: [.itemsOnly, .activeSpace]) {
-            guard
-                let window = WindowInfo(windowID: windowID),
-                window.owningApplication != .current // Skip windows we own.
-            else {
+        for window in WindowInfo.createMenuBarWindows(option: [.itemsOnly, .activeSpace]) {
+            // Skip windows we own.
+            guard window.ownerPID != ownPID else {
                 continue
             }
             if window.title != nil {

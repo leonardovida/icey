@@ -94,6 +94,26 @@ final class ConcealmentController27 {
         live = next
     }
 
+    /// How long to wait before applying a target again after MenuBarAgent turned it down or did
+    /// not answer, or `nil` once the attempts are spent.
+    ///
+    /// A failed apply leaves the previous assertions live, so a change that was meant to hide
+    /// items left them on the bar until something else happened to apply concealment again.
+    /// The waits double, so a MenuBarAgent that is restarting or busy is not asked again and
+    /// again, and they stop after a few attempts, so one that keeps refusing is left alone until
+    /// the next change.
+    ///
+    /// - Parameter failures: How many applies in a row have failed, counting the latest.
+    static func retryDelay(afterFailures failures: Int) -> Duration? {
+        guard failures >= 1, failures <= maximumRetries else {
+            return nil
+        }
+        return .milliseconds(500 << (failures - 1))
+    }
+
+    /// The most applies retried in a row: waits of 0.5, 1, 2, 4 and 8 seconds.
+    static let maximumRetries = 5
+
     /// Releases every live assertion, which restores all items.
     func releaseAll() {
         // Timed like `apply`: releasing is the other half of the bar's movement, and it is

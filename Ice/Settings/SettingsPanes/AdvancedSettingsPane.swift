@@ -41,7 +41,6 @@ struct AdvancedSettingsPane: View {
                     hideApplicationMenus
                 }
                 enableSecondaryContextMenu
-                showOnHoverDelay
                 if #unavailable(macOS 27.0) {
                     tempShowInterval
                 }
@@ -144,25 +143,6 @@ struct AdvancedSettingsPane: View {
             )
             .padding(.trailing, 75)
         }
-    }
-
-    @ViewBuilder
-    private var showOnHoverDelay: some View {
-        LabeledContent {
-            IceSlider(
-                formattedToSeconds(settings.showOnHoverDelay),
-                value: $settings.showOnHoverDelay,
-                in: 0...1,
-                step: 0.1
-            )
-        } label: {
-            Text("Show on hover delay")
-                .frame(minWidth: maxSliderLabelWidth, alignment: .leading)
-                .onFrameChange { frame in
-                    maxSliderLabelWidth = max(maxSliderLabelWidth, frame.width)
-                }
-        }
-        .annotation("The amount of time to wait before showing on hover.")
     }
 
     @ViewBuilder

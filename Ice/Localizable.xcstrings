@@ -13335,6 +13335,124 @@
         }
       }
     },
+    "Icey looks for a new version once a day and lets you know when one is available." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey jednou denně vyhledá novou verzi a upozorní vás, až bude k dispozici."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey sucht einmal am Tag nach einer neuen Version und gibt dir Bescheid, wenn eine verfügbar ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey busca una nueva versión una vez al día y te avisa cuando hay una disponible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey recherche une nouvelle version une fois par jour et vous prévient lorsqu’elle est disponible."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey mencari versi baru sekali sehari dan memberi tahu Anda jika tersedia."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey cerca una nuova versione una volta al giorno e ti avvisa quando è disponibile."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey は 1 日に 1 回新しいバージョンを確認し、利用可能になったときに知らせます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey는 하루에 한 번 새 버전을 확인하고, 새 버전이 있으면 알려줍니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey zoekt één keer per dag naar een nieuwe versie en laat het je weten als er een beschikbaar is."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey raz dziennie szuka nowej wersji i powiadamia, gdy jest dostępna."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Icey procura uma nova versão uma vez por dia e avisa você quando houver uma disponível."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey раз в день проверяет наличие новой версии и сообщает, когда она доступна."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey söker efter en ny version en gång om dagen och meddelar dig när en finns tillgänglig."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey จะตรวจหาเวอร์ชันใหม่วันละครั้งและแจ้งให้คุณทราบเมื่อมีเวอร์ชันใหม่"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey günde bir kez yeni sürüm olup olmadığını denetler ve yeni sürüm olduğunda size bildirir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey раз на день перевіряє наявність нової версії й повідомляє, коли вона доступна."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey tìm phiên bản mới mỗi ngày một lần và thông báo cho bạn khi có phiên bản mới."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey 每天检查一次新版本，有新版本时会通知你。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icey 每天檢查一次新版本，有新版本時會通知你。"
+          }
+        }
+      }
+    },
     "Icey moves each menu bar item it hasn't seen before to this section once. Items you move afterwards stay where you put them." : {
       "localizations" : {
         "cs" : {
@@ -17111,238 +17229,120 @@
         }
       }
     },
-    "Menu bar items are rehidden after a fixed amount of time." : {
+    "Menu bar items are rehidden once the pointer has been away from the menu bar for the time below." : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Položky řádku nabídek se znovu skryjí po pevně stanovené době."
+            "value" : "Položky řádku nabídek se znovu skryjí, jakmile je ukazatel mimo řádek nabídek po dobu nastavenou níže."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menüleistenelemente werden nach einer festen Zeit wieder ausgeblendet."
+            "value" : "Menüleistenelemente werden wieder ausgeblendet, sobald der Zeiger für die unten eingestellte Zeit außerhalb der Menüleiste war."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los elementos se vuelven a ocultar tras un tiempo fijo."
+            "value" : "Los elementos se vuelven a ocultar cuando el puntero lleva fuera de la barra de menús el tiempo indicado abajo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les éléments sont masqués à nouveau après un délai fixe."
+            "value" : "Les éléments sont masqués à nouveau lorsque le pointeur est resté hors de la barre des menus pendant la durée ci-dessous."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Item bar menu disembunyikan kembali setelah jangka waktu tertentu."
+            "value" : "Item bar menu disembunyikan kembali setelah penunjuk berada di luar bar menu selama waktu di bawah."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gli elementi vengono nascosti di nuovo dopo un tempo fisso."
+            "value" : "Gli elementi vengono nascosti di nuovo quando il puntatore resta fuori dalla barra dei menu per il tempo indicato sotto."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一定時間後にメニューバー項目を再び隠す。"
+            "value" : "ポインタがメニューバーから離れて下の時間が経過したら、メニューバー項目を再び隠す。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "일정 시간이 지나면 메뉴 막대 항목을 다시 숨김."
+            "value" : "포인터가 아래 시간 동안 메뉴 막대를 벗어나 있으면 메뉴 막대 항목을 다시 숨김."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menubalkonderdelen worden na een vaste tijd opnieuw verborgen."
+            "value" : "Menubalkonderdelen worden opnieuw verborgen zodra de aanwijzer de hieronder ingestelde tijd buiten de menubalk is geweest."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elementy paska menu są ponownie ukrywane po określonym czasie."
+            "value" : "Elementy paska menu są ponownie ukrywane, gdy wskaźnik pozostaje poza paskiem menu przez czas ustawiony poniżej."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os itens são ocultados novamente após um tempo fixo."
+            "value" : "Os itens são ocultados novamente quando o cursor fica fora da barra de menus pelo tempo definido abaixo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Элементы строки меню снова скрываются через заданное время."
+            "value" : "Элементы строки меню снова скрываются, когда указатель находится вне строки меню в течение заданного ниже времени."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menyradsobjekt döljs igen efter en bestämd tid."
+            "value" : "Menyradsobjekt döljs igen när pekaren har varit utanför menyraden under tiden nedan."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "รายการแถบเมนูจะถูกซ่อนอีกครั้งหลังจากเวลาที่กำหนด"
+            "value" : "รายการแถบเมนูจะถูกซ่อนอีกครั้งเมื่อตัวชี้อยู่นอกแถบเมนูนานตามเวลาที่ตั้งไว้ด้านล่าง"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Menü çubuğu öğeleri belirli bir süre sonra yeniden gizlenir."
+            "value" : "Menü çubuğu öğeleri, imleç aşağıdaki süre boyunca menü çubuğunun dışında kaldığında yeniden gizlenir."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Елементи смуги меню знову ховаються через заданий час."
+            "value" : "Елементи смуги меню знову ховаються, коли вказівник перебуває поза смугою меню протягом заданого нижче часу."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Các mục trên thanh menu được ẩn lại sau một khoảng thời gian cố định."
+            "value" : "Các mục trên thanh menu được ẩn lại khi con trỏ đã rời khỏi thanh menu trong khoảng thời gian bên dưới."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "菜单栏项目会在固定时长后重新隐藏。"
+            "value" : "指针离开菜单栏达到下方设定的时长后，菜单栏项目会重新隐藏。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "經過固定時間後重新隱藏選單列項目。"
-          }
-        }
-      }
-    },
-    "Menu bar items are rehidden using a smart algorithm." : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Položky řádku nabídek se znovu skrývají pomocí chytrého algoritmu."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menüleistenelemente werden mit einem intelligenten Algorithmus wieder ausgeblendet."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los elementos se vuelven a ocultar mediante un algoritmo inteligente."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les éléments sont masqués à nouveau grâce à un algorithme intelligent."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Item bar menu disembunyikan kembali menggunakan algoritma pintar."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gli elementi vengono nascosti di nuovo con un algoritmo intelligente."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スマートなアルゴリズムでメニューバー項目を再び隠す。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스마트 알고리즘으로 메뉴 막대 항목을 다시 숨김."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menubalkonderdelen worden met een slim algoritme opnieuw verborgen."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elementy paska menu są ponownie ukrywane przy użyciu inteligentnego algorytmu."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Os itens são ocultados novamente por um algoritmo inteligente."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Элементы строки меню снова скрываются по интеллектуальному алгоритму."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menyradsobjekt döljs igen med hjälp av en smart algoritm."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "รายการแถบเมนูจะถูกซ่อนอีกครั้งด้วยอัลกอริทึมอัจฉริยะ"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Menü çubuğu öğeleri akıllı bir algoritmayla yeniden gizlenir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Елементи смуги меню знову ховаються за розумним алгоритмом."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Các mục trên thanh menu được ẩn lại bằng thuật toán thông minh."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "菜单栏项目通过智能算法重新隐藏。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用智慧型演算法重新隱藏選單列項目。"
+            "value" : "指標離開選單列達到下方設定的時間後，重新隱藏選單列項目。"
           }
         }
       }
@@ -17461,6 +17461,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目前使用的 App 變更時重新隱藏選單列項目。"
+          }
+        }
+      }
+    },
+    "Menu bar items are rehidden when you click in an app's window outside the menu bar." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Položky řádku nabídek se znovu skryjí, když klepnete do okna aplikace mimo řádek nabídek."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menüleistenelemente werden wieder ausgeblendet, wenn du außerhalb der Menüleiste in das Fenster einer App klickst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los elementos se vuelven a ocultar cuando haces clic en la ventana de una app fuera de la barra de menús."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments sont masqués à nouveau lorsque vous cliquez dans la fenêtre d’une app, en dehors de la barre des menus."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Item bar menu disembunyikan kembali saat Anda mengklik jendela app di luar bar menu."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli elementi vengono nascosti di nuovo quando fai clic nella finestra di un’app, fuori dalla barra dei menu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メニューバーの外でアプリのウインドウをクリックしたときにメニューバー項目を再び隠す。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 막대 밖에서 앱 윈도우를 클릭하면 메뉴 막대 항목을 다시 숨김."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menubalkonderdelen worden opnieuw verborgen wanneer je buiten de menubalk in het venster van een app klikt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elementy paska menu są ponownie ukrywane po kliknięciu w oknie aplikacji poza paskiem menu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os itens são ocultados novamente quando você clica na janela de um app, fora da barra de menus."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Элементы строки меню снова скрываются при нажатии в окне приложения за пределами строки меню."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyradsobjekt döljs igen när du klickar i ett appfönster utanför menyraden."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รายการแถบเมนูจะถูกซ่อนอีกครั้งเมื่อคุณคลิกในหน้าต่างของแอปนอกแถบเมนู"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menü çubuğu öğeleri, menü çubuğunun dışında bir uygulamanın penceresini tıkladığınızda yeniden gizlenir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Елементи смуги меню знову ховаються, коли ви клацаєте у вікні програми поза смугою меню."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các mục trên thanh menu được ẩn lại khi bạn bấm vào cửa sổ của một ứng dụng bên ngoài thanh menu."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当你在菜单栏以外点按某个 App 的窗口时，菜单栏项目会重新隐藏。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在選單列以外按一下 App 的視窗時重新隱藏選單列項目。"
           }
         }
       }
@@ -18169,6 +18287,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新項目出現在"
+          }
+        }
+      }
+    },
+    "New versions download in the background and install when Icey quits." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nové verze se stahují na pozadí a nainstalují se při ukončení Icey."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Versionen werden im Hintergrund geladen und beim Beenden von Icey installiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las nuevas versiones se descargan en segundo plano y se instalan al cerrarse Icey."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les nouvelles versions sont téléchargées en arrière-plan et installées à la fermeture d’Icey."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versi baru diunduh di latar belakang dan diinstal saat Icey keluar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le nuove versioni vengono scaricate in background e installate alla chiusura di Icey."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しいバージョンをバックグラウンドでダウンロードし、Icey の終了時にインストールします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 버전을 백그라운드에서 다운로드하고 Icey가 종료될 때 설치합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieuwe versies worden op de achtergrond gedownload en geïnstalleerd wanneer Icey stopt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowe wersje są pobierane w tle i instalowane po zakończeniu działania Icey."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As novas versões são baixadas em segundo plano e instaladas quando o Icey é encerrado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новые версии загружаются в фоновом режиме и устанавливаются при завершении работы Icey."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nya versioner hämtas i bakgrunden och installeras när Icey avslutas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เวอร์ชันใหม่จะดาวน์โหลดในพื้นหลังและติดตั้งเมื่อออกจาก Icey"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yeni sürümler arka planda indirilir ve Icey kapandığında yüklenir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нові версії завантажуються у фоновому режимі та встановлюються, коли Icey завершує роботу."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các phiên bản mới được tải về trong nền và được cài đặt khi Icey thoát."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本会在后台下载，并在 Icey 退出时安装。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本會在背景下載，並在 Icey 結束時安裝。"
           }
         }
       }
@@ -24427,120 +24663,120 @@
         }
       }
     },
-    "Show hidden menu bar items in a separate bar below the menu bar." : {
+    "Show hidden menu bar items in a separate bar below the menu bar, where the notch can't cover them." : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zobrazovat skryté položky řádku nabídek na samostatném panelu pod řádkem nabídek."
+            "value" : "Zobrazovat skryté položky řádku nabídek na samostatném panelu pod řádkem nabídek, kde je výřez nemůže zakrýt."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ausgeblendete Menüleistenelemente in einer separaten Leiste unter der Menüleiste anzeigen."
+            "value" : "Ausgeblendete Menüleistenelemente in einer separaten Leiste unter der Menüleiste anzeigen, wo die Aussparung sie nicht verdecken kann."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar los elementos ocultos en una barra aparte debajo de la barra de menús."
+            "value" : "Mostrar los elementos ocultos en una barra aparte debajo de la barra de menús, donde la muesca no puede taparlos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Afficher les éléments masqués dans une barre distincte sous la barre des menus."
+            "value" : "Afficher les éléments masqués dans une barre distincte sous la barre des menus, où l’encoche ne peut pas les cacher."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tampilkan item bar menu yang tersembunyi di bar terpisah di bawah bar menu."
+            "value" : "Tampilkan item bar menu yang tersembunyi di bar terpisah di bawah bar menu, tempat notch tidak dapat menutupinya."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostra gli elementi nascosti in una barra separata sotto la barra dei menu."
+            "value" : "Mostra gli elementi nascosti in una barra separata sotto la barra dei menu, dove il notch non può coprirli."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隠れているメニューバー項目をメニューバーの下の別のバーに表示。"
+            "value" : "隠れているメニューバー項目を、ノッチに隠れないようにメニューバーの下の別のバーに表示。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "숨겨진 메뉴 막대 항목을 메뉴 막대 아래의 별도 막대에 표시."
+            "value" : "숨겨진 메뉴 막대 항목을 노치에 가려지지 않도록 메뉴 막대 아래의 별도 막대에 표시."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toon verborgen menubalkonderdelen in een aparte balk onder de menubalk."
+            "value" : "Toon verborgen menubalkonderdelen in een aparte balk onder de menubalk, waar de inkeping ze niet kan bedekken."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pokazuj ukryte elementy paska menu na osobnym pasku poniżej paska menu."
+            "value" : "Pokazuj ukryte elementy paska menu na osobnym pasku poniżej paska menu, gdzie wycięcie nie może ich zasłonić."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar os itens ocultos em uma barra separada abaixo da barra de menus."
+            "value" : "Mostrar os itens ocultos em uma barra separada abaixo da barra de menus, onde o notch não pode cobri-los."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Показывать скрытые элементы строки меню на отдельной панели под строкой меню."
+            "value" : "Показывать скрытые элементы строки меню на отдельной панели под строкой меню, где их не закроет вырез."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Visa dolda menyradsobjekt i en separat rad under menyraden."
+            "value" : "Visa dolda menyradsobjekt i en separat rad under menyraden, där kamerahacket inte kan täcka dem."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แสดงรายการแถบเมนูที่ซ่อนอยู่ในแถบแยกต่างหากใต้แถบเมนู"
+            "value" : "แสดงรายการแถบเมนูที่ซ่อนอยู่ในแถบแยกต่างหากใต้แถบเมนู ซึ่งรอยบากจะไม่บังรายการเหล่านั้น"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gizli menü çubuğu öğelerini menü çubuğunun altında ayrı bir çubukta gösterin."
+            "value" : "Gizli menü çubuğu öğelerini, çentiğin örtemeyeceği şekilde menü çubuğunun altında ayrı bir çubukta gösterin."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Показувати приховані елементи смуги меню на окремій панелі під смугою меню."
+            "value" : "Показувати приховані елементи смуги меню на окремій панелі під смугою меню, де їх не закриє виріз."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hiển thị các mục bị ẩn trên thanh menu trong một thanh riêng bên dưới thanh menu."
+            "value" : "Hiển thị các mục bị ẩn trên thanh menu trong một thanh riêng bên dưới thanh menu, nơi phần khuyết không thể che chúng."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在菜单栏下方的独立栏中显示隐藏的菜单栏项目。"
+            "value" : "在菜单栏下方的独立栏中显示隐藏的菜单栏项目，不会被刘海遮挡。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在選單列下方的獨立列中顯示隱藏的選單列項目。"
+            "value" : "在選單列下方的獨立列中顯示隱藏的選單列項目，不會被瀏海遮住。"
           }
         }
       }

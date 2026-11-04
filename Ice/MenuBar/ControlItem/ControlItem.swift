@@ -216,8 +216,14 @@ final class ControlItem {
             }
             .store(in: &c)
 
+        // Each of the pipelines below follows only the latest window or screen.
+        // `flatMap` added an observer every time `window` or `screen` was set,
+        // and never removed the earlier ones, so each move of the item's window
+        // to another display left one more observer of a screen's frame behind,
+        // and a replaced window stayed alive and observed.
         statusItem.publisher(for: \.button).removeNil()
-            .flatMap { $0.publisher(for: \.window) }
+            .map { $0.publisher(for: \.window) }
+            .switchToLatest()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] window in
                 self?.window = window
@@ -225,7 +231,8 @@ final class ControlItem {
             .store(in: &c)
 
         $window.removeNil()
-            .flatMap { $0.publisher(for: \.frame) }
+            .map { $0.publisher(for: \.frame) }
+            .switchToLatest()
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] frame in
@@ -234,7 +241,8 @@ final class ControlItem {
             .store(in: &c)
 
         $window.removeNil()
-            .flatMap { $0.publisher(for: \.screen) }
+            .map { $0.publisher(for: \.screen) }
+            .switchToLatest()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] screen in
                 self?.screen = screen
@@ -242,7 +250,8 @@ final class ControlItem {
             .store(in: &c)
 
         $screen.removeNil()
-            .flatMap { $0.publisher(for: \.frame) }
+            .map { $0.publisher(for: \.frame) }
+            .switchToLatest()
             .combineLatest($frame.removeNil())
             .removeDuplicates()
             .receive(on: DispatchQueue.main)

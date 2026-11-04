@@ -171,25 +171,6 @@ final class MenuBarAppearanceManager: ObservableObject {
     }
 
     /// Returns a Boolean value that indicates whether a set of overlay panels
-    /// is needed for the given configuration.
-    private func needsOverlayPanels(for configuration: MenuBarAppearanceConfigurationV2) -> Bool {
-        let current = configuration.current
-        if current.hasShadow {
-            return true
-        }
-        if current.hasBorder {
-            return true
-        }
-        if configuration.shapeKind != .noShape {
-            return true
-        }
-        if current.tintKind != .noTint {
-            return true
-        }
-        return false
-    }
-
-    /// Returns a Boolean value that indicates whether a set of overlay panels
     /// may be needed for the given configuration, in either light or dark mode.
     func mayNeedOverlayPanels(for configuration: MenuBarAppearanceConfigurationV2) -> Bool {
         if configuration.shapeKind != .noShape {
@@ -204,10 +185,16 @@ final class MenuBarAppearanceManager: ObservableObject {
     }
 
     /// Configures the manager's overlay panels, if required by the given configuration.
+    ///
+    /// A dynamic configuration keeps its panels in both light and dark mode
+    /// if either of them calls for them. Panels were only built for the mode
+    /// in use, and nothing built them when the mode changed, so an appearance
+    /// set for dark mode alone never showed after a switch from light mode
+    /// until Icey was restarted. "Hold to Preview" showed nothing either.
     private func configureOverlayPanels(with configuration: MenuBarAppearanceConfigurationV2) {
         guard
             let appState,
-            needsOverlayPanels(for: configuration)
+            mayNeedOverlayPanels(for: configuration)
         else {
             while let panel = overlayPanels.popFirst() {
                 panel.close()

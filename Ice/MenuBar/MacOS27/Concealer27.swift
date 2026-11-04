@@ -38,7 +38,15 @@ final class Concealer27: ObservableObject {
     private var runningApplicationsChangeObservation: NSKeyValueObservation?
 
     /// Whether any application is meant to be concealed right now.
-    private(set) var isConcealing = false
+    private(set) var isConcealing = false {
+        didSet {
+            guard isConcealing != oldValue else {
+                return
+            }
+            // The tap that lets clicks through to the system items runs only while this is true.
+            appState?.hidEventManager.updateSystemItemClickTap()
+        }
+    }
 
     /// Process identifiers of the applications meant to be concealed right now.
     private(set) var concealedPIDs = Set<pid_t>()

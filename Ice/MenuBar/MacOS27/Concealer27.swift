@@ -160,12 +160,18 @@ final class Concealer27: ObservableObject {
     }
 
     /// Derives what to conceal from Ice's sections and applies it.
-    func update() {
+    ///
+    /// - Parameter isRetry: Whether this applies again after MenuBarAgent turned down the last
+    ///   attempt (see ``retryAfterFailure(of:)``). Any other update starts the count afresh.
+    func update(isRetry: Bool = false) {
         guard let appState, MenuBarAssessmentAssertion27.isAvailable else {
             return
         }
         if let suspendedUntil, ContinuousClock.now < suspendedUntil {
             return
+        }
+        if !isRetry {
+            consecutiveApplyFailures = 0
         }
         let applications = NSWorkspace.shared.runningApplications
         let running = Set(applications.compactMap(\.bundleIdentifier))
@@ -203,8 +209,10 @@ final class Concealer27: ObservableObject {
             }
             do {
                 try await controller.apply(target: target, running: running)
+                consecutiveApplyFailures = 0
             } catch {
                 logger.error("Could not apply concealment: \(error, privacy: .public)")
+                retryAfterFailure(of: generation)
             }
         }
         applyTask = task
@@ -225,6 +233,40 @@ final class Concealer27: ObservableObject {
 
     /// Counts the updates made, so an update overtaken by a later one is skipped.
     private var updateGeneration = 0
+
+    /// How many applies in a row MenuBarAgent has turned down or not answered.
+    private var consecutiveApplyFailures = 0
+
+    /// The pending retry of a failed apply, if there is one.
+    private var applyRetry: Task<Void, Never>?
+
+    /// Applies concealment again, a little later, after the apply of the given update failed.
+    ///
+    /// A failed apply leaves the previous assertions live: MenuBarAgent turning down the change
+    /// that hides the items, or not answering within its 3 seconds, left them on the bar until
+    /// something else happened to update concealment, which on a quiet machine could be a long
+    /// time. The retries back off and stop after a few (see
+    /// ``ConcealmentController27/retryDelay(afterFailures:)``), and a later update takes over
+    /// from them, since it applies the latest target itself.
+    private func retryAfterFailure(of generation: Int) {
+        guard updateGeneration == generation else {
+            return
+        }
+        consecutiveApplyFailures += 1
+        guard let delay = ConcealmentController27.retryDelay(afterFailures: consecutiveApplyFailures) else {
+            logger.error("Concealment failed \(self.consecutiveApplyFailures, privacy: .public) times in a row; not retrying until the next change")
+            return
+        }
+        applyRetry?.cancel()
+        applyRetry = Task { [weak self] in
+            try? await Task.sleep(for: delay)
+            guard let self, !Task.isCancelled, updateGeneration == generation else {
+                return
+            }
+            logger.notice("Retrying concealment, attempt \(self.consecutiveApplyFailures + 1, privacy: .public)")
+            update(isRetry: true)
+        }
+    }
 
     /// How many checks in a row have disagreed with ``isOverflowStuck``.
     ///

@@ -125,6 +125,30 @@ struct ConcealmentController27Tests {
         #expect(backend.liveTokens.count == 1)
     }
 
+    @Test("Applying again after a rejection reaches the target")
+    func retryAfterRejection() async throws {
+        let backend = FakeConcealmentBackend(universe: running)
+        let controller = ConcealmentController27(backend: backend)
+        try await controller.apply(target: [], running: running)
+        backend.rejectNextActivation = true
+        await #expect(throws: FakeConcealmentBackend.Rejected.self) {
+            try await controller.apply(target: allHidden, running: running)
+        }
+        #expect(backend.concealed.isEmpty)
+        try await controller.apply(target: allHidden, running: running)
+        #expect(backend.concealed == ["hidden.app", "always.app"])
+        #expect(backend.liveTokens.count == 1)
+    }
+
+    @Test("Retries back off and stop after a few")
+    func retryDelays() {
+        let delays = (0...7).map { ConcealmentController27.retryDelay(afterFailures: $0) }
+        #expect(delays == [nil, .milliseconds(500), .seconds(1), .seconds(2), .seconds(4), .seconds(8), nil, nil])
+        #expect(ConcealmentController27.retryDelay(afterFailures: ConcealmentController27.maximumRetries) != nil)
+        #expect(ConcealmentController27.retryDelay(afterFailures: -1) == nil)
+        #expect(ConcealmentController27.retryDelay(afterFailures: .max) == nil)
+    }
+
     @Test("A rejection part way through releases what the same apply had activated")
     func rejectedPartWay() async throws {
         let backend = FakeConcealmentBackend(universe: running)

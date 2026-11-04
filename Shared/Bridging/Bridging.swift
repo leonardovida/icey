@@ -35,24 +35,6 @@ extension Bridging {
 
     // MARK: Public Connection API
 
-    /// Returns a value from the main window server connection.
-    ///
-    /// - Parameter key: A key associated with a value in the main
-    ///   window server connection.
-    static func getConnectionProperty(forKey key: String) -> Any? {
-        var value: Unmanaged<CFTypeRef>?
-        let result = CGSCopyConnectionProperty(
-            getMainConnection(),
-            getMainConnection(),
-            key as CFString,
-            &value
-        )
-        if result != .success {
-            logger.error("CGSCopyConnectionProperty failed with error \(result.logString, privacy: .public)")
-        }
-        return value?.takeRetainedValue()
-    }
-
     /// Sets a value in the main window server connection.
     ///
     /// - Parameters:
@@ -257,30 +239,6 @@ extension Bridging {
     static func isWindowOnSpace(_ windowID: CGWindowID, _ spaceID: CGSSpaceID) -> Bool {
         let list = getSpaceList(for: windowID, visibleSpacesOnly: false)
         return list.contains(spaceID)
-    }
-
-    /// Returns a Boolean value that indicates whether the given window
-    /// intersects the given display bounds.
-    ///
-    /// - Parameters:
-    ///   - windowID: An identifier for a window.
-    ///   - displayBounds: The bounds of a display.
-    static func windowIntersectsDisplayBounds(_ windowID: CGWindowID, _ displayBounds: CGRect) -> Bool {
-        if let windowBounds = getWindowBounds(for: windowID) {
-            return displayBounds.intersects(windowBounds)
-        }
-        return false
-    }
-
-    /// Returns a Boolean value that indicates whether the given window
-    /// is on the specified display.
-    ///
-    /// - Parameters:
-    ///   - windowID: An identifier for a window.
-    ///   - displayID: An identifier for a display.
-    static func isWindowOnDisplay(_ windowID: CGWindowID, _ displayID: CGDirectDisplayID) -> Bool {
-        let displayBounds = CGDisplayBounds(displayID)
-        return windowIntersectsDisplayBounds(windowID, displayBounds)
     }
 
     /// Returns a Boolean value that indicates whether the given window

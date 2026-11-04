@@ -40,14 +40,6 @@ func CGSMainConnectionID() -> CGSConnectionID
 @_silgen_name("CGSDefaultConnectionForThread")
 func CGSDefaultConnectionForThread() -> CGSConnectionID
 
-@_silgen_name("CGSCopyConnectionProperty")
-func CGSCopyConnectionProperty(
-    _ cid: CGSConnectionID,
-    _ targetCID: CGSConnectionID,
-    _ key: CFString,
-    _ outValue: inout Unmanaged<CFTypeRef>?
-) -> CGError
-
 @_silgen_name("CGSSetConnectionProperty")
 func CGSSetConnectionProperty(
     _ cid: CGSConnectionID,

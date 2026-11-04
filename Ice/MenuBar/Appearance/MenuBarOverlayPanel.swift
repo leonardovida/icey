@@ -205,14 +205,35 @@ final class MenuBarOverlayPanel: NSPanel {
         }
         .store(in: &c)
 
+        // The mouse-up monitor below sees every click in every app, and only
+        // the split shape uses what it updates, so it runs only while that
+        // shape is chosen. It used to run for any appearance, a tint alone
+        // included, once for each display's panel.
+        let splitShapeMouseUps: AnyPublisher<Void, Never> = if let appState {
+            appState.appearanceManager.$configuration
+                .map { $0.shapeKind == .split }
+                .removeDuplicates()
+                .map { isSplit -> AnyPublisher<Void, Never> in
+                    guard isSplit else {
+                        return Empty().eraseToAnyPublisher()
+                    }
+                    return EventMonitor.publish(events: .leftMouseUp, scope: .universal)
+                        .filter { [weak self] _ in self?.isOnActiveSpace ?? false }
+                        .replace(with: ())
+                        .eraseToAnyPublisher()
+                }
+                .switchToLatest()
+                .eraseToAnyPublisher()
+        } else {
+            Empty().eraseToAnyPublisher()
+        }
+
         // Special cases for when the user drags an app onto or clicks into another space.
         Publishers.Merge(
             publisher(for: \.isOnActiveSpace)
                 .receive(on: DispatchQueue.main)
                 .replace(with: ()),
-            EventMonitor.publish(events: .leftMouseUp, scope: .universal)
-                .filter { [weak self] _ in self?.isOnActiveSpace ?? false }
-                .replace(with: ())
+            splitShapeMouseUps
         )
         .debounce(for: 0.05, scheduler: DispatchQueue.main)
         .sink { [weak self] in

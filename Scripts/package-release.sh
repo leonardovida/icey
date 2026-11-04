@@ -7,7 +7,8 @@
 # Needs: the "Developer ID Application" certificate in the login keychain, the
 # notarytool keychain profile "icey-notary", and the Sparkle EdDSA key under
 # the account "icey". Output goes to build/release/<tag>/: the DMG, the zip,
-# appcast.xml and SHA256SUMS.txt, ready to attach to the GitHub release.
+# appcast.xml and SHA256SUMS.txt, ready to attach to the GitHub release. The
+# dSYMs for symbolicating crash reports go to build/release/<tag>.dSYMs.zip.
 #
 set -euo pipefail
 
@@ -56,6 +57,12 @@ xcodebuild -project Ice.xcodeproj -scheme Ice -configuration Release -destinatio
   DEVELOPMENT_TEAM="$TEAM" OTHER_CODE_SIGN_FLAGS=--timestamp CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
   build > "$OUT.build.log" 2>&1 || { tail -30 "$OUT.build.log"; exit 1; }
 APP="$DD/Build/Products/Release/Icey.app"
+
+# The Release build strips symbols from the app, so crash reports from users
+# need these dSYMs to show function names. Keep them next to the build log;
+# they aren't uploaded with the release.
+rm -f "$OUT.dSYMs.zip"
+(cd "$DD/Build/Products/Release" && zip -qry "$OUT.dSYMs.zip" Icey.app.dSYM MenuBarItemService.xpc.dSYM)
 
 # Sparkle ships its helpers signed with its own identity and no timestamp, which
 # notarization rejects. Re-sign them, inside out, then everything that contains them.
